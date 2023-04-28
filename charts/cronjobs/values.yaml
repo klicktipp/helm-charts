@@ -17,6 +17,15 @@ imagePullSecrets: []
 # DOCKER_CONFIG_JSON=$(echo -n '{ "auths": { "${REGISTRY_URL}": { "auth": "${AUTH}" } } }' | base64 | tr -d \"\n\")
 # dockerConfigJson: $DOCKER_CONFIG_JSON
 
+volumes: []
+#  - name: docker1
+#    hostPath:
+#      path: /var/
+
+volumeMounts: []
+#  - name: docker1
+#    mountPath: /var/
+
 secrets: {}
 #  # strings and file contents are automatically base64 encoded
 #  ssh-creds:
