@@ -96,7 +96,9 @@ spec:
               resources:
                 {{- toYaml $.Values.resources | nindent 16 }}
               volumeMounts:
-                {{- toYaml $.Values.volumeMounts | default "" | nindent 16 }}
+                {{- with .volumeMounts }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
                 {{- if $.Values.customConfigMap }}
                 - mountPath: /configMaps/{{ $.Values.customConfigMap }}
                   name: {{ $.Values.customConfigMap }}
@@ -122,7 +124,9 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumes:
-            {{- toYaml $.Values.volumes | default "" | nindent 12 }}
+            {{- with .volumes }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
             {{- if $.Values.customConfigMap }}
             - name: {{ $.Values.customConfigMap }}
               configMap:
