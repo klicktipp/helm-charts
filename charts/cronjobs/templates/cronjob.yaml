@@ -96,8 +96,9 @@ spec:
               resources:
                 {{- toYaml $.Values.resources | nindent 16 }}
               volumeMounts:
-                {{- with .volumeMounts }}
-                {{- toYaml . | nindent 16 }}
+                {{- range .volumeMounts }}
+                - mountPath: {{ .mountPath }}
+                  name: {{ print $chart_name "-" $job_name "-" .name }}
                 {{- end }}
                 {{- if $.Values.customConfigMap }}
                 - mountPath: /configMaps/{{ $.Values.customConfigMap }}
@@ -125,9 +126,9 @@ spec:
           {{- end }}
           volumes:
             {{- range .volumes }}
-            - name: {{ .name }}
+            - name: {{ print $chart_name "-" $job_name "-" .name }}
               persistentVolumeClaim:
-                claimName: {{ .claimName | default .name }}
+                claimName: {{ print $chart_name "-" $job_name "-" (.claimName | default .name) }}
             {{- end }}
             {{- if $.Values.customConfigMap }}
             - name: {{ $.Values.customConfigMap }}

@@ -1,10 +1,11 @@
+{{- $chart_name := include "cronjobs.fullname" . }}
 {{- range $job_name, $job := .Values.jobs }}
 {{- range $volume := .volumes }}
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ $job_name }}-{{ .name }}
+  name: {{ print $chart_name "-" $job_name "-" .name }}
 spec:
   capacity:
     storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
@@ -22,7 +23,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ $job_name }}-{{ .claimName | default .name }}
+  name: {{ print $chart_name "-" $job_name "-" (.claimName | default .name) }}
 spec:
   accessModes:
     - ReadWriteMany
