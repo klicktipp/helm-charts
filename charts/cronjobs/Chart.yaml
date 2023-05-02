@@ -2,18 +2,13 @@ apiVersion: v2
 name: cronjobs
 description: A generic helm cronjob chart for kubernetes
 type: application
-version: 0.2.1
+version: 0.2.2
 appVersion: latest
-home: https://github.com/SickHub
-icon: https://raw.githubusercontent.com/SickHub/charts/master/sickhub/cronjobs/icon.png
+home: https://github.com/klicktipp/helm-charts
 keywords:
   - cronjob
 sources:
-  - https://github.com/SickHub/charts
-maintainers:
-  - name: SickHub
-    email: drpsychick@drsick.net
-    url: https://github.com/SickHub
+  - hhttps://github.com/klicktipp/helm-charts
 annotations:
   artifacthub.io/links: |
     - name: Image source
