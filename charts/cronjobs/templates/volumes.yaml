@@ -1,0 +1,36 @@
+{{- range $job_name, $job := .Values.jobs }}
+{{- with .volumes }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ $job_name }}-{{ .name }}
+spec:
+  capacity:
+    storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: {{ .storageClass }}
+  csi:
+    {{- with .csi }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $job_name }}-{{ .name }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ $.Values.efs.storageClass }}
+  volumeName: {{ $job_name }}-{{ .name }}
+  resources:
+    requests:
+      storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
+
+{{- end }} {{/* # end .volume */}}
+{{- end }}
