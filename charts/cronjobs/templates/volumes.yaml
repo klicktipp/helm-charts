@@ -1,5 +1,5 @@
 {{- range $job_name, $job := .Values.jobs }}
-{{- with .volumes }}
+{{- range $volume := .volumes }}
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -32,5 +32,5 @@ spec:
     requests:
       storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
 
-{{- end }} {{/* # end .volume */}}
-{{- end }}
+{{- end }} {{/* # end range volumes */}}
+{{- end }} {{/* # end range jobs */}}
