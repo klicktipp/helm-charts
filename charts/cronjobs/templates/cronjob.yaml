@@ -98,7 +98,7 @@ spec:
               volumeMounts:
                 {{- range .volumeMounts }}
                 - mountPath: {{ .mountPath }}
-                  name: {{ print $chart_name "-" $job_name "-" .name }}
+                  name: {{ print $chart_name "-" $job_name "-" .name | lower }}
                 {{- end }}
                 {{- if $.Values.customConfigMap }}
                 - mountPath: /configMaps/{{ $.Values.customConfigMap }}
@@ -126,9 +126,9 @@ spec:
           {{- end }}
           volumes:
             {{- range .volumes }}
-            - name: {{ print $chart_name "-" $job_name "-" .name }}
+            - name: {{ print $chart_name "-" $job_name "-" .name | lower }}
               persistentVolumeClaim:
-                claimName: {{ print $chart_name "-" $job_name "-" (.claimName | default .name) }}
+                claimName: {{ print $chart_name "-" $job_name "-" (.claimName | default .name) | lower }}
             {{- end }}
             {{- if $.Values.customConfigMap }}
             - name: {{ $.Values.customConfigMap }}

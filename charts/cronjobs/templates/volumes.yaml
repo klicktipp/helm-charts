@@ -5,7 +5,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ print $chart_name "-" $job_name "-" .name }}
+  name: {{ print $chart_name "-" $job_name "-" .name | lower }}
 spec:
   capacity:
     storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
@@ -23,12 +23,12 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ print $chart_name "-" $job_name "-" (.claimName | default .name) }}
+  name: {{ print $chart_name "-" $job_name "-" (.claimName | default .name) | lower }}
 spec:
   accessModes:
     - ReadWriteMany
   storageClassName: {{ .storageClass }}
-  volumeName: {{ $job_name }}-{{ .name }}
+  volumeName: {{ print $chart_name "-" $job_name "-" .name | lower }}
   resources:
     requests:
       storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
