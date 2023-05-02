@@ -1,0 +1,37 @@
+{{- $chart_name := include "cronjobs.fullname" . }}
+{{- range $job_name, $job := .Values.jobs }}
+{{- range $volume := .volumes }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ print $chart_name "-" $job_name "-" .name | lower }}
+spec:
+  capacity:
+    storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: {{ .storageClass }}
+  csi:
+    {{- with .csi }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ print $chart_name "-" $job_name "-" (.claimName | default .name) | lower }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ .storageClass }}
+  volumeName: {{ print $chart_name "-" $job_name "-" .name | lower }}
+  resources:
+    requests:
+      storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
+
+{{- end }} {{/* # end range volumes */}}
+{{- end }} {{/* # end range jobs */}}

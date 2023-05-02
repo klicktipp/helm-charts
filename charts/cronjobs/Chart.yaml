@@ -1,0 +1,26 @@
+apiVersion: v2
+name: cronjobs
+description: A generic helm cronjob chart for kubernetes
+type: application
+version: 0.2.0
+appVersion: latest
+home: https://github.com/SickHub
+icon: https://raw.githubusercontent.com/SickHub/charts/master/sickhub/cronjobs/icon.png
+keywords:
+  - cronjob
+sources:
+  - https://github.com/SickHub/charts
+maintainers:
+  - name: SickHub
+    email: drpsychick@drsick.net
+    url: https://github.com/SickHub
+annotations:
+  artifacthub.io/links: |
+    - name: Image source
+      url: https://github.com/docker-library/busybox
+    - name: Image DockerHub
+      url: https://hub.docker.com/_/busybox
+dependencies:
+  - name: common
+    version: 2.2.4
+    repository: https://charts.bitnami.com/bitnami
