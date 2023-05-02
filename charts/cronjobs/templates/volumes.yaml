@@ -22,7 +22,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ $job_name }}-{{ .name }}
+  name: {{ $job_name }}-{{ .claimName | default .name }}
 spec:
   accessModes:
     - ReadWriteMany

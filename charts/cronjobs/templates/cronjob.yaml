@@ -124,8 +124,10 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumes:
-            {{- with .volumes }}
-            {{- toYaml . | nindent 12 }}
+            {{- range .volumes }}
+            - name: {{ .name }}
+              persistentVolumeClaim:
+                claimName: {{ .claimName | default .name }}
             {{- end }}
             {{- if $.Values.customConfigMap }}
             - name: {{ $.Values.customConfigMap }}
