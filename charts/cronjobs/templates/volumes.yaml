@@ -30,7 +30,7 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: {{ .storageClass }}
-  volumeName: {{ print $chart_name "-" $job_name "-" .name | lower }}
+  volumeName: {{ $PV_NAME }}
   resources:
     requests:
       storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
