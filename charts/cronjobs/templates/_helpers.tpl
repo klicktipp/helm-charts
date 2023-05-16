@@ -60,3 +60,12 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Given a list of strings, concatenate all of them with a dash ("-")
+and slugify the string to be DNS name compatible
+*/}}
+{{- define "kt.slugify-volume-name" -}}
+{{- $r := (join "-" .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trunc 63 | trimSuffix "-" }}
+{{- $r }}
+{{- end -}}
