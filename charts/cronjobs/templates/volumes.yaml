@@ -1,11 +1,13 @@
 {{- $chart_name := include "cronjobs.fullname" . }}
 {{- range $job_name, $job := .Values.jobs }}
 {{- range $volume := .volumes }}
+{{- $PV_NAME := include "kt.slugify-volume-name" (list $.Release.Namespace $.Release.Name $job_name .name) }}
+{{- $PVC_NAME := include "kt.slugify-volume-name" (list $.Release.Name (coalesce .claimName  .name)) }}
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ print $chart_name "-" $job_name "-" .name | lower }}
+  name: {{ $PV_NAME }}
 spec:
   capacity:
     storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
@@ -23,7 +25,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ print $chart_name "-" $job_name "-" (.claimName | default .name) | lower }}
+  name: {{ $PVC_NAME }}
 spec:
   accessModes:
     - ReadWriteMany
