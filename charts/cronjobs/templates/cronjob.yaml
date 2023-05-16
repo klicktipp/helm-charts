@@ -97,8 +97,9 @@ spec:
                 {{- toYaml $.Values.resources | nindent 16 }}
               volumeMounts:
                 {{- range .volumeMounts }}
-                - mountPath: {{ .mountPath }}
-                  name: {{ print $chart_name "-" $job_name "-" .name | lower }}
+                  {{- $PVC_NAME := include "kt.slugify-volume-name" (list $.Release.Name (coalesce .claimName  .name)) }}
+                - name: {{ $PVC_NAME }}
+                  mountPath: {{ .mountPath }}
                 {{- end }}
                 {{- if $.Values.customConfigMap }}
                 - mountPath: /configMaps/{{ $.Values.customConfigMap }}
@@ -126,9 +127,10 @@ spec:
           {{- end }}
           volumes:
             {{- range .volumes }}
-            - name: {{ print $chart_name "-" $job_name "-" .name | lower }}
+            {{- $PVC_NAME := include "kt.slugify-volume-name" (list $.Release.Name (coalesce .claimName  .name)) }}
+            - name: {{ $PVC_NAME }}
               persistentVolumeClaim:
-                claimName: {{ print $chart_name "-" $job_name "-" (.claimName | default .name) | lower }}
+                claimName: {{ $PVC_NAME }}
             {{- end }}
             {{- if $.Values.customConfigMap }}
             - name: {{ $.Values.customConfigMap }}
