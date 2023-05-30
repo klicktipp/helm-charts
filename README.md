@@ -1,6 +1,6 @@
 # KT Helm Charts
 
-## Usage
+## Helm Chart Repo Usage
 
 [Helm](https://helm.sh) must be installed to use the charts.  Please refer to
 Helm's [documentation](https://helm.sh/docs) to get started.
@@ -21,3 +21,13 @@ To uninstall the chart:
 ```
     helm delete my-<chart-name>
 ```
+
+## Creating/Updating Charts
+
+* Pull latest `main` branch changes
+* Branch out with the name `${chartname}-chart`
+* Put all your changes on this branch and push
+* Create a merge request and let it approve and be merged to the `main` branch
+* After sucessfull merging, create a tag on the `main` branch with the name of the chart and the latest chart version. Example: `redisinsight-0.2.0`.
+* Push the tag
+* Now the chart index (in the `gh-pages`) should be updated with the latest chart changes
