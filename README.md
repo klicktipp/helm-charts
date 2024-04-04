@@ -28,6 +28,6 @@ To uninstall the chart:
 * Branch out with the name `${chartname}-chart`
 * Put all your changes on this branch and push
 * Create a merge request and let it approve and be merged to the `main` branch
-* After sucessfull merging, create a tag on the `main` branch with the name of the chart and the latest chart version. Example: `redisinsight-0.2.0`.
+* After successful merging, create a tag on the `main` branch with the name of the chart and the latest chart version. Example: `redisinsight-0.2.0`.
 * Push the tag
 * Now the chart index (in the `gh-pages`) should be updated with the latest chart changes

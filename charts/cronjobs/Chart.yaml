@@ -1,8 +1,9 @@
+---
 apiVersion: v2
 name: cronjobs
 description: A generic helm cronjob chart for kubernetes
 type: application
-version: 0.2.5
+version: 1.0.0
 appVersion: latest
 home: https://github.com/klicktipp/helm-charts
 keywords:

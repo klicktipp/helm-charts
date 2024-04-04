@@ -3,25 +3,15 @@
 {{- $chart_labels := include "cronjobs.labels" . }}
 {{- $chart_selector_labels := include "cronjobs.selectorLabels" . }}
 {{- $service_account_name := include "cronjobs.serviceAccountName" . }}
-{{- $registry := .Values.image.registry }}
-{{- $tag := .Values.image.tag | default .Chart.AppVersion }}
-{{- $image_pull_secrets := .Values.imagePullSecrets }}
-
 {{- range $job_name, $job := .Values.jobs }}
-{{- $image := print $registry "/" $.Values.image.repository ":" $tag }}
-{{- if .image }}
-  {{- $image = print (default $registry .image.registry) "/" .image.repository ":" (default $tag .image.tag) }}
-{{- end }}
-{{- $env := $.Values.env }}
-{{- if .env }}
-  {{- $env = concat $env .env }}
-{{- end }}
+{{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-volume-name" $job_name }}
+{{- $env := mergeOverwrite dict $.Values.env ($job.env | default dict) }}
 {{- $checksum := toYaml . | sha256sum | trunc 20 | quote }}
 ---
 apiVersion: {{ $api_version }}
 kind: CronJob
 metadata:
-  name: {{ $chart_name }}-{{ $job_name }}
+  name: {{ $chart_name }}-{{ $JOB_NAME_SLUG }}
   labels:
     {{- $chart_labels | nindent 4 }}
   annotations:
@@ -31,9 +21,7 @@ spec:
   failedJobsHistoryLimit: {{ default 1 .failedJobsHistoryLimit }}
   successfulJobsHistoryLimit: {{ default 1 .successfulJobsHistoryLimit }}
   schedule: {{ .schedule | quote }}
-  {{- if .suspend }}
-  suspend: {{ .suspend }}
-  {{- end }}
+  suspend: {{ .suspend | default false }}
   {{- if .startingDeadlineSeconds }}
   startingDeadlineSeconds: {{ .startingDeadlineSeconds }}
   {{- end }}
@@ -66,23 +54,23 @@ spec:
         spec:
           restartPolicy: {{ default "Never" .restartPolicy }}
           imagePullSecrets:
-          {{- with default $image_pull_secrets .imagePullSecrets }}
+          {{- with ($job.imagePullSecrets | default $.Values.imagePullSecrets) }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- if $.Values.dockerConfigJson }}
+          {{- if $job.dockerConfigJson | default $.Values.dockerConfigJson }}
             - name: {{ $chart_name }}-registry
           {{- end }}
           {{- if or $.Values.serviceAccount.create $.Values.serviceAccount.name }}
           serviceAccountName: {{ $service_account_name }}
           {{- end }}
           securityContext:
-            {{- toYaml $.Values.podSecurityContext | nindent 12 }}
+            {{- toYaml ($job.podSecurityContext | default $.Values.podSecurityContext) | nindent 12 }}
           containers:
-            - name: {{ $job_name }}
+            - name: job
               securityContext:
-                {{- toYaml $.Values.securityContext | nindent 16 }}
-              image: {{ $image }}
-              imagePullPolicy: {{ $.Values.image.pullPolicy }}
+                {{- toYaml ($job.securityContext | default $.Values.securityContext) | nindent 16 }}
+              image: "{{ $job.image.repository }}:{{ $job.image.tag | default $.Chart.AppVersion }}"
+              imagePullPolicy: {{ $job.image.pullPolicy  | default "IfNotPresent" }}
               {{- if .command }}
               command:
                 {{- toYaml .command | nindent 16 }}
@@ -92,15 +80,33 @@ spec:
                 {{- toYaml . | nindent 16 }}
               {{- end }}
               env:
-                {{- toYaml $env | nindent 16 }}
-              resources:
-                {{- toYaml $.Values.resources | nindent 16 }}
-              volumeMounts:
-                {{- range .volumeMounts }}
-                  {{- $PVC_NAME := include "kt.slugify-volume-name" (list $.Release.Name (coalesce .claimName  .name)) }}
-                - name: {{ $PVC_NAME }}
-                  mountPath: {{ .mountPath }}
+                {{- range $key, $value := $env}}
+                - name: {{ $key }}
+                  value: {{ $value | quote }}
                 {{- end }}
+              resources:
+                {{- toYaml $job.resources | nindent 16 }}
+              volumeMounts:
+                {{- if and $job.storage (hasKey $job.storage "efs") (hasKey $job.storage.efs "mounts") }}
+                {{- range $efs_mount := $job.storage.efs.mounts }}
+                {{- range $efs_ap := $efs_mount.access_points }}
+                {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}
+                {{- $PVC_NAME := include "com.klicktipp.slugify-volume-name" (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
+                - name: {{ $PVC_NAME }}
+                  mountPath: {{ required "ERROR: the EFS mount point requires a mount_dest." $efs_ap.mount_dest }}
+                {{- end }} {{/* # end range $efs_ap */}}
+                {{- end }} {{/* # end range $efs_mount */}}
+                {{- end }} {{/* # end if storage.efs */}}
+                {{- if and (hasKey $job "extraFiles") $job.extraFiles }}
+                {{- range $filename, $file := $job.extraFiles }}
+                {{- if $file.enabled }}
+                - name: cronjob-files
+                  mountPath: '{{ $file.mountPath }}'
+                  subPath: '{{ $filename }}'
+                  readOnly: true
+                {{- end }}
+                {{- end }} {{/* # end range extraFiles */}}
+                {{- end }} {{/* # end exists extraFiles */}}
                 {{- if $.Values.customConfigMap }}
                 - mountPath: /configMaps/{{ $.Values.customConfigMap }}
                   name: {{ $.Values.customConfigMap }}
@@ -113,25 +119,43 @@ spec:
                 - mountPath: /secrets/{{ $job_name }}
                   name: {{ $job_name }}
                 {{- end }}
-          {{- with $.Values.nodeSelector }}
+          {{- with $job.nodeSelector | default $.Values.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with $.Values.affinity }}
+          {{- with $job.affinity | default $.Values.affinity }}
           affinity:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with $.Values.tolerations }}
+          {{- with $job.tolerations | default $.Values.tolerations }}
           tolerations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           volumes:
-            {{- range .volumes }}
-            {{- $PVC_NAME := include "kt.slugify-volume-name" (list $.Release.Name (coalesce .claimName  .name)) }}
+            {{- if and $job.storage (hasKey $job.storage "efs") (hasKey $job.storage.efs "mounts") }}
+            {{- range $efs_mount := $job.storage.efs.mounts }}
+            {{- range $efs_ap := $efs_mount.access_points }}
+            {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}
+            {{- $PVC_NAME := include "com.klicktipp.slugify-volume-name" (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
             - name: {{ $PVC_NAME }}
               persistentVolumeClaim:
                 claimName: {{ $PVC_NAME }}
-            {{- end }}
+            {{- end }} {{/* # end range $efs_ap */}}
+            {{- end }} {{/* # end range $efs_mount */}}
+            {{- end }} {{/* # end if storage.efs */}}
+            {{- if and (hasKey $job "extraFiles") $job.extraFiles }}
+            - name: cronjob-files
+              configMap:
+                name: {{ include "com.klicktipp.slugify-volume-name" (list $chart_name "files" $JOB_NAME_SLUG) }}
+                items:
+                {{- range $filename, $file := $job.extraFiles }}
+                  {{- if $file.enabled }}
+                  - key: '{{ $filename }}'
+                    path: '{{ $filename }}'
+                    mode: {{ ($file.mode | default "0644") | toDecimal }}
+                  {{- end }}
+                {{- end }} {{/* # end range extraFiles */}}
+            {{- end }} {{/* # end exists extraFiles */}}
             {{- if $.Values.customConfigMap }}
             - name: {{ $.Values.customConfigMap }}
               configMap:
@@ -142,7 +166,7 @@ spec:
               configMap:
                 name: {{ print $chart_name "-" $job_name }}
             {{- end }}
-            {{- range $job_name, $secret := $.Values.secrets }}
+            {{- range $job_name, $secret := $job.secrets | default $.Values.secrets }}
             - name: {{ $job_name }}
               secret:
                 secretName: {{ print $chart_name "-" $job_name }}

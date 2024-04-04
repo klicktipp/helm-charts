@@ -1,13 +1,6 @@
 nameOverride: ""
 fullnameOverride: ""
 
-image:
-  registry: docker.io
-  repository: busybox
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: latest
-
 imagePullSecrets: []
 
 # will create a kubernetes.io/dockerconfigjson secret
@@ -51,7 +44,7 @@ configMaps: {}
 #      example.sh: ci/files/example.sh
 
 # environment variables for all jobs
-env: []
+env: {}
 
 jobs: {}
 #  test:
@@ -63,26 +56,36 @@ jobs: {}
 #      - echo "foo"; ps fauxwww
 #    image:
 #      repository: alpine
+#      tag: latest
+#      pullPolicy: IfNotPresent
 #    # see https://github.com/kubernetes/kubernetes/issues/74848#issuecomment-475178355
-#    # restartPolicy: Never
-#    # startingDeadlineSeconds: 60
-#    # activeDeadlineSeconds: 60
-#    # backoffLimit: 3
-#    # completions: 3
-#    # parallelism: 1
-#    # ttlSecondsAfterFinished: 60
-#    # suspend: false
-#    # volumes:
-#    #   - name: docker1
-#    #     hostPath:
-#    #       path: /var/
-#    #     storageClass: efs
-#    #     csi:
-#    #       driver: efs.csi.aws.com
-#    #       volumeHandle: {{ $efs_fs_id }}::{{ $efs_ap.id }}
-#    # volumeMounts:
-#    #   - name: docker1
-#    #     mountPath: /var/
+#    restartPolicy: Never
+#    startingDeadlineSeconds: 60
+#    activeDeadlineSeconds: 60
+#    backoffLimit: 3
+#    completions: 3
+#    parallelism: 1
+#    ttlSecondsAfterFinished: 60
+#    suspend: false
+#    storage:
+#      efs:
+#        storageClass: kt-efs-sc
+#        mounts: []
+#        # - fs_name: <aws-efs-filesystem-name>
+#        #   fs_id: fs-1111111111
+#        #   access_points:
+#        #     - path: /foo/bar
+#        #       mount_dest: /var/bar
+#        #       id: fsap-1232345678
+#        #       #name: foo # [OPTIONAL]
+#    extraFiles: {}
+#     # myscript.sh:
+#       # mountPath: "/usr/local/bin/myscript.sh"
+#       # enabled: true
+#       # mode: "0755"
+#       # content: |
+#       #   #!/bin/bash
+#       #   echo "Hello from script"
 
 serviceAccount:
   # Specifies whether a service account should be created
