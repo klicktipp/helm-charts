@@ -1,5 +1,5 @@
 ## cronjobs Helm Chart
-A chart that lets you setup one or multiple jobs with ease.
+A chart that lets you set up one or multiple jobs with ease.
 
 Components:
 * Per job, one `busybox` (or your image) pod that runs at scheduled times
