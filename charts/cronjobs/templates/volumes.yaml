@@ -17,7 +17,15 @@ metadata:
     storage.ktsys.cloud/efs_name: {{ $efs_mount.fs_name | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
     storage.ktsys.cloud/efs_path: {{ $efs_ap.path | quote }}
+    {{- with $.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     {{- with $efs_mount.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  labels:
+    {{- include "cronjobs.labels" $ | nindent 4 }}
+    {{- with $.commonLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
@@ -42,7 +50,15 @@ metadata:
     storage.ktsys.cloud/efs_name: {{ $efs_mount.fs_name | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
     storage.ktsys.cloud/efs_path: {{ $efs_ap.path | quote }}
+    {{- with $.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     {{- with $efs_mount.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  labels:
+    {{- include "cronjobs.labels" $ | nindent 4 }}
+    {{- with $.commonLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:

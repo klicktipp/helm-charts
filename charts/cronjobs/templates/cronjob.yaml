@@ -1,21 +1,23 @@
 {{- $api_version := include "common.capabilities.cronjob.apiVersion" . }}
 {{- $chart_name := include "cronjobs.fullname" . }}
-{{- $chart_labels := include "cronjobs.labels" . }}
-{{- $chart_selector_labels := include "cronjobs.selectorLabels" . }}
 {{- $service_account_name := include "cronjobs.serviceAccountName" . }}
 {{- range $job_name, $job := .Values.jobs }}
 {{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-volume-name" $job_name }}
 {{- $env := mergeOverwrite dict $.Values.env ($job.env | default dict) }}
-{{- $checksum := toYaml . | sha256sum | trunc 20 | quote }}
 ---
 apiVersion: {{ $api_version }}
 kind: CronJob
 metadata:
   name: {{ $chart_name }}-{{ $JOB_NAME_SLUG }}
   labels:
-    {{- $chart_labels | nindent 4 }}
+    {{- include "cronjobs.labels" $ | nindent 4 }}
+    {{- with $.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   annotations:
-    values/checksum: {{ $checksum }}
+    {{- if $.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   concurrencyPolicy: {{ default "Forbid" .concurrencyPolicy }}
   failedJobsHistoryLimit: {{ default 1 .failedJobsHistoryLimit }}
@@ -45,12 +47,18 @@ spec:
       {{- end}}
       template:
         metadata:
-          {{- with .podAnnotations }}
           annotations:
+            {{- with .podAnnotations }}
             {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- end }}
           labels:
-            {{- $chart_selector_labels | nindent 12 }}
+            {{- with $.commonLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- include "cronjobs.selectorLabels" $ | nindent 12 }}
+            {{- with .podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
         spec:
           restartPolicy: {{ default "Never" .restartPolicy }}
           imagePullSecrets:

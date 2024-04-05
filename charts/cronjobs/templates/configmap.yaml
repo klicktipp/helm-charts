@@ -1,18 +1,19 @@
-{{- $chart_name := include "cronjobs.fullname" . }}
-{{- $chart_labels := include "cronjobs.labels" . }}
-
 {{- if .Values.configMaps }}
 {{- range $name, $map := .Values.configMaps }}
-{{- $checksum := toYaml $map | sha256sum | trunc 20 | quote }}
 ---
 apiVersion: "v1"
 kind: "ConfigMap"
 metadata:
-  name: {{ $chart_name }}-{{ $name }}
+  name: {{ include "cronjobs.fullname" $ }}-{{ $name }}
   labels:
-    {{- $chart_labels | nindent 4 }}
+    {{- include "cronjobs.labels" $ | nindent 4 }}
+    {{- with $.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   annotations:
-    values/checksum: {{ $checksum }}
+    {{- with $.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 data:
   {{- range $name, $value := $map.data }}
   {{ $name }}: |
@@ -32,11 +33,16 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "com.klicktipp.slugify-volume-name" (list $chart_name "files" $job_name) }}
+  name: {{ include "com.klicktipp.slugify-volume-name" (list (include "cronjobs.fullname" $) "files" $job_name) }}
   labels:
-    {{- $chart_labels | nindent 4 }}
+    {{- include "cronjobs.labels" $ | nindent 4 }}
+    {{- with $.commonLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   annotations:
-    values/checksum: {{ $checksum }}
+    {{- with $.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 data:
 {{- range $filename, $file := $job.extraFiles }}
   {{- if $file.enabled }}
