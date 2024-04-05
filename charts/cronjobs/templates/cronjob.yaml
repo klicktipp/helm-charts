@@ -2,6 +2,7 @@
 {{- $chart_name := include "cronjobs.fullname" . }}
 {{- $service_account_name := include "cronjobs.serviceAccountName" . }}
 {{- range $job_name, $job := .Values.jobs }}
+{{- if $job }}
 {{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-volume-name" $job_name }}
 {{- $env := mergeOverwrite dict $.Values.env ($job.env | default dict) }}
 ---
@@ -179,4 +180,5 @@ spec:
               secret:
                 secretName: {{ print $chart_name "-" $job_name }}
             {{- end }}
-  {{- end }}
+{{- end }} {{/* # end if check $job */}}
+{{- end }} {{/* # end range $job */}}

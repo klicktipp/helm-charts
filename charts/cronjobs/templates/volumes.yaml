@@ -1,7 +1,7 @@
 ---
 {{- range $job_name, $job := .Values.jobs }}
 {{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-volume-name" $job_name }}
-{{- if and $job.storage (hasKey $job.storage "efs") (hasKey $job.storage.efs "mounts") }}
+{{- if and $job (hasKey $job "storage") (hasKey $job.storage "efs") (hasKey $job.storage.efs "mounts") }}
 {{- range $efs_mount := $job.storage.efs.mounts }}
 {{- range $efs_ap := $efs_mount.access_points }}
 {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}

@@ -27,7 +27,7 @@ data:
 {{- end }}
 
 {{- range $job_name, $job := .Values.jobs }}
-{{- if and (hasKey $job "extraFiles") $job.extraFiles }}
+{{- if and $job (hasKey $job "extraFiles") $job.extraFiles }}
 {{- $checksum := toYaml $job.extraFiles | sha256sum | trunc 20 | quote }}
 ---
 apiVersion: v1
