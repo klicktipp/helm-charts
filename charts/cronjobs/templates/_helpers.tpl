@@ -46,7 +46,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Selector labels
 */}}
 {{- define "cronjobs.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "cronjobs.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 

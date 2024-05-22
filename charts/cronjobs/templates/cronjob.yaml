@@ -14,6 +14,7 @@ metadata:
     {{- with $.Values.commonLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
+    app.kubernetes.io/name: {{ $chart_name }}-{{ $JOB_NAME_SLUG }}
     {{- include "cronjobs.labels" $ | nindent 4 }}
   annotations:
     {{- if $.commonAnnotations }}
@@ -56,6 +57,7 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
           labels:
+            app.kubernetes.io/name: {{ $chart_name }}-{{ $JOB_NAME_SLUG }}
             {{- with $.Values.commonLabels }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
