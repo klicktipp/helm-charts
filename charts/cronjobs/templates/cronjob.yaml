@@ -11,10 +11,10 @@ kind: CronJob
 metadata:
   name: {{ $chart_name }}-{{ $JOB_NAME_SLUG }}
   labels:
-    {{- include "cronjobs.labels" $ | nindent 4 }}
-    {{- with $.commonLabels }}
+    {{- with $.Values.commonLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
+    {{- include "cronjobs.labels" $ | nindent 4 }}
   annotations:
     {{- if $.commonAnnotations }}
     {{- toYaml . | nindent 4 }}
@@ -49,11 +49,14 @@ spec:
       template:
         metadata:
           annotations:
+            {{- if $.commonAnnotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
             {{- with .podAnnotations }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
           labels:
-            {{- with $.commonLabels }}
+            {{- with $.Values.commonLabels }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
             {{- include "cronjobs.selectorLabels" $ | nindent 12 }}

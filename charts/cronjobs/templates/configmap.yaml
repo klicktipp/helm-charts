@@ -7,7 +7,7 @@ metadata:
   name: {{ include "cronjobs.fullname" $ }}-{{ $name }}
   labels:
     {{- include "cronjobs.labels" $ | nindent 4 }}
-    {{- with $.commonLabels }}
+    {{- with $.Values.commonLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
@@ -36,7 +36,7 @@ metadata:
   name: {{ include "com.klicktipp.slugify-volume-name" (list (include "cronjobs.fullname" $) "files" $job_name) }}
   labels:
     {{- include "cronjobs.labels" $ | nindent 4 }}
-    {{- with $.commonLabels }}
+    {{- with $.Values.commonLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:

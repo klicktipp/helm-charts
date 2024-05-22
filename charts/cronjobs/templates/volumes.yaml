@@ -23,11 +23,6 @@ metadata:
     {{- with $efs_mount.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  labels:
-    {{- include "cronjobs.labels" $ | nindent 4 }}
-    {{- with $.commonLabels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
 spec:
   capacity:
     storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
@@ -54,11 +49,6 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
     {{- with $efs_mount.annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-  labels:
-    {{- include "cronjobs.labels" $ | nindent 4 }}
-    {{- with $.commonLabels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
