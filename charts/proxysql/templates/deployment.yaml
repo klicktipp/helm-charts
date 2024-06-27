@@ -165,9 +165,20 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-    {{- with .Values.affinity }}
       affinity:
+    {{- with .Values.affinity }}
         {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.podAntiAffinity.enabled }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - {{ include "proxysql.fullname" . }}
+              topologyKey: kubernetes.io/hostname
     {{- end }}
     {{- with .Values.tolerations }}
       tolerations:
@@ -177,6 +188,13 @@ spec:
       priorityClassName: {{ . }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | int }}
+      topologySpreadConstraints:
+      {{- range $constraint := .Values.topologySpreadConstraints }}
+        - {{- toYaml $constraint | nindent 10 }}
+          labelSelector:
+            matchLabels:
+              {{- include "proxysql.satellite.selectorLabels" $ | nindent 14 }}
+      {{- end }}
       volumes:
         - name: data
           emptyDir: {}

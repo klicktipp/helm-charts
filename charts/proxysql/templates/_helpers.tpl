@@ -40,6 +40,7 @@ release: {{ .Release.Name }}
 helm.sh/chart: {{ include "proxysql.chart" . }}
 app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/name: {{ include "proxysql.fullname" . }}
 {{- end -}}
 
 {{/*
