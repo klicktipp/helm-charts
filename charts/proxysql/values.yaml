@@ -107,6 +107,10 @@ tolerations: []
 # Will be applied if not specified otherwise.
 affinity: {}
 
+# Set a pod-to pod anti-affinity rule, to spread proxysql pods evenly across nodes.
+podAntiAffinity:
+  enabled: false
+
 # Common annotations to add to all resources (sub-charts are not considered).
 # Evaluated as a template
 commonAnnotations: {}
@@ -411,6 +415,11 @@ debug:
       runAsGroup: 999
 
 terminationGracePeriodSeconds: 60
+
+topologySpreadConstraints:
+#  - maxSkew: 1 # allows a node or zone to have up to X pods more or less than any other node or zone.
+#    topologyKey: kubernetes.io/hostname # at least one Pod per Node
+#    whenUnsatisfiable: DoNotSchedule
 
 # How long shall the pre-stop-Hook wait k8s to deregister the pod from the service,
 # before checking for open connections?
