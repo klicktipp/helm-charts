@@ -48,6 +48,7 @@ env: {}
 
 jobs: {}
 #  test:
+#    containerName: cronjob
 #    schedule: "*/5 * * * *"
 #    command:
 #      - /bin/sh
@@ -103,6 +104,10 @@ commonAnnotations: {}
 
 # Common labels to add to all resources. Evaluated as a template
 commonLabels: {}
+
+# Given name given to the job container inside the Pod.
+#   Can be oveeriden with .jobs.KEY.containerName
+commonContainerName: cronjob
 
 podSecurityContext: {}
   # fsGroup: 2000
