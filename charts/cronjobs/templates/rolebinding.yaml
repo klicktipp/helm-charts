@@ -1,0 +1,26 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "cronjobs.fullname" . }}-rolebinding
+  labels:
+    {{- include "cronjobs.labels" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- toYaml .Values.commonLabels | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.rbac.annotations }}
+    {{- toYaml .Values.rbac.annotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonAnnotations }}
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "cronjobs.fullname" . }}-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "cronjobs.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

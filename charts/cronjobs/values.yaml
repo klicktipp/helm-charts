@@ -93,11 +93,27 @@ jobs: {}
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+
+rbac:
+  # Enable creation of Role/RoleBinding
+  create: true
+  # Annotations to add to the role and rolebinding
+  annotations: {}
+  # Rules for the role
+  rules: []
+    # - apiGroups: [""]
+    #   resources: ["pods", "pods/log"]
+    #   verbs: ["get", "list", "watch"]
+    # - apiGroups: ["batch"]
+    #   resources: ["jobs", "cronjobs"]
+    #   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
 # Common annotations to add to all resources. Evaluated as a template
 commonAnnotations: {}
