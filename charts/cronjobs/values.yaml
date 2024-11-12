@@ -102,18 +102,36 @@ serviceAccount:
   name: ""
 
 rbac:
-  # Enable creation of Role/RoleBinding
+  # Enable creation of Roles and Roles Binding
   create: false
-  # Annotations to add to the role and rolebinding
-  annotations: {}
-  # Rules for the role
-  rules: []
-    # - apiGroups: [""]
-    #   resources: ["pods", "pods/log"]
-    #   verbs: ["get", "list", "watch"]
-    # - apiGroups: ["batch"]
-    #   resources: ["jobs", "cronjobs"]
-    #   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # (Namespaced) Role configuration
+  role:
+    # Enable creation of Role/RoleBinding
+    create: false
+    # Annotations to add to the role and rolebinding
+    annotations: {}
+    # Rules for the role
+    rules: []
+      # - apiGroups: [""]
+      #   resources: ["pods", "pods/log"]
+      #   verbs: ["get", "list", "watch"]
+      # - apiGroups: ["batch"]
+      #   resources: ["jobs", "cronjobs"]
+      #   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # ClusterRole configuration
+  clusterRole:
+    # Enable creation of ClusterRole/ClusterRoleBinding
+    create: false
+    # Annotations specific to ClusterRole
+    annotations: {}
+    # Rules for the ClusterRole
+    rules: []
+      # node-labeler
+      # - apiGroups: [""]
+      #   resources: ["nodes"]
+      #   verbs: ["get", "list", "patch", "update"]
 
 # Common annotations to add to all resources. Evaluated as a template
 commonAnnotations: {}

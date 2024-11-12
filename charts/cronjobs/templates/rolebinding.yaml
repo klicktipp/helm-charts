@@ -1,4 +1,6 @@
 {{- if .Values.rbac.create -}}
+{{- if .Values.rbac.role.create -}}
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -9,6 +11,9 @@ metadata:
     {{- toYaml .Values.commonLabels | nindent 4 }}
     {{- end }}
   annotations:
+    {{- if .Values.rbac.role.annotations }}
+    {{- toYaml .Values.rbac.role.annotations | nindent 4 }}
+    {{- end }}
     {{- if .Values.rbac.annotations }}
     {{- toYaml .Values.rbac.annotations | nindent 4 }}
     {{- end }}
@@ -20,7 +25,45 @@ roleRef:
   kind: Role
   name: {{ include "cronjobs.fullname" . }}-role
 subjects:
-- kind: ServiceAccount
-  name: {{ include "cronjobs.serviceAccountName" . }}
-  namespace: {{ .Release.Namespace }}
-{{- end }}
+  - kind: ServiceAccount
+    name: {{ include "cronjobs.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+  {{- if .Values.rbac.role.extraSubjects }}
+  {{- toYaml .Values.rbac.role.extraSubjects | nindent 2 }}
+  {{- end }}
+{{- end }} {{/* # end rbac.role.createe */}}
+
+{{- if .Values.rbac.clusterRole.create -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "cronjobs.fullname" . }}-cluster-rolebinding
+  labels:
+    {{- include "cronjobs.labels" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- toYaml .Values.commonLabels | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.rbac.clusterRole.annotations }}
+    {{- toYaml .Values.rbac.clusterRole.annotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.rbac.annotations }}
+    {{- toYaml .Values.rbac.annotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonAnnotations }}
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "cronjobs.fullname" . }}-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "cronjobs.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+  {{- if .Values.rbac.clusterRole.extraSubjects }}
+  {{- toYaml .Values.rbac.clusterRole.extraSubjects | nindent 2 }}
+  {{- end }}
+{{- end }} {{/* # end rbac.clusterRole.createe */}}
+{{- end }} {{/* # end rbac.create */}}
