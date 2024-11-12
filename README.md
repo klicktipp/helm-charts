@@ -29,6 +29,5 @@ To uninstall the chart:
 * Put all your changes on this branch and push
 * Bump the `Chart.yaml` version and push
 * Create a merge request and let it approve and be merged to the `main` branch
-* After successful merging, create a tag on the `main` branch with the name of the chart and the latest chart version. Example: `redisinsight-0.2.0`.
-* Push the tag
-* Now the chart index (in the `gh-pages`) should be updated with the latest chart changes
+* After successful merging, Github Actions (bot) will automagically create a tag on the `main` branch with the name of the chart and the latest chart version. Example: `redisinsight-0.2.0`.
+* Now the chart index (in the `gh-pages`) has been updated with the latest chart changes: https://github.com/klicktipp/helm-charts/blob/gh-pages/index.yaml
