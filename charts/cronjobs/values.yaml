@@ -103,7 +103,7 @@ serviceAccount:
 
 rbac:
   # Enable creation of Role/RoleBinding
-  create: true
+  create: false
   # Annotations to add to the role and rolebinding
   annotations: {}
   # Rules for the role
