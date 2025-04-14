@@ -28,7 +28,7 @@ data:
 
 {{- range $job_name, $job := .Values.jobs }}
 {{- if and $job (hasKey $job "extraFiles") $job.extraFiles }}
-{{- $checksum := toYaml $job.extraFiles | sha256sum | trunc 20 | quote }}
+{{- $checksum := toYaml $job.extraFiles | sha256sum | trunc 20 }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -40,6 +40,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
   annotations:
+    checksum/config: {{ $checksum | quote }}
     {{- with $.commonAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

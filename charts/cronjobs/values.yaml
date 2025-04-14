@@ -76,6 +76,8 @@ jobs: {}
 #    suspend: false
 #    podLabels: {} # If labels are same as commonLabels , this will take precedence
 #    podAnnotations: {}  # Additional pod annotations for pods
+#    env: {}
+#    secretEnv: {}
 #    secretEnvFrom:
 #      - name: MY_SECRET_ENV_VAR
 #        secretName: my-secret
