@@ -109,7 +109,7 @@ spec:
                 - name: {{ $key }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
+                      name: {{ include "com.klicktipp.slugify-volume-name" (list (include "cronjobs.fullname" $) $job_name "envvars") }}
                       key: {{ $key }}
                 {{- end }}
               resources:
@@ -203,11 +203,6 @@ spec:
             - name: {{ $secret.secretName }}
               secret:
                 secretName: {{ $secret.secretName }}
-            {{- end }}
-            {{- if and $job (hasKey $job "secretEnv") $job.secretEnv }}
-            - name: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
-              secret:
-                secretName: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
             {{- end }}
 {{- end }} {{/* # end if check $job */}}
 {{- end }} {{/* # end range $job */}}
