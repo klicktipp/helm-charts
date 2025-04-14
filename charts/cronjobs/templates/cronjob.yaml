@@ -105,8 +105,8 @@ spec:
                       name: {{ $s.secretName }}
                       key: {{ $s.key }}
                 {{- end }}
-                {{- range $s := $job.secretEnv }}
-                - name: {{ $s.name }}
+                {{- range $key, $value := $job.secretEnv }}
+                - name: {{ $key }}
                   valueFrom:
                     secretKeyRef:
                       name: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
