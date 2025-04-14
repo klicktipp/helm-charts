@@ -43,6 +43,12 @@ configMaps: {}
 #    files:
 #      example.sh: ci/files/example.sh
 
+# List of existing secrets to mount as volume
+secretEnvFrom: []
+#  - name: MY_SECRET_ENV_VAR
+#    secretName: my-secret
+#    key: my-key
+
 # environment variables for all jobs
 env: {}
 
@@ -70,6 +76,10 @@ jobs: {}
 #    suspend: false
 #    podLabels: {} # If labels are same as commonLabels , this will take precedence
 #    podAnnotations: {}  # Additional pod annotations for pods
+#    secretEnvFrom:
+#      - name: MY_SECRET_ENV_VAR
+#        secretName: my-secret
+#        key: my-key
 #    storage:
 #      efs:
 #        storageClass: kt-efs-sc
