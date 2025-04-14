@@ -109,8 +109,8 @@ spec:
                 - name: {{ $s.name }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ include "cronjobs.fullname" . }}-{{ $job_name }}-envvars
-                      key: {{ $s.key }}
+                      name: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
+                      key: {{ $key }}
                 {{- end }}
               resources:
                 {{- toYaml $job.resources | nindent 16 }}
@@ -205,9 +205,9 @@ spec:
                 secretName: {{ $secret.secretName }}
             {{- end }}
             {{- if and $job (hasKey $job "secretEnv") $job.secretEnv }}
-            - name: {{ include "cronjobs.fullname" . }}-{{ $job_name }}-envvars
+            - name: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
               secret:
-                secretName: {{ include "cronjobs.fullname" . }}-{{ $job_name }}-envvars
+                secretName: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
             {{- end }}
 {{- end }} {{/* # end if check $job */}}
 {{- end }} {{/* # end range $job */}}
