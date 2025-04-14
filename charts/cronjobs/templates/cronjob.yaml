@@ -105,6 +105,13 @@ spec:
                       name: {{ $s.secretName }}
                       key: {{ $s.key }}
                 {{- end }}
+                {{- range $key, $value := $job.secretEnv }}
+                - name: {{ $key }}
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
+                      key: {{ $key }}
+                {{- end }}
               resources:
                 {{- toYaml $job.resources | nindent 16 }}
               volumeMounts:
@@ -196,6 +203,11 @@ spec:
             - name: {{ $secret.secretName }}
               secret:
                 secretName: {{ $secret.secretName }}
+            {{- end }}
+            {{- if and $job (hasKey $job "secretEnv") $job.secretEnv }}
+            - name: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
+              secret:
+                secretName: {{ include "cronjobs.fullname" $ }}-{{ $job_name }}-envvars
             {{- end }}
 {{- end }} {{/* # end if check $job */}}
 {{- end }} {{/* # end range $job */}}
