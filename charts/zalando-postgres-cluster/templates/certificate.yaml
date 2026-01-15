@@ -1,0 +1,35 @@
+---
+{{- $tls := default dict .Values.postgres_cluster.tls -}}
+{{- $clusterName := .Values.postgres_cluster.name | default (include "zalando-postgres-cluster.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- $tlsSecretName := $tls.secretName | default (printf "%s-tls" $clusterName | trunc 63 | trimSuffix "-") -}}
+{{- if and $tls.enabled ($tls.createCertificate.createCertificate | default false) (.Capabilities.APIVersions.Has "cert-manager.io/v1") -}}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tlsSecretName | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "zalando-postgres-cluster.labels" . | nindent 4 }}
+spec:
+  secretName: {{ $tlsSecretName | quote }}
+  duration: {{ default "2160h" $tls.duration | quote }}
+  renewBefore: {{ default "360h" $tls.renewBefore | quote }}
+  subject:
+    organizations:
+      - {{ $tls.organization | quote }}
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+  dnsNames:
+    - {{ printf "%s.%s.svc" $clusterName .Release.Namespace | quote }}
+    - {{ printf "%s.%s.svc.cluster.local" $clusterName .Release.Namespace | quote }}
+    - {{ $clusterName | quote }}
+  issuerRef:
+    name: {{ required "postgres_cluster.tls.issuerRef.name is required when tls.createCertificate=true" ($tls.issuerRef.name | default "") | quote }}
+    kind: {{ default "ClusterIssuer" ($tls.issuerRef.kind.issuerRef.kind | default "") | quote }}
+    group: {{ default "cert-manager.io" ($tls.issuerRef.group.issuerRef.group | default "") | quote }}
+{{- end -}}

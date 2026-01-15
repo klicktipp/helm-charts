@@ -1,0 +1,120 @@
+---
+{{- $tls := default dict .Values.postgres_cluster.tls -}}
+{{- $clusterName := .Values.postgres_cluster.name | default (include "zalando-postgres-cluster.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- $tlsSecretName := $tls.secretName | default (printf "%s-tls" $clusterName | trunc 63 | trimSuffix "-") -}}
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: {{ $clusterName | quote }}
+  labels:
+    {{- include "zalando-postgres-cluster.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.postgres_cluster.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  teamId: {{ .Values.postgres_cluster.teamId | quote }}
+
+  postgresql:
+    version: {{ .Values.postgres_cluster.postgres.version | quote }}
+    parameters:
+      {{- with .Values.postgres_cluster.postgres.parameters }}
+      {{ toYaml . | nindent 6 }}
+      {{- end }}
+
+  numberOfInstances: {{ .Values.postgres_cluster.instances | int }}
+
+  enableMasterLoadBalancer: {{ .Values.postgres_cluster.expose.masterLoadBalancer }}
+  enableReplicaLoadBalancer: {{ .Values.postgres_cluster.expose.replicaLoadBalancer }}
+
+  enableConnectionPooler: {{ .Values.postgres_cluster.pooler.enabled }}
+  enableMasterPoolerLoadBalancer: {{ .Values.postgres_cluster.pooler.enableMasterPoolerLoadBalancer }}
+  enableReplicaPoolerLoadBalancer: {{ .Values.postgres_cluster.pooler.enableReplicaPoolerLoadBalancer }}
+  enableReplicaConnectionPooler: {{ .Values.postgres_cluster.pooler.enableReplicaConnectionPooler }}
+
+  enableLogicalBackup: {{ .Values.postgres_cluster.backup.enabled }}
+  {{- if .Values.postgres_cluster.backup.enabled }}
+  logicalBackupSchedule: {{ .Values.postgres_cluster.backup.schedule | quote }}
+  logicalBackupRetention: {{ .Values.postgres_cluster.backup.retention | quote }}
+  {{- end }}
+
+  {{- if $tls.enabled }}
+  # TLS requires spiloFSGroup (per operator docs and your existing template). :contentReference[oaicite:6]{index=6}
+  tls:
+    secretName: {{ $tlsSecretName | quote }}
+    certificateFile: {{ $tls.certificateFile | quote }}
+    privateKeyFile: {{ $tls.privateKeyFile | quote }}
+    {{- with $tls.caFile }}
+    caFile: {{ . | quote }}
+    {{- end }}
+    {{- with $tls.caSecretName }}
+    caSecretName: {{ . | quote }}
+    {{- end }}
+  spiloFSGroup: 103
+   # ^^ Required to make tls work, otherwise spilo will not be able to read the certificate
+  {{- end }}
+
+  podServiceAccount:
+    name: {{ .Values.postgres_cluster.podServiceAccount.name | default (include "zalando-postgres-cluster.serviceAccountName" .) | quote }}
+
+  env:
+    {{- if .Values.postgres_cluster.wal.enabled }}
+    - name: BACKUP_SCHEDULE
+      values: {{ .Values.postgres_cluster.wal.backupSchedule | quote }}
+    - name: WAL_S3_BUCKET
+      value: {{ required "postgres_cluster.wal.s3Bucket is required when wal.enabled=true" .Values.postgres_cluster.wal.s3Bucket | quote }}
+    - name: WAL_BUCKET_SCOPE_PREFIX
+      value: {{ .Values.postgres_cluster.wal.s3ScopePrefix | quote }}
+    - name: BACKUP_NUM_TO_RETAIN
+      value: {{ .Values.postgres_cluster.wal.backupNumToRetain | quote }}
+    - name: AWS_REGION
+      value: {{ required "postgres_cluster.wal.awsRegion is required when wal.enabled=true" .Values.postgres_cluster.wal.awsRegion | quote }}
+    - name: aws_instance_profile
+      value: "false"  # Disable AWS instance profile, as we are using access keys
+    - name: aws_access_key_id
+      valueFrom:
+        secretKeyRef:
+          name: {{ (printf "%s-wal-aws-creds" $clusterName ) | quote }}
+          key: aws_access_key_id
+    - name: aws_secret_access_key
+      valueFrom:
+        secretKeyRef:
+          name: {{ (printf "%s-wal-aws-creds" $clusterName ) | quote }}
+          key: aws_secret_access_key
+
+    {{- if .Values.postgres_cluster.wal.logS3Tags }}
+    - name: LOG_S3_TAGS
+      value: '{{ printf "{\"ClusterName\": \"%s\", \"Namespace\": \"%s\"}" $clusterName .Release.Namespace }}'
+    {{- end }}
+    {{- end }}
+    {{- with .Values.postgres_cluster.env }}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+
+
+  {{- if .Values.postgres_cluster.volume.enabled }}
+  volume:
+    size: {{ .Values.postgres_cluster.volume.size | quote }}
+    storageClass: {{ .Values.postgres_cluster.volume.storageClass | quote }}
+  {{- end }}
+
+  users:
+    {{- with .Values.postgres_cluster.users }}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+
+  {{- if .Values.postgres_cluster.preparedDatabases }}
+  preparedDatabases:
+    {{ .Values.postgres_cluster.preparedDatabases | toYaml | indent 6 }}
+  {{- end }}
+
+  resources:
+    {{- with .Values.postgres_cluster.resources }}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+
+  nodeAffinity:
+    {{- with .Values.postgres_cluster.nodeAffinity }}
+    {{ toYaml . | nindent 4 }}
+    {{- end }}
+
