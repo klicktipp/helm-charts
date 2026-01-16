@@ -2,7 +2,7 @@
 {{- $tls := default dict .Values.postgres_cluster.tls -}}
 {{- $clusterName := .Values.postgres_cluster.name | default (include "zalando-postgres-cluster.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- $tlsSecretName := $tls.secretName | default (printf "%s-tls" $clusterName | trunc 63 | trimSuffix "-") -}}
-{{- if and $tls.enabled ($tls.createCertificate.createCertificate | default false) (.Capabilities.APIVersions.Has "cert-manager.io/v1") -}}
+{{- if and $tls.enabled $tls.createCertificate -}}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -30,6 +30,6 @@ spec:
     - {{ $clusterName | quote }}
   issuerRef:
     name: {{ required "postgres_cluster.tls.issuerRef.name is required when tls.createCertificate=true" ($tls.issuerRef.name | default "") | quote }}
-    kind: {{ default "ClusterIssuer" ($tls.issuerRef.kind.issuerRef.kind | default "") | quote }}
-    group: {{ default "cert-manager.io" ($tls.issuerRef.group.issuerRef.group | default "") | quote }}
+    kind: {{ default "ClusterIssuer" ($tls.issuerRef.kind | default "") | quote }}
+    group: {{ default "cert-manager.io" ($tls.issuerRef.group | default "") | quote }}
 {{- end -}}
