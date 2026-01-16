@@ -54,9 +54,6 @@ spec:
    # ^^ Required to make tls work, otherwise spilo will not be able to read the certificate
   {{- end }}
 
-  podServiceAccount:
-    name: {{ .Values.postgres_cluster.podServiceAccount.name | default (include "zalando-postgres-cluster.serviceAccountName" .) | quote }}
-
   env:
     {{- if .Values.postgres_cluster.wal.enabled }}
     - name: BACKUP_SCHEDULE
@@ -88,7 +85,7 @@ spec:
     {{- end }}
     {{- end }}
     {{- with .Values.postgres_cluster.env }}
-    {{ toYaml . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
 
 
@@ -100,21 +97,21 @@ spec:
 
   users:
     {{- with .Values.postgres_cluster.users }}
-    {{ toYaml . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
 
   {{- if .Values.postgres_cluster.preparedDatabases }}
   preparedDatabases:
-    {{ .Values.postgres_cluster.preparedDatabases | toYaml | indent 6 }}
+    {{- .Values.postgres_cluster.preparedDatabases | toYaml | nindent 6 }}
   {{- end }}
 
   resources:
     {{- with .Values.postgres_cluster.resources }}
-    {{ toYaml . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
 
   nodeAffinity:
     {{- with .Values.postgres_cluster.nodeAffinity }}
-    {{ toYaml . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
 
