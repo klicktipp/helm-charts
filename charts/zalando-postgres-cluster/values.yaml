@@ -68,6 +68,7 @@ postgres_cluster:
 
   backup:
     # operator-managed logical dumps (pg_dump/pg_dumpall style) on a cron schedule.
+    # uploaded to S3. See postgres-operator 'configuration.logical_backup'
     enabled: false
     schedule: "30 00 * * *"
     retention: "7 days"
