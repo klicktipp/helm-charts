@@ -470,4 +470,26 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/redisinsight-0.2.0/redisinsight-0.2.0.tgz
     version: 0.2.0
-generated: "2025-04-14T14:32:34.854363378Z"
+  zalando-postgres-cluster:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-01-16T11:08:54.325853784Z"
+    description: Creates a postgres cluster using the Zalando Postgres operator and
+      local storage
+    digest: f94660cb49dc2b33c4c43c0940470aafeb8174f2d883581ee6b1ea413e1a4101
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/1200px-Postgresql_elephant.svg.png
+    keywords:
+    - postgres
+    - cluster
+    - operator
+    - zalando
+    maintainers:
+    - name: KlickTipp DevOps Team
+    name: zalando-postgres-cluster
+    sources:
+    - https://github.com/zalando/postgres-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
+    version: 1.0.1
+generated: "2026-01-16T11:08:54.325902276Z"
