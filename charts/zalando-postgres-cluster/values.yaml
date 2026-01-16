@@ -1,0 +1,138 @@
+---
+
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+postgres_cluster:
+  enabled: true
+
+  # Operator requires metadata.name to start with "<teamId>-". :contentReference[oaicite:7]{index=7}
+  teamId: app
+  # If empty -> defaults to Release.Name, then prefixed with "<teamId>-" if needed.
+  name: ""
+
+  labels: {}
+  annotations: {}
+
+  instances: 1
+
+  priorityClassName: ""
+
+  postgres:
+    version: "17"
+    parameters: {}
+
+  # Initial goal: set database.name, optionally users, volume.size, backup.*
+  database:
+    name: app
+
+  preparedDatabases: {}
+
+  # Extra users beyond preparedDatabases defaults. Supports list or map form.
+  # List form:
+  users: []
+  # - name: app_admin
+  #   flags: ["createdb"]
+  # Map form:
+  # users:
+  #   app_admin: ["createdb"]
+
+  volume:
+    enabled: false
+    size: "2Gi"
+    storageClass: ""  # optional; omit to use default StorageClass
+
+  expose:
+    masterLoadBalancer: false
+    replicaLoadBalancer: false
+
+  pooler:
+    enabled: false
+    enableMasterPoolerLoadBalancer: false
+    enableReplicaPoolerLoadBalancer: false
+    enableReplicaConnectionPooler: false
+
+
+  backup:
+    # operator-managed logical dumps (pg_dump/pg_dumpall style) on a cron schedule.
+    # uploaded to S3. See postgres-operator 'configuration.logical_backup'
+    enabled: false
+    schedule: "30 00 * * *"
+    retention: "7 days"
+
+  # Optional: WAL/S3 env wiring (matches your env var naming). :contentReference[oaicite:8]{index=8}
+  wal:
+    # Configures physical backup + continuous WAL archiving to S3 (base backup + WAL segments).
+    # Enables PITR (point-in-time recovery) and faster restores for large DBs (physical restore).
+    # NOTE: Requires IAM permissions for S3 access.
+    enabled: false
+    backupSchedule: "00 10 * * *"
+    s3Bucket: ""
+    s3ScopePrefix: ""
+    awsRegion: ""
+    accessKeyId: ""
+    secretAccessKey: ""
+    backupNumToRetain: "5"
+    logS3Tags: true
+
+  # Optional: TLS. If createCertificate=false, secret must exist already (e.g. managed elsewhere).
+  tls:
+    enabled: false
+    secretName: ""            # defaults to "<fullName>-tls" if empty
+    certificateFile: "tls.crt"
+    privateKeyFile: "tls.key"
+    caFile: ""
+    caSecretName: ""
+
+    createCertificate: false
+    organization: "ACME INC."
+    duration: "2160h" # 90d
+    renewBefore: "360h" # 15d
+    issuerRef:
+      name: ""
+      kind: "ClusterIssuer"
+      group: "cert-manager.io"
+
+  podServiceAccount:
+    name: ""  # Use default service account if empty
+
+  # Extra env entries appended to spec.env
+  env: []
+    # - name: foo
+    #   value: "42"
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 250m
+    #   memory: 256Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeAffinity: {}
+    # requiredDuringSchedulingIgnoredDuringExecution:
+    #   nodeSelectorTerms:
+    #     - matchExpressions:
+    #         - key: "key.example.com/name"
+    #           operator: In
+    #           values:
+    #             - "general-purpose"
+
+  tolerations: []
