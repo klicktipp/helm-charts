@@ -88,6 +88,7 @@ spec:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 
+  podPriorityClassName: {{ .Values.postgres_cluster.priorityClassName | quote }}
 
   {{- if .Values.postgres_cluster.volume.enabled }}
   volume:

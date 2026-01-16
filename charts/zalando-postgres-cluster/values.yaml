@@ -29,6 +29,8 @@ postgres_cluster:
 
   instances: 1
 
+  priorityClassName: ""
+
   postgres:
     version: "17"
     parameters: {}
