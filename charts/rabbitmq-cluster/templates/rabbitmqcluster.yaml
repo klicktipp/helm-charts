@@ -1,0 +1,116 @@
+---
+# cluster
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: {{ .Values.rabbitmq.cluster.name }}
+  annotations:
+    rabbitmq.com/created-by: "klicktipp"
+    rabbitmq.com/created-for: "kt-integrations-airbyte"
+    rabbitmq.com/created-by-version: "{{ .Chart.AppVersion }}"
+    rabbitmq.com/created-for-version: "{{ .Values.env.name }}"
+    rabbitmq.com/created-for-namespace: "{{ .Release.Namespace }}"
+    rabbitmq.com/created-for-team: "{{ .Values.teamId }}"
+    rabbitmq.com/created-for-region: "{{ .Values.aws_region }}"
+    rabbitmq.com/created-for-cluster: "{{ .Values.eks_cluster_name }}"
+spec:
+  image: 035931995993.dkr.ecr.eu-west-1.amazonaws.com/docker-hub/library/rabbitmq:4.1.0-management-alpine
+  replicas: 3
+  persistence:
+    storageClassName: kt-gp3
+    storage: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 2Gi
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: nodepool.ktsys.cloud/name
+                operator: In
+                values:
+                  - klicktipp-worker
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - pod-anti-affinity
+            topologyKey: kubernetes.io/hostname
+  rabbitmq:
+    additionalPlugins:
+      - rabbitmq_management
+      - rabbitmq_prometheus
+      - rabbitmq_peer_discovery_k8s
+
+# config
+
+---
+## vhost
+apiVersion: rabbitmq.com/v1beta1
+kind: Vhost
+metadata:
+  name: {{ .Values.rabbitmq.queue_config.vhost }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  name: {{ .Values.rabbitmq.queue_config.vhost }}
+  rabbitmqClusterReference:
+    name: {{ .Values.rabbitmq.cluster.name}}
+
+
+{{/*---*/}}
+
+{{/*apiVersion: rabbitmq.com/v1beta1*/}}
+{{/*kind: Exchange*/}}
+{{/*metadata:*/}}
+{{/*  name: {{ .Values.rabbitmq.queue_config.exchange.name }}*/}}
+{{/*  namespace: {{ .Release.Namespace }}*/}}
+{{/*spec:*/}}
+{{/*  vhost: {{ .Values.rabbitmq.queue_config.vhost }}*/}}
+{{/*  name: {{ .Values.rabbitmq.queue_config.exchange.name }}*/}}
+{{/*  type: direct*/}}
+{{/*  autoDelete: false*/}}
+{{/*  durable: true*/}}
+{{/*  rabbitmqClusterReference:*/}}
+{{/*    name: {{ .Values.rabbitmq.cluster.name }}*/}}
+
+{{/*---*/}}
+{{/*apiVersion: rabbitmq.com/v1beta1*/}}
+{{/*kind: Queue*/}}
+{{/*metadata:*/}}
+{{/*  name: {{ .Values.rabbitmq.queue_config.queue.name }}*/}}
+{{/*  namespace: {{ .Release.Namespace }}*/}}
+{{/*spec:*/}}
+{{/*  vhost: {{ .Values.rabbitmq.queue_config.vhost }}*/}}
+{{/*  name: {{ .Values.rabbitmq.queue_config.queue.name }}*/}}
+{{/*  type: quorum*/}}
+{{/*  durable: true*/}}
+{{/*  autoDelete: false*/}}
+{{/*  rabbitmqClusterReference:*/}}
+{{/*    name: {{ .Values.rabbitmq.cluster.name }}*/}}
+
+{{/*---*/}}
+{{/*apiVersion: rabbitmq.com/v1beta1*/}}
+{{/*kind: Binding*/}}
+{{/*metadata:*/}}
+{{/*  name: kt.integrations.binding*/}}
+{{/*  namespace: {{ .Release.Namespace }}*/}}
+{{/*spec:*/}}
+{{/*  vhost: {{ .Values.rabbitmq.queue_config.vhost }}*/}}
+{{/*  source: {{ .Values.rabbitmq.queue_config.exchange.name }}*/}}
+{{/*  destination: {{ .Values.rabbitmq.queue_config.queue.name }}*/}}
+{{/*  destinationType: queue*/}}
+{{/*  routingKey: kt.integrations.topic*/}}
+{{/*  rabbitmqClusterReference:*/}}
+{{/*    name: {{ .Values.rabbitmq.cluster.name }}*/}}
+{{/*  arguments:*/}}
+{{/*    x-match: all*/}}

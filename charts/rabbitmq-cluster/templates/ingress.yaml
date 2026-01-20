@@ -1,0 +1,27 @@
+---
+# ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: zerossl-prod
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  name: airbyte-rabbitmq
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: airbyte-rabbitmq.{{ .Values.env.name }}.ktsys.cloud
+      http:
+        paths:
+          - backend:
+              service:
+                name: airbyte-rabbitmq
+                port:
+                  name: management
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - airbyte-rabbitmq.{{ .Values.env.name }}.ktsys.cloud
+      secretName: airbyte-rabbitmq.{{ .Values.env.name }}.ktsys.cloud-tls

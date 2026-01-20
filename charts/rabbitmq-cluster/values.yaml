@@ -1,0 +1,15 @@
+---
+env:
+  name: ""
+aws_region: ""
+rabbitmq:
+  cluster:
+    name: ""
+  queue_config:
+    vhost: "airbyte"
+    exchange:
+      name: ""
+    queue:
+      name: ""
+
+  users: []
