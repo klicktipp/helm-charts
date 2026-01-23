@@ -4,24 +4,22 @@
 
 {{- range $queue := .Values.rabbitmq.topology.queues }}
 
-{{- $queueType := $queue.type | default "quorum"  -}}
-{{- $queueDurable := $queue.durable | default true -}}
-{{- $queueAutoDelete := $queue.autoDelete | default false -}}
+{{- $queueType := $queue.type | default "quorum"  }}
+{{- $queueDurable := $queue.durable | default true }}
+{{- $queueAutoDelete := $queue.autoDelete | default false }}
 
-{{- $exchangeName := $queue.exchange.name | default $queue.name  -}}
-{{- $exchangeType := $queue.exchange.type | default "fanout"  -}}
-{{- $exchangeDurable := $queue.exchange.durable | default true  -}}
-{{- $exchangeAutoDelete := $queue.exchange.autoDelete | default false  -}}
-
-{{- $routingKey :=  $queue.binding.routingKey | default "" -}}
+{{- $exchangeName := $queue.exchange.name | default $queue.name  }}
+{{- $exchangeType := $queue.exchange.type | default "fanout"  }}
+{{- $exchangeDurable := $queue.exchange.durable | default true  }}
+{{- $exchangeAutoDelete := $queue.exchange.autoDelete | default false  }}
 
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Queue
 metadata:
-  name: {{ $queue.name | trunc 63 | trimSuffix "-" | quote }}
+  name: {{ $queue.name | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
+    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
   name: {{ $queue.name | quote }}
   type: {{ $queueType | quote }}
@@ -34,9 +32,9 @@ spec:
 apiVersion: rabbitmq.com/v1beta1
 kind: Exchange
 metadata:
-  name: {{ printf "%s-exchange" $exchangeName | trunc 63 | trimSuffix "-" | quote }}
+  name: {{ printf "%s-exchange" $exchangeName | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
+    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
   name: {{ $exchangeName | quote }}
   type: {{ $exchangeType | quote }}
@@ -46,12 +44,15 @@ spec:
     name: {{ $clusterRef | quote }}
 
 ---
+{{- $binding :=  $queue.binding | default (dict) }}
+{{- $routingKey := $binding.routingKey | default "" }}
+{{- if $binding }}
 apiVersion: rabbitmq.com/v1beta1
 kind: Binding
 metadata:
-  name: {{ printf "%s-binding" $queue.name | trunc 63 | trimSuffix "-" | quote }}
+  name: {{ printf "%s-binding" $queue.name | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
+    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
   source: {{ $exchangeName | quote }}
   destination: {{ $queue.name | quote }}
@@ -61,5 +62,7 @@ spec:
   {{- end }}
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
+{{- end }}  {{/* END binding */}}
+
 {{- end }} {{/* END queue loop */}}
 {{- end }} {{/* END if enabled */}}
