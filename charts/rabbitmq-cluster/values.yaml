@@ -81,3 +81,15 @@ rabbitmq:
     enabled: false
 
     name: ""
+
+  users: []
+    # - name: alice           # required
+    #   password: ""          # required
+    #   tags:                 # optional
+    #     - "monitoring"
+    #   permission:
+    #     enabled: true
+    #     vhost: "/"        # optional, default: "/"
+    #     configure: ".*"   # optional, default: ".*"
+    #     write: ".*"       # optional, default: ".*"
+    #     read: ".*"        # optional, default: ".*"
