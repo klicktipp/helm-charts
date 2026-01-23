@@ -1,15 +1,87 @@
----
-env:
-  name: ""
-aws_region: ""
+# Optional Helm name overrides
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: rabbitmq
+  tag: 4.2-management
+
+
+pdb:
+  enabled: false
+  # Can be an integer (e.g., 1) or a percentage string (e.g., "25%")
+  maxUnavailable: 1
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+
 rabbitmq:
   cluster:
-    name: ""
-  queue_config:
-    vhost: "airbyte"
-    exchange:
-      name: ""
-    queue:
-      name: ""
+    # If false, this chart will NOT create a RabbitmqCluster; you must point topology at an existing cluster.
+    enabled: false
 
-  users: []
+    # RabbitmqCluster metadata.name (K8s object name). If empty, defaults to the Helm release fullname.
+    name: ""
+
+    replicas: 3
+
+    persistence:
+      enabled: true
+      storage: 10Gi
+      storageClassName: ""
+
+    resources: {}
+      # limits:
+      #   cpu: 250m
+      #   memory: 512Mi
+      # requests:
+      #   cpu: 1000m
+      #   memory: 1Gi
+
+    additionalPlugins:
+      - rabbitmq_management
+      - rabbitmq_prometheus
+      - rabbitmq_peer_discovery_k8s
+
+    affinity: {}
+
+  topology:
+    enabled: true
+
+    # Required when cluster.enabled=false AND you create any topology resources.
+    # If cluster.enabled=true and this is empty, it will reference the created cluster automatically.
+    rabbitmqClusterReferenceName: ""
+
+    # List of queue definitions. Empty by default (generic chart).
+    queues: []
+    # queues item schema:
+    # - name: my_queue                # required (RabbitMQ entity name; underscores allowed)
+    #   durable: true                 # optional (default true)
+    #   autoDelete: false             # optional (default false)
+    #   exchange:
+    #     name: ""                    # optional (default: queue name)
+    #     type: fanout                # optional (default fanout)
+    #     durable: true               # optional (default true)
+    #     autoDelete: false           # optional (default false)
+    #   binding:
+    #     routingKey: ""              # optional (only relevant for direct/topic exchanges)
+
+  vhost:
+    enabled: false
+
+    name: ""

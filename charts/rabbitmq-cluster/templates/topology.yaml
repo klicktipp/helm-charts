@@ -1,0 +1,65 @@
+{{- if .Values.rabbitmq.topology.enabled }}
+
+{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
+
+{{- range $queue := .Values.rabbitmq.topology.queues }}
+
+{{- $queueType := $queue.type | default "quorum"  -}}
+{{- $queueDurable := $queue.durable | default true -}}
+{{- $queueAutoDelete := $queue.autoDelete | default false -}}
+
+{{- $exchangeName := $queue.exchange.name | default $queue.name  -}}
+{{- $exchangeType := $queue.exchange.type | default "fanout"  -}}
+{{- $exchangeDurable := $queue.exchange.durable | default true  -}}
+{{- $exchangeAutoDelete := $queue.exchange.autoDelete | default false  -}}
+
+{{- $routingKey :=  $queue.binding.routingKey | default "" -}}
+
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: {{ $queue.name | trunc 63 | trimSuffix "-" | quote }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
+spec:
+  name: {{ $queue.name | quote }}
+  type: {{ $queueType | quote }}
+  durable: {{ $queueDurable }}
+  autoDelete: {{ $queueAutoDelete }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: {{ printf "%s-exchange" $exchangeName | trunc 63 | trimSuffix "-" | quote }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
+spec:
+  name: {{ $exchangeName | quote }}
+  type: {{ $exchangeType | quote }}
+  durable: {{ $exchangeDurable }}
+  autoDelete: {{ $exchangeAutoDelete }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: {{ printf "%s-binding" $queue.name | trunc 63 | trimSuffix "-" | quote }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
+spec:
+  source: {{ $exchangeName | quote }}
+  destination: {{ $queue.name | quote }}
+  destinationType: queue
+  {{- if ne $routingKey "" }}
+  routingKey: {{ $routingKey | quote }}
+  {{- end }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+{{- end }} {{/* END queue loop */}}
+{{- end }} {{/* END if enabled */}}
