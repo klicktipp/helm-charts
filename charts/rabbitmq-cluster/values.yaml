@@ -33,7 +33,7 @@ ingress:
 rabbitmq:
   cluster:
     # If false, this chart will NOT create a RabbitmqCluster; you must point topology at an existing cluster.
-    enabled: false
+    enabled: true
 
     # RabbitmqCluster metadata.name (K8s object name). If empty, defaults to the Helm release fullname.
     name: ""
@@ -41,7 +41,7 @@ rabbitmq:
     replicas: 3
 
     persistence:
-      enabled: true
+      enabled: false
       storage: 10Gi
       storageClassName: ""
 
@@ -63,10 +63,6 @@ rabbitmq:
   topology:
     enabled: true
 
-    # Required when cluster.enabled=false AND you create any topology resources.
-    # If cluster.enabled=true and this is empty, it will reference the created cluster automatically.
-    rabbitmqClusterReferenceName: ""
-
     # List of queue definitions. Empty by default (generic chart).
     queues: []
     # queues item schema:
@@ -75,7 +71,7 @@ rabbitmq:
     #   autoDelete: false             # optional (default false)
     #   exchange:
     #     name: ""                    # optional (default: queue name)
-    #     type: fanout                # optional (default fanout)
+    #     type: fanout                # optional (default fanout) [fanout, direct, topic, headers]
     #     durable: true               # optional (default true)
     #     autoDelete: false           # optional (default false)
     #   binding:

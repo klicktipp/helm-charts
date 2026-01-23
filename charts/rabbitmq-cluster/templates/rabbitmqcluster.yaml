@@ -18,11 +18,11 @@ spec:
   {{- end }}
   {{- with .Values.rabbitmq.cluster.resources }}
   resources:
-    {{- toYaml . | nindent 12 }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with .Values.rabbitmq.cluster.affinity }}
   affinity:
-    {{- toYaml . | nindent 8 }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   rabbitmq:
     additionalPlugins:
