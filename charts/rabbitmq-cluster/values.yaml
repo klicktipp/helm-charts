@@ -29,6 +29,9 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+monitoring:
+  serviceMonitor:
+    enabled: false
 
 rabbitmq:
   cluster:
