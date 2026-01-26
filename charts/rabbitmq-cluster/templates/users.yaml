@@ -39,7 +39,7 @@ stringData:
 
 {{- $permission := $user.permission | default (dict) }}
 {{- if $permission.enabled | default true }}
-{{- $permissionName := $permission.name | default $permissionVhost }}
+{{- $permissionName := $permission.name | default $vhost }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Permission
