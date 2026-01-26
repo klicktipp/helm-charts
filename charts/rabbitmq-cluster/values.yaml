@@ -83,6 +83,8 @@ rabbitmq:
     #     autoDelete: false           # optional (default false)
     #   binding:
     #     routingKey: ""              # optional (only relevant for direct/topic exchanges)
+    #     destination: ""             # optional (an existing queue or exchange)
+    #     type: queue                 # optional (default queue) [queue, exchange]
 
   vhost:
     enabled: false

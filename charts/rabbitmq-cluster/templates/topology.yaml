@@ -1,6 +1,10 @@
 {{- if .Values.rabbitmq.topology.enabled }}
 
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
+{{- $vhost := "/" }}
+{{- if $.Values.rabbitmq.vhost.enabled }}
+  {{- $vhost = (.Values.rabbitmq.vhost.name | default (include "rabbitmq-cluster.fullname" .)) }}
+{{- end }}
 
 {{- range $queue := .Values.rabbitmq.topology.queues }}
 
@@ -8,10 +12,11 @@
 {{- $queueDurable := $queue.durable | default true }}
 {{- $queueAutoDelete := $queue.autoDelete | default false }}
 
-{{- $exchangeName := $queue.exchange.name | default $queue.name  }}
-{{- $exchangeType := $queue.exchange.type | default "fanout"  }}
-{{- $exchangeDurable := $queue.exchange.durable | default true  }}
-{{- $exchangeAutoDelete := $queue.exchange.autoDelete | default false  }}
+{{- $queueExchange := $queue.exchange | default (dict) }}
+{{- $exchangeName := $queueExchange.name | default $queue.name  }}
+{{- $exchangeType := $queueExchange.type | default "fanout"  }}
+{{- $exchangeDurable := $queueExchange.durable | default true  }}
+{{- $exchangeAutoDelete := $queueExchange.autoDelete | default false  }}
 
 ---
 apiVersion: rabbitmq.com/v1beta1
@@ -25,6 +30,7 @@ spec:
   type: {{ $queueType | quote }}
   durable: {{ $queueDurable }}
   autoDelete: {{ $queueAutoDelete }}
+  vhost: {{ $vhost | quote }}
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
 
@@ -32,14 +38,15 @@ spec:
 apiVersion: rabbitmq.com/v1beta1
 kind: Exchange
 metadata:
-  name: {{ printf "%s-exchange" $exchangeName | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $exchangeName | include "com.klicktipp.slugify-string" | quote }}
   labels:
     {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
-  name: {{ $exchangeName | quote }}
+  name: {{ $exchangeName | include "com.klicktipp.slugify-string" | quote }}
   type: {{ $exchangeType | quote }}
   durable: {{ $exchangeDurable }}
   autoDelete: {{ $exchangeAutoDelete }}
+  vhost: {{ $vhost | quote }}
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
 
@@ -54,9 +61,10 @@ metadata:
   labels:
     {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
-  source: {{ $exchangeName | quote }}
-  destination: {{ $queue.name | quote }}
-  destinationType: queue
+  vhost: {{ $vhost | quote }}
+  source: {{ $exchangeName | include "com.klicktipp.slugify-string" | quote }}   # an existing exchange
+  destination: {{ $binding.destination | default $queue.name | quote }}        # an existing queue or exchange
+  destinationType: {{ $binding.type | default "queue" | quote }}  # can be 'queue' or 'exchange'
   {{- if ne $routingKey "" }}
   routingKey: {{ $routingKey | quote }}
   {{- end }}
