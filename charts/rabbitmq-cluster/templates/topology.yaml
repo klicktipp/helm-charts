@@ -13,7 +13,7 @@
 {{- $queueAutoDelete := $queue.autoDelete | default false }}
 
 {{- $queueExchange := $queue.exchange | default (dict) }}
-{{- $exchangeName := $queueExchange.name | default $queue.name  }}
+{{- $exchangeName := $queueExchange.name | default $queue.name | include "com.klicktipp.slugify-string" }}
 {{- $exchangeType := $queueExchange.type | default "fanout"  }}
 {{- $exchangeDurable := $queueExchange.durable | default true  }}
 {{- $exchangeAutoDelete := $queueExchange.autoDelete | default false  }}
@@ -38,11 +38,11 @@ spec:
 apiVersion: rabbitmq.com/v1beta1
 kind: Exchange
 metadata:
-  name: {{ $exchangeName | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $exchangeName | quote }}
   labels:
     {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
-  name: {{ $exchangeName | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $exchangeName | quote }}
   type: {{ $exchangeType | quote }}
   durable: {{ $exchangeDurable }}
   autoDelete: {{ $exchangeAutoDelete }}
@@ -57,12 +57,12 @@ spec:
 apiVersion: rabbitmq.com/v1beta1
 kind: Binding
 metadata:
-  name: {{ printf "%s-binding" $queue.name | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $queue.name | include "com.klicktipp.slugify-string" | quote }}
   labels:
     {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
   vhost: {{ $vhost | quote }}
-  source: {{ $exchangeName | include "com.klicktipp.slugify-string" | quote }}   # an existing exchange
+  source: {{ $exchangeName | quote }}   # an existing exchange
   destination: {{ $binding.destination | default $queue.name | quote }}        # an existing queue or exchange
   destinationType: {{ $binding.type | default "queue" | quote }}  # can be 'queue' or 'exchange'
   {{- if ne $routingKey "" }}
