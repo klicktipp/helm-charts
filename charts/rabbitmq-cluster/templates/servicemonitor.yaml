@@ -12,7 +12,8 @@ spec:
     matchLabels:
       {{- include "rabbitmq-cluster.selectorLabels" . | nindent 6 }}
   namespaceSelector:
-    - {{ .Release.Namespace | quote }}
+    matchNames:
+      - {{ .Release.Namespace | quote }}
   endpoints:
     - port: prometheus
       scheme: http
