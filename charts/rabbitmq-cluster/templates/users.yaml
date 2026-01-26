@@ -57,4 +57,4 @@ spec:
     name: {{ $clusterRef | quote }}
 {{- end }} {{/* END if permission enabled */}}
 
-{{- end }} {{/* END if enabled */}}
+{{- end }} {{/* END range rabbitmq.users */}}
