@@ -1,0 +1,76 @@
+{{- if .Values.rabbitmq.topology.enabled }}
+
+{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
+{{- $vhost := "/" }}
+{{- if $.Values.rabbitmq.vhost.enabled }}
+  {{- $vhost = (.Values.rabbitmq.vhost.name | default (include "rabbitmq-cluster.fullname" .)) }}
+{{- end }}
+
+{{- range $queue := .Values.rabbitmq.topology.queues }}
+
+{{- $queueType := $queue.type | default "quorum"  }}
+{{- $queueDurable := $queue.durable | default true }}
+{{- $queueAutoDelete := $queue.autoDelete | default false }}
+
+{{- $queueExchange := $queue.exchange | default (dict) }}
+{{- $exchangeName := $queueExchange.name | default $queue.name | include "com.klicktipp.slugify-string" }}
+{{- $exchangeType := $queueExchange.type | default "fanout"  }}
+{{- $exchangeDurable := $queueExchange.durable | default true  }}
+{{- $exchangeAutoDelete := $queueExchange.autoDelete | default false  }}
+
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: {{ $queue.name | include "com.klicktipp.slugify-string" | quote }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+spec:
+  name: {{ $queue.name | quote }}
+  type: {{ $queueType | quote }}
+  durable: {{ $queueDurable }}
+  autoDelete: {{ $queueAutoDelete }}
+  vhost: {{ $vhost | quote }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: {{ $exchangeName | quote }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+spec:
+  name: {{ $exchangeName | quote }}
+  type: {{ $exchangeType | quote }}
+  durable: {{ $exchangeDurable }}
+  autoDelete: {{ $exchangeAutoDelete }}
+  vhost: {{ $vhost | quote }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+
+---
+{{- $binding :=  $queue.binding | default (dict) }}
+{{- $routingKey := $binding.routingKey | default "" }}
+{{- if $binding }}
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: {{ $queue.name | include "com.klicktipp.slugify-string" | quote }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+spec:
+  vhost: {{ $vhost | quote }}
+  source: {{ $exchangeName | quote }}   # an existing exchange
+  destination: {{ $binding.destination | default $queue.name | quote }}        # an existing queue or exchange
+  destinationType: {{ $binding.type | default "queue" | quote }}  # can be 'queue' or 'exchange'
+  {{- if ne $routingKey "" }}
+  routingKey: {{ $routingKey | quote }}
+  {{- end }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+{{- end }}  {{/* END binding */}}
+
+{{- end }} {{/* END queue loop */}}
+{{- end }} {{/* END if enabled */}}
