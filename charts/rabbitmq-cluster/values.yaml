@@ -12,13 +12,11 @@ pdb:
   # Can be an integer (e.g., 1) or a percentage string (e.g., "25%")
   maxUnavailable: 1
 
-# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+    # cert-manager.io/cluster-issuer: foo
   hosts:
     - host: chart-example.local
       paths:
