@@ -4,7 +4,7 @@
 apiVersion: rabbitmq.com/v1beta1
 kind: Vhost
 metadata:
-  name: {{ .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
+  name: {{ .Values.rabbitmq.vhost.name | default (include "rabbitmq-cluster.fullname" .) }}
   labels:
     {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
 spec:
