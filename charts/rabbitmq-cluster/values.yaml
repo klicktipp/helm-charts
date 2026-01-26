@@ -54,10 +54,14 @@ rabbitmq:
       #   cpu: 1000m
       #   memory: 1Gi
 
+    # Default plugins
     additionalPlugins:
       - rabbitmq_management
       - rabbitmq_prometheus
       - rabbitmq_peer_discovery_k8s
+
+    # Additional plugins to enable
+    extraPlugins:  []
 
     affinity: {}
 

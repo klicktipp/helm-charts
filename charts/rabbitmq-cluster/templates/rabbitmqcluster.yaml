@@ -26,7 +26,9 @@ spec:
   {{- end }}
   rabbitmq:
     additionalPlugins:
-    {{- range .Values.rabbitmq.cluster.additionalPlugins }}
+      {{- $additionalPlugins := .Values.rabbitmq.cluster.additionalPlugins | default (list) }}
+      {{- $extraPlugins := .Values.rabbitmq.cluster.extraPlugins | default (list) }}
+      {{- range (concat $additionalPlugins $extraPlugins | uniq) }}
       - {{ . | quote }}
-    {{- end }}
+      {{- end }}
 {{- end }}
