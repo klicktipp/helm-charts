@@ -31,6 +31,8 @@ monitoring:
   serviceMonitor:
     enabled: false
 
+terminationGracePeriodSeconds: 600
+
 rabbitmq:
   cluster:
     # If false, this chart will NOT create a RabbitmqCluster; you must point topology at an existing cluster.
