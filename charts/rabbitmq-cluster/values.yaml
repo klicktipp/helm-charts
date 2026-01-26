@@ -4,8 +4,7 @@ fullnameOverride: ""
 
 image:
   repository: rabbitmq
-  tag: 4.2-management
-
+  tag: latest
 
 pdb:
   enabled: false
