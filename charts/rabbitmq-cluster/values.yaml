@@ -65,6 +65,26 @@ rabbitmq:
     extraPlugins:  []
 
     affinity: {}
+    #  nodeAffinity:
+    #    requiredDuringSchedulingIgnoredDuringExecution:
+    #      nodeSelectorTerms:
+    #        - matchExpressions:
+    #          - key: nodepool
+    #            operator: In
+    #            values:
+    #              - workers
+    #  podAntiAffinity:
+    #    preferredDuringSchedulingIgnoredDuringExecution:
+    #      - weight: 100
+    #        podAffinityTerm:
+    #          labelSelector:
+    #            matchExpressions:
+    #              - key: app.kubernetes.io/name
+    #                operator: In
+    #                values:
+    #                  - rabbitmq-cluster
+    #          topologyKey: kubernetes.io/hostname
+
 
   topology:
     enabled: false
