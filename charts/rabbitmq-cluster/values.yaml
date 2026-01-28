@@ -118,6 +118,8 @@ rabbitmq:
     #     destination: ""             # optional (an existing queue or exchange)
     #     type: queue                 # optional (default queue) [queue, exchange]
 
+    policies: []
+
   vhost:
     enabled: false
 
