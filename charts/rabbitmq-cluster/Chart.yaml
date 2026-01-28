@@ -3,7 +3,7 @@ apiVersion: v2
 name: rabbitmq-cluster
 description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (RabbitmqCluster).
 type: application
-version: 1.0.0
+version: 1.1.0
 appVersion: "4.2-management"
 kubeVersion: ">= 1.33.0-0"
 home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
