@@ -27,6 +27,7 @@ ingress:
   #      - chart-example.local
 
 monitoring:
+  enabled: false
   serviceMonitor:
     enabled: false
 
