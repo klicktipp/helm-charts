@@ -66,6 +66,15 @@ rabbitmq:
     # Additional plugins to enable
     extraPlugins:  []
 
+    # Overrides for the RabbitmqCluster spec (e.g., for StatefulSet annotations)
+    override: {}
+    #  statefulSet:
+    #    spec:
+    #      template:
+    #        metadata:
+    #          annotations:
+    #            foo: bar
+
     affinity: {}
     #  nodeAffinity:
     #    requiredDuringSchedulingIgnoredDuringExecution:

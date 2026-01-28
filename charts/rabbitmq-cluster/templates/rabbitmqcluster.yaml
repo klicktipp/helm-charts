@@ -33,4 +33,8 @@ spec:
       {{- range (concat $additionalPlugins $extraPlugins | uniq) }}
       - {{ . | quote }}
       {{- end }}
+  {{- with .Values.rabbitmq.cluster.override }}
+  override:
+    {{- nindent 4 (toYaml .) }}
+  {{- end }}
 {{- end }}
