@@ -67,7 +67,7 @@ rabbitmq:
     affinity: {}
 
   topology:
-    enabled: true
+    enabled: false
 
     # List of queue definitions. Empty by default (generic chart).
     queues: []
@@ -75,6 +75,8 @@ rabbitmq:
     # - name: my_queue                # required (RabbitMQ entity name; underscores allowed)
     #   durable: true                 # optional (default true)
     #   autoDelete: false             # optional (default false)
+    #   arguments:                    # optional
+    #     x-message-ttl: 300000
     #   exchange:
     #     name: ""                    # optional (default: queue name)
     #     type: fanout                # optional (default fanout) [fanout, direct, topic, headers]

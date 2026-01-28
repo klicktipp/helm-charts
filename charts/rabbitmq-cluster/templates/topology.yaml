@@ -31,6 +31,10 @@ spec:
   durable: {{ $queueDurable }}
   autoDelete: {{ $queueAutoDelete }}
   vhost: {{ $vhost | quote }}
+  {{- with $queue.arguments }}
+  arguments:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
 
