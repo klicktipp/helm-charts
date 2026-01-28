@@ -94,7 +94,8 @@ rabbitmq:
 
   users: []
     # - name: alice           # required
-    #   password: ""          # required
+    #   password: ""          # required (ignored if existingSecret is provided)
+    #   existingSecret: ""    # optional, if provided this secret will be used instead of creating a new one
     #   tags:                 # optional
     #     - "monitoring"
     #   permission:

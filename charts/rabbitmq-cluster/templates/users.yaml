@@ -8,7 +8,7 @@
 
 {{- range $user := .Values.rabbitmq.users }}
 {{- $tags := $user.tags | default (list) }}
-{{- $secretName := printf "%s-user-%s" $clusterRef $user.name }}
+{{- $secretName := $user.existingSecret | default (printf "%s-user-%s" $clusterRef $user.name) }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: User
@@ -16,7 +16,7 @@ metadata:
   name: {{ printf "%s-%s" $clusterRef $user.name | include "com.klicktipp.slugify-string" | quote }}
   annotations:
     # Workaround to trigger a re-creation of the user / setting the password
-    checksum/user: {{ printf "%s-%s" $user.name $user.password | sha256sum }}
+    checksum/user: {{ $user.existingSecret | default (printf "%s-%s" $user.name $user.password) | sha256sum }}
 spec:
   tags:
   {{- range $t := $tags }}
@@ -27,6 +27,7 @@ spec:
   importCredentialsSecret:
     name: {{ $secretName }}
 
+{{- if not $user.existingSecret }}
 ---
 apiVersion: v1
 kind: Secret
@@ -36,6 +37,7 @@ type: "Opaque"
 stringData:
   username: {{ $user.name | quote }}
   password: {{ $user.password | quote }}
+{{- end }}
 
 {{- $permission := $user.permission | default (dict) }}
 {{- if $permission.enabled | default true }}
