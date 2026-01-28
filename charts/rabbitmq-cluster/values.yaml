@@ -42,6 +42,8 @@ rabbitmq:
 
     replicas: 3
 
+    delayStartSeconds: 10
+
     persistence:
       enabled: false
       storage: 10Gi

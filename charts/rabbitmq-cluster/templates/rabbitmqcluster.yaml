@@ -16,6 +16,7 @@ spec:
     storageClassName: {{ .Values.rabbitmq.cluster.persistence.storageClassName | quote }}
     {{- end }}
   {{- end }}
+  delayStartSeconds: {{ .Values.rabbitmq.cluster.delayStartSeconds | int }}
   {{- with .Values.rabbitmq.cluster.resources }}
   resources:
     {{- toYaml . | nindent 4 }}
