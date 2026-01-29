@@ -60,7 +60,7 @@ spec:
     {{- if .Values.postgres_cluster.wal.enabled }}
     {{- if .Values.postgres_cluster.wal.backupSchedule }}
     - name: BACKUP_SCHEDULE
-      values: {{ .Values.postgres_cluster.wal.backupSchedule | quote }}
+      value: {{ .Values.postgres_cluster.wal.backupSchedule | quote }}
     {{- end }}
     - name: BACKUP_NUM_TO_RETAIN
       value: {{ .Values.postgres_cluster.wal.backupNumToRetain | quote }}
