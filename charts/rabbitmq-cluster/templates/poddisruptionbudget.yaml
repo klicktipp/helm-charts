@@ -1,0 +1,19 @@
+{{- if .Values.pdb.enabled }}
+---
+# pod disruption budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "rabbitmq-cluster.fullname" . }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
+spec:
+  {{- if kindIs "string" .Values.pdb.maxUnavailable }}
+  maxUnavailable: "{{ .Values.pdb.maxUnavailable }}"
+  {{- else }}
+  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "rabbitmq-cluster.selectorLabels" . | nindent 6 }}
+{{- end }}
