@@ -53,7 +53,7 @@ postgres_cluster:
   volume:
     enabled: false
     size: "10Gi"
-    storageClass: ""  # optional; omit using default StorageClass
+    storageClass: ""  # optional; omit to use the default StorageClass
 
   expose:
     masterLoadBalancer: false
