@@ -79,13 +79,13 @@ postgres_cluster:
     # Enables PITR (point-in-time recovery) and faster restores for large DBs (physical restore).
     # NOTE: Requires IAM permissions for S3 access.
     enabled: false
-    backupSchedule: "00 10 * * *"
-    s3Bucket: ""
-    s3ScopePrefix: ""
-    awsRegion: ""
-    accessKeyId: ""
-    secretAccessKey: ""
-    backupNumToRetain: "5"
+    backupSchedule: "0 10 * * *"
+    s3Bucket: null              # set to override operator-managed default
+    s3ScopePrefix: null         # set to override operator-managed default
+    awsRegion: null             # set to override operator-managed default
+    accessKeyId: null           # set to override operator-managed default
+    secretAccessKey: null       # set to override operator-managed default
+    backupNumToRetain: "3"
     logS3Tags: true
 
   # Optional: TLS. If createCertificate=false, secret must exist already (e.g. managed elsewhere).
