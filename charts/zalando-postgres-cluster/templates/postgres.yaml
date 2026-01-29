@@ -38,6 +38,8 @@ spec:
   logicalBackupRetention: {{ .Values.postgres_cluster.backup.retention | quote }}
   {{- end }}
 
+  enableWALArchiving: {{ .Values.postgres_cluster.wal.enabled }}
+
   {{- if $tls.enabled }}
   # TLS requires spiloFSGroup (per operator docs and your existing template). :contentReference[oaicite:6]{index=6}
   tls:
@@ -56,34 +58,46 @@ spec:
 
   env:
     {{- if .Values.postgres_cluster.wal.enabled }}
+    {{- if .Values.postgres_cluster.wal.backupSchedule }}
     - name: BACKUP_SCHEDULE
-      values: {{ .Values.postgres_cluster.wal.backupSchedule | quote }}
-    - name: WAL_S3_BUCKET
-      value: {{ required "postgres_cluster.wal.s3Bucket is required when wal.enabled=true" .Values.postgres_cluster.wal.s3Bucket | quote }}
-    - name: WAL_BUCKET_SCOPE_PREFIX
-      value: {{ .Values.postgres_cluster.wal.s3ScopePrefix | quote }}
+      value: {{ .Values.postgres_cluster.wal.backupSchedule | quote }}
+    {{- end }}
     - name: BACKUP_NUM_TO_RETAIN
       value: {{ .Values.postgres_cluster.wal.backupNumToRetain | quote }}
+    {{- if .Values.postgres_cluster.wal.s3Bucket }}
+    - name: WAL_S3_BUCKET
+      value: {{ .Values.postgres_cluster.wal.s3Bucket | quote }}
+    {{- end }}
+    {{- if .Values.postgres_cluster.wal.s3ScopePrefix }}
+    - name: WAL_BUCKET_SCOPE_PREFIX
+      value: {{ .Values.postgres_cluster.wal.s3ScopePrefix | quote }}
+    {{- end }}
+    {{- if .Values.postgres_cluster.wal.awsRegion }}
     - name: AWS_REGION
-      value: {{ required "postgres_cluster.wal.awsRegion is required when wal.enabled=true" .Values.postgres_cluster.wal.awsRegion | quote }}
+      value: {{ .Values.postgres_cluster.wal.awsRegion | quote }}
+    {{- end }}
     - name: aws_instance_profile
       value: "false"  # Disable AWS instance profile, as we are using access keys
+    {{- if .Values.postgres_cluster.wal.accessKeyId }}
     - name: aws_access_key_id
       valueFrom:
         secretKeyRef:
           name: {{ (printf "%s-wal-aws-creds" $clusterName ) | quote }}
           key: aws_access_key_id
+    {{- end }}
+    {{- if .Values.postgres_cluster.wal.secretAccessKey}}
     - name: aws_secret_access_key
       valueFrom:
         secretKeyRef:
           name: {{ (printf "%s-wal-aws-creds" $clusterName ) | quote }}
           key: aws_secret_access_key
-
+    {{- end }}
     {{- if .Values.postgres_cluster.wal.logS3Tags }}
     - name: LOG_S3_TAGS
       value: '{{ printf "{\"ClusterName\": \"%s\", \"Namespace\": \"%s\"}" $clusterName .Release.Namespace }}'
     {{- end }}
-    {{- end }}
+    {{- end }} {{/** if wal.enabled **/}}
+
     {{- with .Values.postgres_cluster.env }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
