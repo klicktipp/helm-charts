@@ -1,0 +1,62 @@
+---
+{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
+
+{{- $vhost := "/" }}
+{{- if $.Values.rabbitmq.vhost.enabled }}
+  {{- $vhost = (.Values.rabbitmq.vhost.name | default (include "rabbitmq-cluster.fullname" .)) }}
+{{- end }}
+
+{{- range $user := .Values.rabbitmq.users }}
+{{- $tags := $user.tags | default (list) }}
+{{- $secretName := $user.existingSecret | default (printf "%s-user-%s" $clusterRef $user.name) }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: {{ printf "%s-%s" $clusterRef $user.name | include "com.klicktipp.slugify-string" | quote }}
+  annotations:
+    # Workaround to trigger a re-creation of the user / setting the password
+    checksum/user: {{ $user.existingSecret | default (printf "%s-%s" $user.name $user.password) | sha256sum }}
+spec:
+  tags:
+  {{- range $t := $tags }}
+    - {{ $t | quote }}
+  {{- end }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+  importCredentialsSecret:
+    name: {{ $secretName }}
+
+{{- if not $user.existingSecret }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName | quote }}
+type: "Opaque"
+stringData:
+  username: {{ $user.name | quote }}
+  password: {{ $user.password | quote }}
+{{- end }}
+
+{{- $permission := $user.permission | default (dict) }}
+{{- if $permission.enabled | default true }}
+{{- $permissionName := $permission.name | default $vhost }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: {{ printf "%s-%s-%s" $clusterRef $user.name $permissionName | include "com.klicktipp.slugify-string" | quote }}
+spec:
+  vhost: {{ $permission.vhost | default $vhost | quote }}
+  userReference:
+    name: {{ printf "%s-%s" $clusterRef $user.name | include "com.klicktipp.slugify-string" | quote }}
+  permissions:
+    write: {{ $permission.write | default ".*" | quote }}
+    configure: {{ $permission.configure | default ".*" | quote }}
+    read: {{ $permission.read | default ".*" | quote }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+{{- end }} {{/* END if permission enabled */}}
+
+{{- end }} {{/* END range rabbitmq.users */}}

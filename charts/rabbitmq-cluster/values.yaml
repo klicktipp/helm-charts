@@ -1,0 +1,140 @@
+# Optional Helm name overrides
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: rabbitmq
+  tag: 4.2-management-alpine
+
+pdb:
+  enabled: false
+  # Can be an integer (e.g., 1) or a percentage string (e.g., "25%")
+  maxUnavailable: 1
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # cert-manager.io/cluster-issuer: foo
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+
+terminationGracePeriodSeconds: 600
+
+rabbitmq:
+  cluster:
+    # If false, this chart will NOT create a RabbitmqCluster; you must point topology at an existing cluster.
+    enabled: true
+
+    # RabbitmqCluster metadata.name (K8s object name). If empty, defaults to the Helm release fullname.
+    name: ""
+
+    replicas: 3
+
+    delayStartSeconds: 10
+
+    persistence:
+      enabled: false
+      storage: 10Gi
+      storageClassName: ""
+
+    resources: {}
+      # limits:
+      #   cpu: 250m
+      #   memory: 512Mi
+      # requests:
+      #   cpu: 1000m
+      #   memory: 1Gi
+
+    # Default plugins
+    additionalPlugins:
+      - rabbitmq_management
+      - rabbitmq_prometheus
+      - rabbitmq_peer_discovery_k8s
+
+    # Additional plugins to enable
+    extraPlugins:  []
+
+    # Overrides for the RabbitmqCluster spec (e.g., for StatefulSet annotations)
+    override: {}
+    #  statefulSet:
+    #    spec:
+    #      template:
+    #        metadata:
+    #          annotations:
+    #            foo: bar
+
+    affinity: {}
+    #  nodeAffinity:
+    #    requiredDuringSchedulingIgnoredDuringExecution:
+    #      nodeSelectorTerms:
+    #        - matchExpressions:
+    #          - key: nodepool
+    #            operator: In
+    #            values:
+    #              - workers
+    #  podAntiAffinity:
+    #    preferredDuringSchedulingIgnoredDuringExecution:
+    #      - weight: 100
+    #        podAffinityTerm:
+    #          labelSelector:
+    #            matchExpressions:
+    #              - key: app.kubernetes.io/name
+    #                operator: In
+    #                values:
+    #                  - rabbitmq-cluster
+    #          topologyKey: kubernetes.io/hostname
+
+
+  topology:
+    enabled: false
+
+    # List of queue definitions. Empty by default (generic chart).
+    queues: []
+    # queues item schema:
+    # - name: my_queue                # required (RabbitMQ entity name; underscores allowed)
+    #   durable: true                 # optional (default true)
+    #   autoDelete: false             # optional (default false)
+    #   arguments:                    # optional
+    #     x-message-ttl: 300000
+    #   exchange:
+    #     name: ""                    # optional (default: queue name)
+    #     type: fanout                # optional (default fanout) [fanout, direct, topic, headers]
+    #     durable: true               # optional (default true)
+    #     autoDelete: false           # optional (default false)
+    #   binding:
+    #     routingKey: ""              # optional (only relevant for direct/topic exchanges)
+    #     destination: ""             # optional (an existing queue or exchange)
+    #     type: queue                 # optional (default queue) [queue, exchange]
+
+    policies: []
+
+  vhost:
+    enabled: false
+
+    name: ""
+
+  users: []
+    # - name: alice           # required
+    #   password: ""          # required (ignored if existingSecret is provided)
+    #   existingSecret: ""    # optional, if provided this secret will be used instead of creating a new one
+    #   tags:                 # optional
+    #     - "monitoring"
+    #   permission:
+    #     enabled: true
+    #     vhost: "/"        # optional, default: "/"
+    #     configure: ".*"   # optional, default: ".*"
+    #     write: ".*"       # optional, default: ".*"
+    #     read: ".*"        # optional, default: ".*"

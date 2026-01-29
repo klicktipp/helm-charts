@@ -1,0 +1,40 @@
+---
+{{- if .Values.rabbitmq.cluster.enabled }}
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: {{ .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
+spec:
+  image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+  replicas: {{ .Values.rabbitmq.cluster.replicas }}
+  {{- if .Values.rabbitmq.cluster.persistence.enabled }}
+  persistence:
+    storage: {{ .Values.rabbitmq.cluster.persistence.storage | quote }}
+    {{- if .Values.rabbitmq.cluster.persistence.storageClassName }}
+    storageClassName: {{ .Values.rabbitmq.cluster.persistence.storageClassName | quote }}
+    {{- end }}
+  {{- end }}
+  delayStartSeconds: {{ .Values.rabbitmq.cluster.delayStartSeconds | int }}
+  {{- with .Values.rabbitmq.cluster.resources }}
+  resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.rabbitmq.cluster.affinity }}
+  affinity:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | int }}
+  rabbitmq:
+    additionalPlugins:
+      {{- $additionalPlugins := .Values.rabbitmq.cluster.additionalPlugins | default (list) }}
+      {{- $extraPlugins := .Values.rabbitmq.cluster.extraPlugins | default (list) }}
+      {{- range (concat $additionalPlugins $extraPlugins | uniq) }}
+      - {{ . | quote }}
+      {{- end }}
+  {{- with .Values.rabbitmq.cluster.override }}
+  override:
+    {{- nindent 4 (toYaml .) }}
+  {{- end }}
+{{- end }}
