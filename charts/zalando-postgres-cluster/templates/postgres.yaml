@@ -72,7 +72,7 @@ spec:
     - name: WAL_BUCKET_SCOPE_PREFIX
       value: {{ .Values.postgres_cluster.wal.s3ScopePrefix | quote }}
     {{- end }}
-    {{- if .Values.postgres_cluster.wal.awsRegion}}
+    {{- if .Values.postgres_cluster.wal.awsRegion }}
     - name: AWS_REGION
       value: {{ .Values.postgres_cluster.wal.awsRegion | quote }}
     {{- end }}
