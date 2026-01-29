@@ -496,6 +496,27 @@ entries:
   zalando-postgres-cluster:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2026-01-29T13:35:13.368637548Z"
+    description: Creates a postgres cluster using the Zalando Postgres operator and
+      local storage
+    digest: e47868e70d97e6eec0531cfd6a401c0778286d38a6f786694268eea712dd0164
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/1200px-Postgresql_elephant.svg.png
+    keywords:
+    - postgres
+    - cluster
+    - operator
+    - zalando
+    maintainers:
+    - name: KlickTipp DevOps Team
+    name: zalando-postgres-cluster
+    sources:
+    - https://github.com/zalando/postgres-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.1.0/zalando-postgres-cluster-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2026-01-16T11:08:54.325853784Z"
     description: Creates a postgres cluster using the Zalando Postgres operator and
       local storage
@@ -515,4 +536,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-01-29T09:02:56.607900998Z"
+generated: "2026-01-29T13:35:13.368698862Z"
