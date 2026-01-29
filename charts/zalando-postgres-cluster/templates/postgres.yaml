@@ -38,6 +38,8 @@ spec:
   logicalBackupRetention: {{ .Values.postgres_cluster.backup.retention | quote }}
   {{- end }}
 
+  enableWALArchiving: {{ .Values.postgres_cluster.wal.enabled }}
+
   {{- if $tls.enabled }}
   # TLS requires spiloFSGroup (per operator docs and your existing template). :contentReference[oaicite:6]{index=6}
   tls:
