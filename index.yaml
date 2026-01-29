@@ -441,6 +441,29 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/proxysql-0.14.3/proxysql-0.14.3.tgz
     version: 0.14.3
+  rabbitmq-cluster:
+  - apiVersion: v2
+    appVersion: 4.2-management
+    created: "2026-01-29T09:02:56.607849191Z"
+    description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com
+      CRDs (RabbitmqCluster).
+    digest: aeb821f6b97673e2d38b14d7da2ddd6d539dc48fb286a46d38256a8a2c41ea4d
+    home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
+    keywords:
+    - cloudpirates
+    - rabbitmq
+    - operator
+    - crd
+    - messaging
+    - amqp
+    kubeVersion: '>= 1.33.0-0'
+    name: rabbitmq-cluster
+    sources:
+    - https://github.com/CloudPirates-io/helm-charts/tree/main/charts/rabbitmq-cluster-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-cluster-1.2.0/rabbitmq-cluster-1.2.0.tgz
+    version: 1.2.0
   redisinsight:
   - apiVersion: v2
     appVersion: 1.14.0
@@ -492,4 +515,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-01-16T11:08:54.325902276Z"
+generated: "2026-01-29T09:02:56.607900998Z"
