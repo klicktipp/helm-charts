@@ -2,17 +2,19 @@
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
 {{- $defaultVhost := include "rabbitmq-cluster.default-vhost" . }}
 
-{{- range $user := .Values.rabbitmq.users }}
+{{- range $name, $user := .Values.rabbitmq.topology.users }}
+{{- if ($user.enabled | default true) }}
+{{- $userName := $user.name | default $name }}
 {{- $tags := $user.tags | default (list) }}
-{{- $secretName := $user.existingSecret | default (printf "%s-user-%s" $clusterRef $user.name) }}
+{{- $secretName := $user.existingSecret | default (printf "%s-user-%s" $clusterRef $userName) }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: User
 metadata:
-  name: {{ printf "%s-%s" $clusterRef $user.name | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ printf "%s-%s" $clusterRef $userName | include "com.klicktipp.slugify-string" | quote }}
   annotations:
     # Workaround to trigger a re-creation of the user / setting the password
-    checksum/user: {{ $user.existingSecret | default (printf "%s-%s" $user.name $user.password) | sha256sum }}
+    checksum/user: {{ $user.existingSecret | default (printf "%s-%s" $userName $user.password) | sha256sum }}
 spec:
   tags:
   {{- range $t := $tags }}
@@ -31,23 +33,22 @@ metadata:
   name: {{ $secretName | quote }}
 type: "Opaque"
 stringData:
-  username: {{ $user.name | quote }}
+  username: {{ $userName | quote }}
   password: {{ $user.password | quote }}
 {{- end }}
 
 {{- $permission := $user.permission | default (dict) }}
 {{- if $permission.enabled | default true }}
-{{- $permissionVhost := $permission.vhost | default $defaultVhost }}
-{{- $permissionName := $permission.name | default $permissionVhost }}
+{{- $vhost := coalesce $user.vhost $permission.vhost $defaultVhost }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Permission
 metadata:
-  name: {{ printf "%s-%s-%s" $clusterRef $user.name $permissionName | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $permission.name | default (printf "%s-%s" $clusterRef $userName) | include "com.klicktipp.slugify-string" | quote }}
 spec:
-  vhost: {{ $permissionVhost | quote }}
+  vhost: {{ $vhost | quote }}
   userReference:
-    name: {{ printf "%s-%s" $clusterRef $user.name | include "com.klicktipp.slugify-string" | quote }}
+    name: {{ printf "%s-%s" $clusterRef $userName | include "com.klicktipp.slugify-string" | quote }}
   permissions:
     write: {{ $permission.write | default ".*" | quote }}
     configure: {{ $permission.configure | default ".*" | quote }}
@@ -56,4 +57,5 @@ spec:
     name: {{ $clusterRef | quote }}
 {{- end }} {{/* END if permission enabled */}}
 
-{{- end }} {{/* END range rabbitmq.users */}}
+{{- end }} {{/* END if user enabled */}}
+{{- end }} {{/* END range rabbitmq.topology.users */}}
