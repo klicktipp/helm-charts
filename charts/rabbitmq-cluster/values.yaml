@@ -121,10 +121,11 @@ rabbitmq:
 
     policies: []
 
-  vhost:
-    enabled: false
-
-    name: ""
+  vhosts: {}
+    # example:
+    # my-vhost:
+    #   enabled: true
+    #   name: "my-vhost" # optional, defaults to key
 
   users: []
     # - name: alice           # required

@@ -1,10 +1,6 @@
 ---
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
-
-{{- $vhost := "/" }}
-{{- if $.Values.rabbitmq.vhost.enabled }}
-  {{- $vhost = (.Values.rabbitmq.vhost.name | default (include "rabbitmq-cluster.fullname" .)) }}
-{{- end }}
+{{- $defaultVhost := include "rabbitmq-cluster.default-vhost" . }}
 
 {{- range $user := .Values.rabbitmq.users }}
 {{- $tags := $user.tags | default (list) }}
@@ -41,14 +37,15 @@ stringData:
 
 {{- $permission := $user.permission | default (dict) }}
 {{- if $permission.enabled | default true }}
-{{- $permissionName := $permission.name | default $vhost }}
+{{- $permissionVhost := $permission.vhost | default $defaultVhost }}
+{{- $permissionName := $permission.name | default $permissionVhost }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Permission
 metadata:
   name: {{ printf "%s-%s-%s" $clusterRef $user.name $permissionName | include "com.klicktipp.slugify-string" | quote }}
 spec:
-  vhost: {{ $permission.vhost | default $vhost | quote }}
+  vhost: {{ $permissionVhost | quote }}
   userReference:
     name: {{ printf "%s-%s" $clusterRef $user.name | include "com.klicktipp.slugify-string" | quote }}
   permissions:

@@ -1,10 +1,7 @@
 {{- if .Values.rabbitmq.topology.enabled }}
 
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
-{{- $vhost := "/" }}
-{{- if $.Values.rabbitmq.vhost.enabled }}
-  {{- $vhost = (.Values.rabbitmq.vhost.name | default (include "rabbitmq-cluster.fullname" .)) }}
-{{- end }}
+{{- $vhost := include "rabbitmq-cluster.default-vhost" . }}
 
 {{- range $queue := .Values.rabbitmq.topology.queues }}
 
