@@ -52,7 +52,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{/*
 Returns the default vhost name.
-The first vhost of the dict is the "default" vhost (beside "/").
+The first vhost of the dict is the "default" vhost (besides "/").
 If no vhosts are defined, returns "/".
 */}}
 {{- define "rabbitmq-cluster.default-vhost" -}}
