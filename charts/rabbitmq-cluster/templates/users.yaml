@@ -39,15 +39,14 @@ stringData:
 
 {{- $permission := $user.permission | default (dict) }}
 {{- if $permission.enabled | default true }}
-{{- $permissionVhost := $permission.vhost | default $defaultVhost }}
-{{- $permissionName := $permission.name | default $permissionVhost }}
+{{- $vhost := coalesce $user.vhost $permission.vhost $defaultVhost }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Permission
 metadata:
-  name: {{ printf "%s-%s-%s" $clusterRef $userName $permissionName | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $permission.name | default (printf "%s-%s" $clusterRef $userName) | include "com.klicktipp.slugify-string" | quote }}
 spec:
-  vhost: {{ $permissionVhost | quote }}
+  vhost: {{ $vhost | quote }}
   userReference:
     name: {{ printf "%s-%s" $clusterRef $userName | include "com.klicktipp.slugify-string" | quote }}
   permissions:
