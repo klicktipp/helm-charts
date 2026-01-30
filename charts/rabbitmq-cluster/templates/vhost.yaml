@@ -1,7 +1,7 @@
 ---
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
 {{- range $key, $vhost := .Values.rabbitmq.vhosts }}
-{{- if $vhost.enabled }}
+{{- if (hasKey $vhost "enabled" | ternary $vhost.enabled true) }}
 {{- $vhostName := $vhost.name | default $key }}
 apiVersion: rabbitmq.com/v1beta1
 kind: Vhost
