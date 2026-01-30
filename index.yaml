@@ -444,6 +444,28 @@ entries:
   rabbitmq-cluster:
   - apiVersion: v2
     appVersion: 4.2-management
+    created: "2026-01-30T09:43:18.600522883Z"
+    description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com
+      CRDs (RabbitmqCluster).
+    digest: 8647b5bdd44ca759a2e7a6107a167fb5b189fd8903170d3e2fa1275cde167d45
+    home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
+    keywords:
+    - cloudpirates
+    - rabbitmq
+    - operator
+    - crd
+    - messaging
+    - amqp
+    kubeVersion: '>= 1.33.0-0'
+    name: rabbitmq-cluster
+    sources:
+    - https://github.com/CloudPirates-io/helm-charts/tree/main/charts/rabbitmq-cluster-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-cluster-2.1.0/rabbitmq-cluster-2.1.0.tgz
+    version: 2.1.0
+  - apiVersion: v2
+    appVersion: 4.2-management
     created: "2026-01-30T08:48:51.533588784Z"
     description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com
       CRDs (RabbitmqCluster).
@@ -558,4 +580,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-01-30T08:48:51.533654065Z"
+generated: "2026-01-30T09:43:18.600611568Z"
