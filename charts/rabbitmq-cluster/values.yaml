@@ -149,4 +149,5 @@ rabbitmq:
     # example:
     #   my-vhost:
     #     enabled: true
+    #     default: true  # optional, if true this vhost will be used as default
     #     name: "my-vhost" # optional, defaults to key

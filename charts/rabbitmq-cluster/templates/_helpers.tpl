@@ -52,14 +52,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{/*
 Returns the default vhost name.
-The first vhost of the dict is the "default" vhost (besides "/").
-If no vhosts are defined, returns "/".
+If one of the vhosts has "default: true", use that vhost as default one.
+Otherwise, always use "/".
 */}}
 {{- define "rabbitmq-cluster.default-vhost" -}}
 {{- $vhost := "/" }}
 {{- if .Values.rabbitmq.vhosts }}
   {{- range $key, $val := .Values.rabbitmq.vhosts }}
-    {{- if $val.enabled }}
+    {{- if and ($val.enabled | default true) $val.default }}
       {{- $vhost = $val.name | default $key }}
       {{- break }}
     {{- end }}
