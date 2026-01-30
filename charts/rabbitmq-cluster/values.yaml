@@ -120,6 +120,14 @@ rabbitmq:
     #       type: queue                 # optional (default queue) [queue, exchange]
 
     policies: {}
+    # policies item schema:
+    #   ha-all:                       # required (Policy name)
+    #     pattern: ".*"               # required (Regular expression)
+    #     applyTo: "all"              # required [all, queues, exchanges]
+    #     priority: 0                 # optional (default 0)
+    #     definition:                 # required
+    #       ha-mode: all
+    #       ha-sync-mode: automatic
 
     users: {}
     #   alice:                  # required
