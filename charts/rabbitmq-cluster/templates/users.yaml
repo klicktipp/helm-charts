@@ -3,6 +3,7 @@
 {{- $defaultVhost := include "rabbitmq-cluster.default-vhost" . }}
 
 {{- range $name, $user := .Values.rabbitmq.topology.users }}
+{{- if ($user.enabled | default true) }}
 {{- $userName := $user.name | default $name }}
 {{- $tags := $user.tags | default (list) }}
 {{- $secretName := $user.existingSecret | default (printf "%s-user-%s" $clusterRef $userName) }}
@@ -57,4 +58,5 @@ spec:
     name: {{ $clusterRef | quote }}
 {{- end }} {{/* END if permission enabled */}}
 
+{{- end }} {{/* END if user enabled */}}
 {{- end }} {{/* END range rabbitmq.topology.users */}}

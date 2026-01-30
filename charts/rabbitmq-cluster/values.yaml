@@ -105,6 +105,7 @@ rabbitmq:
     queues: {}
     # queues item schema:
     #   my_queue:                     # required (RabbitMQ entity name; underscores allowed)
+    #     enabled: true               # optional (default true)
     #     durable: true                 # optional (default true)
     #     autoDelete: false             # optional (default false)
     #     arguments:                    # optional
@@ -122,6 +123,7 @@ rabbitmq:
     policies: {}
     # policies item schema:
     #   ha-all:                       # required (Policy name)
+    #     enabled: true               # optional (default true)
     #     pattern: ".*"               # required (Regular expression)
     #     applyTo: "all"              # required [all, queues, exchanges]
     #     priority: 0                 # optional (default 0)
@@ -131,6 +133,7 @@ rabbitmq:
 
     users: {}
     #   alice:                  # required
+    #     enabled: true         # optional (default true)
     #     password: ""          # required (ignored if existingSecret is provided)
     #     existingSecret: ""    # optional, if provided this secret will be used instead of creating a new one
     #     tags:                 # optional
@@ -144,6 +147,6 @@ rabbitmq:
 
   vhosts: {}
     # example:
-    # my-vhost:
-    #   enabled: true
-    #   name: "my-vhost" # optional, defaults to key
+    #   my-vhost:
+    #     enabled: true
+    #     name: "my-vhost" # optional, defaults to key

@@ -59,8 +59,8 @@ spec:
 {{- end }} {{/* END if servicemonitor enabled */}}
 
 {{- range $name, $queue := .Values.rabbitmq.topology.queues }}
+{{- if and ($queue.enabled | default true) ($queue.alert_when_has_messages | default false ) }}
 {{- $queueName := $queue.name | default $name }}
-{{- if ($queue.alert_when_has_messages | default false ) }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -96,7 +96,7 @@ spec:
             summary: "RabbitMQ fallback queue backlog is critical"
             description: "Queue {{ $queueName }} has {{`{{`}} $value {{`}}`}} messages (> 1000). Immediate action required."
 
-{{- end }} {{/* END if alert_when_has_messages enabled */}}
+{{- end }} {{/* END if alert enabled */}}
 {{- end }} {{/* END queue loop */}}
 
 {{- end }} {{/* END if monitoring enabled */}}
