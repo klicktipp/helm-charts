@@ -102,40 +102,40 @@ rabbitmq:
     enabled: false
 
     # List of queue definitions. Empty by default (generic chart).
-    queues: []
+    queues: {}
     # queues item schema:
-    # - name: my_queue                # required (RabbitMQ entity name; underscores allowed)
-    #   durable: true                 # optional (default true)
-    #   autoDelete: false             # optional (default false)
-    #   arguments:                    # optional
-    #     x-message-ttl: 300000
-    #   exchange:
-    #     name: ""                    # optional (default: queue name)
-    #     type: fanout                # optional (default fanout) [fanout, direct, topic, headers]
-    #     durable: true               # optional (default true)
-    #     autoDelete: false           # optional (default false)
-    #   binding:
-    #     routingKey: ""              # optional (only relevant for direct/topic exchanges)
-    #     destination: ""             # optional (an existing queue or exchange)
-    #     type: queue                 # optional (default queue) [queue, exchange]
+    #   my_queue:                     # required (RabbitMQ entity name; underscores allowed)
+    #     durable: true                 # optional (default true)
+    #     autoDelete: false             # optional (default false)
+    #     arguments:                    # optional
+    #       x-message-ttl: 300000
+    #     exchange:
+    #       name: ""                    # optional (default: queue name)
+    #       type: fanout                # optional (default fanout) [fanout, direct, topic, headers]
+    #       durable: true               # optional (default true)
+    #       autoDelete: false           # optional (default false)
+    #     binding:
+    #       routingKey: ""              # optional (only relevant for direct/topic exchanges)
+    #       destination: ""             # optional (an existing queue or exchange)
+    #       type: queue                 # optional (default queue) [queue, exchange]
 
-    policies: []
+    policies: {}
+
+    users: {}
+    #   alice:                  # required
+    #     password: ""          # required (ignored if existingSecret is provided)
+    #     existingSecret: ""    # optional, if provided this secret will be used instead of creating a new one
+    #     tags:                 # optional
+    #       - "monitoring"
+    #     permission:
+    #       enabled: true
+    #       vhost: "/"        # optional, default: "/"
+    #       configure: ".*"   # optional, default: ".*"
+    #       write: ".*"       # optional, default: ".*"
+    #       read: ".*"        # optional, default: ".*"
 
   vhosts: {}
     # example:
     # my-vhost:
     #   enabled: true
     #   name: "my-vhost" # optional, defaults to key
-
-  users: []
-    # - name: alice           # required
-    #   password: ""          # required (ignored if existingSecret is provided)
-    #   existingSecret: ""    # optional, if provided this secret will be used instead of creating a new one
-    #   tags:                 # optional
-    #     - "monitoring"
-    #   permission:
-    #     enabled: true
-    #     vhost: "/"        # optional, default: "/"
-    #     configure: ".*"   # optional, default: ".*"
-    #     write: ".*"       # optional, default: ".*"
-    #     read: ".*"        # optional, default: ".*"

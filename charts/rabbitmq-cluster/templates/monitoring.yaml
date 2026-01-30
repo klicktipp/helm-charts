@@ -58,13 +58,14 @@ spec:
         insecureSkipVerify: true
 {{- end }} {{/* END if servicemonitor enabled */}}
 
-{{- range $queue := .Values.rabbitmq.topology.queues }}
+{{- range $name, $queue := .Values.rabbitmq.topology.queues }}
+{{- $queueName := $queue.name | default $name }}
 {{- if ($queue.alert_when_has_messages | default false ) }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: {{ (printf "%s-%s-%s-unroutable" $clusterRef $vhost $queue.name) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ (printf "%s-%s-%s-unroutable" $clusterRef $vhost $queueName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
     {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
@@ -74,26 +75,26 @@ spec:
         - alert: RabbitMQQueueNotEmpty
           expr: |
             max(
-              rabbitmq_detailed_queue_messages{queue={{ $queue.name | quote }}}
+              rabbitmq_detailed_queue_messages{queue={{ $queueName | quote }}}
             ) > 0
           for: 1m
           labels:
             severity: warning
           annotations:
             summary: "RabbitMQ fallback queue has messages"
-            description: "Queue {{ $queue.name }} has {{`{{`}} $value {{`}}`}} messages (> 0)."
+            description: "Queue {{ $queueName }} has {{`{{`}} $value {{`}}`}} messages (> 0)."
 
         - alert: RabbitMQQueueHighBacklog
           expr: |
             max(
-              rabbitmq_detailed_queue_messages{queue={{ $queue.name | quote }}}
+              rabbitmq_detailed_queue_messages{queue={{ $queueName | quote }}}
             ) > 1000
           for: 5m
           labels:
             severity: critical
           annotations:
             summary: "RabbitMQ fallback queue backlog is critical"
-            description: "Queue {{ $queue.name }} has {{`{{`}} $value {{`}}`}} messages (> 1000). Immediate action required."
+            description: "Queue {{ $queueName }} has {{`{{`}} $value {{`}}`}} messages (> 1000). Immediate action required."
 
 {{- end }} {{/* END if alert_when_has_messages enabled */}}
 {{- end }} {{/* END queue loop */}}
