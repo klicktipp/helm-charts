@@ -49,3 +49,21 @@ Selector labels
 app.kubernetes.io/name: {{ include "rabbitmq-cluster.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Returns the default vhost name.
+The first vhost of the dict is the "default" vhost (beside "/").
+If no vhosts are defined, returns "/".
+*/}}
+{{- define "rabbitmq-cluster.default-vhost" -}}
+{{- $vhost := "/" }}
+{{- if .Values.rabbitmq.vhosts }}
+  {{- range $key, $val := .Values.rabbitmq.vhosts }}
+    {{- if $val.enabled }}
+      {{- $vhost = $val.name | default $key }}
+      {{- break }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- $vhost }}
+{{- end -}}

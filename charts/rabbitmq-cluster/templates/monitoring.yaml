@@ -1,8 +1,5 @@
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
-{{- $vhost := "/" }}
-{{- if $.Values.rabbitmq.vhost.enabled }}
-  {{- $vhost = (.Values.rabbitmq.vhost.name | default (include "rabbitmq-cluster.fullname" .)) }}
-{{- end }}
+{{- $vhost := include "rabbitmq-cluster.default-vhost" . }}
 
 {{- if and .Values.monitoring.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
 {{- if .Values.monitoring.serviceMonitor.enabled }}
