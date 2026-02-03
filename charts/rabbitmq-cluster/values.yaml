@@ -60,7 +60,7 @@ rabbitmq:
 
     # Environment preset (PROD, STAGING, DEV or custom).
     # If set, it applies predefined RabbitMQ configuration snippets.
-    # Supported values: "PROD", "STAGING", "DEV".
+    # Supported values: "PROD", "STAGING", "DEV". If empty or null, no preset is applied.
     environment: "DEV"
 
     # Additional RabbitMQ configuration as a multiline string.
