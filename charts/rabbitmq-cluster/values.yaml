@@ -63,6 +63,10 @@ rabbitmq:
     # Supported values: "PROD", "STAGING", "DEV".
     environment: "DEV"
 
+    # Additional RabbitMQ configuration as a multiline string.
+    # This will be appended to the environment-specific configuration.
+    extraConfig: ""
+
     # Default plugins
     additionalPlugins:
       - rabbitmq_management
