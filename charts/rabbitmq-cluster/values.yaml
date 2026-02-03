@@ -58,6 +58,11 @@ rabbitmq:
       #   cpu: 1000m
       #   memory: 1Gi
 
+    # Environment preset (PROD, STAGING, DEV or custom).
+    # If set, it applies predefined RabbitMQ configuration snippets.
+    # Supported values: "PROD", "STAGING", "DEV".
+    environment: "DEV"
+
     # Default plugins
     additionalPlugins:
       - rabbitmq_management

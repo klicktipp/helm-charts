@@ -27,6 +27,12 @@ spec:
   {{- end }}
   terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | int }}
   rabbitmq:
+    {{- $env := .Values.rabbitmq.cluster.environment | lower }}
+    {{- if or (eq $env "prod") (eq $env "staging") (eq $env "dev") }}
+    additionalConfig: |
+      {{- $configFile := printf "files/rabbitmq-configs/%s.conf" $env }}
+      {{- tpl (.Files.Get $configFile) . | nindent 6 }}
+    {{- end }}
     additionalPlugins:
       {{- $additionalPlugins := .Values.rabbitmq.cluster.additionalPlugins | default (list) }}
       {{- $extraPlugins := .Values.rabbitmq.cluster.extraPlugins | default (list) }}
