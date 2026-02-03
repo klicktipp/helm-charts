@@ -61,7 +61,7 @@ rabbitmq:
     # Configuration profile preset (PROD, STAGING, DEV or custom).
     # If set, it applies predefined RabbitMQ configuration snippets.
     # Supported values: "PROD", "STAGING", "DEV". If empty or null, no preset is applied.
-    configProfile: "DEV"
+    configProfile: null
 
     # Additional RabbitMQ configuration as a multiline string.
     # This will be appended to the environment-specific configuration.
