@@ -27,7 +27,7 @@ spec:
   {{- end }}
   terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | int }}
   rabbitmq:
-    {{- $env := .Values.rabbitmq.cluster.environment | default "" | lower }}
+    {{- $env := .Values.rabbitmq.cluster.configProfile | default "" | lower }}
     {{- $extraConfig := .Values.rabbitmq.cluster.extraConfig -}}
     {{- $hasEnvConfig := or (eq $env "prod") (eq $env "staging") (eq $env "dev") -}}
     {{- if or $hasEnvConfig $extraConfig }}
