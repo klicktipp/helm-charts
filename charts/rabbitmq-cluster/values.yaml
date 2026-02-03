@@ -41,7 +41,7 @@ rabbitmq:
     # RabbitmqCluster metadata.name (K8s object name). If empty, defaults to the Helm release fullname.
     name: ""
 
-    replicas: 3
+    replicas: 1
 
     delayStartSeconds: 10
 
