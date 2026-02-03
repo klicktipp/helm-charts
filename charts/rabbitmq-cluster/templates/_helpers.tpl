@@ -67,3 +67,20 @@ Otherwise, always use "/".
 {{- end }}
 {{- $vhost }}
 {{- end -}}
+
+{{/*
+Return 10% of a volume size given as "<N>Gi" in MB (binary MB: 1Gi = 1024MB).
+Very small sizes clamp to 50MB.
+Example: "8Gi" -> 820
+*/}}
+{{- define "rabbitmq-cluster.calculateDiskFreeLimit" -}}
+{{- $sizeRaw := (printf "%v" .) -}}
+{{- $sizeGi := (trimSuffix "Gi" $sizeRaw) | int -}}
+{{- $totalMB := mul $sizeGi 1024 -}}
+{{- $limitMB := div (add $totalMB 9) 10 -}} {{/* ceil(totalMB/10) */}}
+{{- if lt $limitMB 50 -}}
+50
+{{- else -}}
+{{ $limitMB }}
+{{- end -}}
+{{- end -}}
