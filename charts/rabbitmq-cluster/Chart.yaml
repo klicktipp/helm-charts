@@ -3,7 +3,7 @@ apiVersion: v2
 name: rabbitmq-cluster
 description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (RabbitmqCluster).
 type: application
-version: "2.3.1"
+version: "2.4.0"
 appVersion: "4.2-management"
 kubeVersion: ">= 1.33.0-0"
 home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
@@ -16,3 +16,7 @@ keywords:
   - crd
   - messaging
   - amqp
+dependencies:
+  - name: klicktipp.common
+    version: 0.1.0
+    repository: "https://klicktipp.github.io/helm-charts/"
