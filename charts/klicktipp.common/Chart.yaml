@@ -1,0 +1,6 @@
+apiVersion: v2
+name: klicktipp.common
+description: A Helm library chart for KlickTipp common templates
+type: library
+version: 0.1.0
+appVersion: "1.0.0"
