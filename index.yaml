@@ -376,6 +376,17 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/cronjobs-0.2.2/cronjobs-0.2.2.tgz
     version: 0.2.2
+  klicktipp.common:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-02-04T11:15:46.580519873Z"
+    description: A Helm library chart for KlickTipp common templates
+    digest: 6ccee80438a333589637a0beeaa1fd6268450b6b41e9b9c843fdf6bd22f70d5d
+    name: klicktipp.common
+    type: library
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/klicktipp.common-0.1.0/klicktipp.common-0.1.0.tgz
+    version: 0.1.0
   proxysql:
   - apiVersion: v1
     appVersion: 2.7.1
@@ -690,4 +701,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-02-04T11:03:49.815897108Z"
+generated: "2026-02-04T11:15:46.580613207Z"
