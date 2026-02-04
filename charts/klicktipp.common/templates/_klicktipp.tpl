@@ -14,7 +14,7 @@ slugify the string to be (k8s) DNS name compatible
 {{- /* 4) Limit to 63 characters, then remove a trailing dash if truncation created one */ -}}
 {{- $text = $text | trunc 63 | trimSuffix "-" -}}
 
-{{- /* Step 5: If nothing is left (e.g. input was only symbols), fail fast */ -}}
+{{- /* 5) If nothing is left (e.g. input was only symbols), fail fast */ -}}
 {{- if eq $text "" -}}
 {{- fail "slugify: input became empty after sanitizing (must contain at least one a-z/0-9)" -}}
 {{- end -}}
