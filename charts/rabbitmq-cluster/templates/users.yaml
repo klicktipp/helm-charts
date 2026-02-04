@@ -6,7 +6,7 @@
 {{- if ($user.enabled | default true) }}
 {{- $userName := $user.name | default $name }}
 {{- $tags := $user.tags | default (list) }}
-{{- $secretName := $user.existingSecret | default (printf "%s-user-%s" $clusterRef $userName) }}
+{{- $secretName := $user.existingSecret | default (printf "%s-%s" $clusterRef $userName | include "com.klicktipp.slugify-string") }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: User
@@ -40,11 +40,12 @@ stringData:
 {{- $permission := $user.permission | default (dict) }}
 {{- if $permission.enabled | default true }}
 {{- $vhost := coalesce $user.vhost $permission.vhost $defaultVhost }}
+{{- $permissionName := $permission.name | default (printf "%s-%s" $clusterRef $userName) | include "com.klicktipp.slugify-string" }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Permission
 metadata:
-  name: {{ $permission.name | default (printf "%s-%s" $clusterRef $userName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $permissionName | quote }}
 spec:
   vhost: {{ $vhost | quote }}
   userReference:
