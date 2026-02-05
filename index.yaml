@@ -466,6 +466,32 @@ entries:
   rabbitmq-cluster:
   - apiVersion: v2
     appVersion: 4.2-management
+    created: "2026-02-05T05:28:54.386627495Z"
+    dependencies:
+    - name: klicktipp-common
+      repository: https://klicktipp.github.io/helm-charts/
+      version: 1.0.0
+    description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com
+      CRDs (RabbitmqCluster).
+    digest: 8e70719393fad4549d82ab57f24eb2275d476e37153ca69bec9b49110d823d2b
+    home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
+    keywords:
+    - cloudpirates
+    - rabbitmq
+    - operator
+    - crd
+    - messaging
+    - amqp
+    kubeVersion: '>= 1.33.0-0'
+    name: rabbitmq-cluster
+    sources:
+    - https://github.com/CloudPirates-io/helm-charts/tree/main/charts/rabbitmq-cluster-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-cluster-2.4.1/rabbitmq-cluster-2.4.1.tgz
+    version: 2.4.1
+  - apiVersion: v2
+    appVersion: 4.2-management
     created: "2026-02-05T05:26:30.855471661Z"
     dependencies:
     - name: klicktipp.common
@@ -738,4 +764,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-02-05T05:26:30.855555747Z"
+generated: "2026-02-05T05:28:54.38673251Z"
