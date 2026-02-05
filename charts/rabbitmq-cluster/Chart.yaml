@@ -17,6 +17,6 @@ keywords:
   - messaging
   - amqp
 dependencies:
-  - name: klicktipp-common
-    version: 0.2.0
+  - name: klicktipp.common
+    version: 0.1.0
     repository: "https://klicktipp.github.io/helm-charts/"
