@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "charts/**"
+      - "charts/*/Chart.yaml"
 
 jobs:
   release:
@@ -20,12 +20,45 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Detect chart version bumps
+        id: version_bump
+        run: |
+          set -euo pipefail
+
+          BEFORE_SHA="${{ github.event.before }}"
+          AFTER_SHA="${{ github.sha }}"
+          HAS_BUMP=false
+
+          mapfile -t changed_chart_files < <(
+            git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA}" -- 'charts/*/Chart.yaml' || true
+          )
+
+          if [ "${#changed_chart_files[@]}" -eq 0 ]; then
+            echo "No Chart.yaml changes detected."
+          fi
+
+          for file in "${changed_chart_files[@]}"; do
+            old_version="$(git show "${BEFORE_SHA}:${file}" 2>/dev/null | awk -F': *' '$1 == "version" { print $2; exit }' || true)"
+            new_version="$(awk -F': *' '$1 == "version" { print $2; exit }' "${file}" || true)"
+
+            if [ -n "${new_version}" ] && [ "${new_version}" != "${old_version}" ]; then
+              HAS_BUMP=true
+              echo "Version bump detected in ${file}: ${old_version:-<none>} -> ${new_version}"
+            else
+              echo "No version bump in ${file}: ${old_version:-<none>} -> ${new_version:-<none>}"
+            fi
+          done
+
+          echo "has_bump=${HAS_BUMP}" >> "$GITHUB_OUTPUT"
+
       - name: Configure Git
+        if: steps.version_bump.outputs.has_bump == 'true'
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
       - name: Add Helm dependency repos
+        if: steps.version_bump.outputs.has_bump == 'true'
         run: |
           set -euo pipefail
 
@@ -51,6 +84,11 @@ jobs:
           helm repo update
 
       - name: Run chart-releaser
+        if: steps.version_bump.outputs.has_bump == 'true'
         uses: helm/chart-releaser-action@v1.7.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Skip release (no chart version bump)
+        if: steps.version_bump.outputs.has_bump != 'true'
+        run: echo "No chart version bump detected. Skipping release."
