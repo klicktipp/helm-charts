@@ -156,7 +156,27 @@ persistentVolumeClaim:
   {{- if not (kindIs "slice" $component) -}}
     {{- fail "component extraEnv must be a list (preferred) or map (legacy)" -}}
   {{- end -}}
-  {{- $merged := concat $global $component -}}
+  {{- $mergedByName := dict -}}
+  {{- $orderedNames := list -}}
+  {{- range $entry := concat $global $component -}}
+    {{- if not (kindIs "map" $entry) -}}
+      {{- fail "extraEnv list entries must be Kubernetes EnvVar objects with a `name` field" -}}
+    {{- end -}}
+    {{- if not (hasKey $entry "name") -}}
+      {{- fail "extraEnv list entries must include `name`" -}}
+    {{- end -}}
+    {{- $name := get $entry "name" | toString -}}
+    {{- if not (hasKey $mergedByName $name) -}}
+      {{- $orderedNames = append $orderedNames $name -}}
+    {{- end -}}
+    {{- $_ := set $mergedByName $name $entry -}}
+  {{- end -}}
+
+  {{- $merged := list -}}
+  {{- range $name := $orderedNames -}}
+    {{- $merged = append $merged (get $mergedByName $name) -}}
+  {{- end -}}
+
   {{- if gt (len $merged) 0 -}}
 {{ tpl (toYaml $merged) $ctx }}
   {{- end -}}
