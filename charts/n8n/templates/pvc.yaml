@@ -102,7 +102,7 @@ spec:
   {{- end }}
 {{- end }}
 {{- $mcpPersistence := mergeOverwrite (deepCopy (default (dict) .Values.webhook.persistence)) (default (dict) .Values.webhook.mcp.persistence) -}}
-{{- if and .Values.webhook.mcp.enabled $mcpPersistence.enabled (eq $mcpPersistence.type "dynamic") (not $mcpPersistence.existingClaim) }}
+{{- if and .Values.webhook.enabled .Values.webhook.mcp.enabled $mcpPersistence.enabled (eq $mcpPersistence.type "dynamic") (not $mcpPersistence.existingClaim) }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
