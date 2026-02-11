@@ -1,0 +1,80 @@
+name: Helm Docs Quality
+
+on:
+  pull_request:
+    paths:
+      - 'charts/**'
+      - 'scripts/**'
+      - '.github/workflows/docs-quality.yml'
+  workflow_dispatch:
+
+jobs:
+  docs-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install helm-docs
+        run: |
+          go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Determine charts to check
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            mapfile -t changed_files < <(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)
+          else
+            mapfile -t changed_files < <(git ls-files 'charts/*/values.yaml' 'charts/*/README.md' 'charts/*/Chart.yaml')
+          fi
+
+          declare -A chart_set=()
+          for file in "${changed_files[@]}"; do
+            if [[ "$file" =~ ^charts/[^/]+/ ]]; then
+              chart_dir="$(echo "$file" | cut -d/ -f1-2)"
+              chart_set["$chart_dir"]=1
+            fi
+          done
+
+          chart_dirs=()
+          values_files=()
+          for chart in "${!chart_set[@]}"; do
+            if [ -f "${chart}/Chart.yaml" ] && [ -f "${chart}/values.yaml" ]; then
+              chart_dirs+=("${chart}")
+              values_files+=("${chart}/values.yaml")
+            fi
+          done
+
+          if [ "${#chart_dirs[@]}" -eq 0 ]; then
+            echo "has_charts=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          printf 'has_charts=true\n' >> "$GITHUB_OUTPUT"
+          printf 'chart_dirs=%s\n' "${chart_dirs[*]}" >> "$GITHUB_OUTPUT"
+          printf 'values_files=%s\n' "${values_files[*]}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify values documentation
+        if: steps.changed.outputs.has_charts == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/check-values-docs.sh ${{ steps.changed.outputs.values_files }}
+
+      - name: Verify README consistency with values
+        if: steps.changed.outputs.has_charts == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/check-readme-consistency.sh ${{ steps.changed.outputs.chart_dirs }}

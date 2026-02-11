@@ -31,3 +31,38 @@ To uninstall the chart:
 * Create a merge request and let it approve and be merged to the `main` branch
 * After successful merging, Github Actions (bot) will automagically create a tag on the `main` branch with the name of the chart and the latest chart version. Example: `redisinsight-0.2.0`.
 * Now the chart index (in the `gh-pages`) has been updated with the latest chart changes: https://github.com/klicktipp/helm-charts/blob/gh-pages/index.yaml
+
+## Chart Documentation (values -> README)
+
+This repository uses `helm-docs` and local scripts to keep chart README files in sync with `values.yaml`.
+
+Install `helm-docs`:
+
+```bash
+go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2
+```
+
+Validate values documentation comments (`# -- ...`) for one chart:
+
+```bash
+scripts/check-values-docs.sh charts/n8n/values.yaml
+```
+
+Generate/refresh chart README files from values:
+
+```bash
+scripts/generate-chart-readmes.sh
+```
+
+Check README consistency for one chart:
+
+```bash
+scripts/check-readme-consistency.sh charts/n8n
+```
+
+For all charts, run:
+
+```bash
+scripts/check-values-docs.sh
+scripts/check-readme-consistency.sh
+```
