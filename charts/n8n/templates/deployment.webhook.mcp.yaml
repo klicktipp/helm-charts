@@ -1,0 +1,191 @@
+{{- if and .Values.webhook.enabled .Values.webhook.mcp.enabled -}}
+{{- /* Validate Valkey/Redis configuration */}}
+{{- include "n8n.validateValkey" . }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "n8n.fullname" . }}-webhook-mcp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "n8n.labels" . | nindent 4 }}
+    {{- with .Values.global.deploymentLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.webhook.deploymentLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.webhook.mcp.deploymentLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.global.deploymentAnnotations .Values.webhook.deploymentAnnotations .Values.webhook.mcp.deploymentAnnotations }}
+  annotations:
+    {{- with .Values.global.deploymentAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.webhook.deploymentAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.webhook.mcp.deploymentAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  replicas: 1
+  strategy:
+    type: {{ .Values.webhook.deploymentStrategy.type }}
+    {{- if eq .Values.webhook.deploymentStrategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ default "25%" .Values.webhook.deploymentStrategy.maxSurge  }}
+      maxUnavailable: {{ default "25%" .Values.webhook.deploymentStrategy.maxUnavailable }}
+    {{- end }}
+  selector:
+    matchLabels:
+      {{- include "n8n.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/type: webhook-mcp
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ print .Values.webhook .Values.webhook.mcp .Values.main | sha256sum }}
+        {{- with .Values.global.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.webhook.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.webhook.mcp.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "n8n.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/type: webhook-mcp
+        {{- with .Values.global.podLabels }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.webhook.podLabels }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.webhook.mcp.podLabels }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with (coalesce .Values.imagePullSecrets .Values.global.imagePullSecrets) }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "n8n.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.podSecurityContext)) (default (dict) .Values.webhook.podSecurityContext) (default (dict) .Values.webhook.mcp.podSecurityContext)) | nindent 8 }}
+      {{- if .Values.webhook.initContainers }}
+      initContainers:
+      {{ tpl (toYaml .Values.webhook.initContainers) . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}-webhook-mcp
+          image: "{{ coalesce .Values.webhook.mcp.image.repository .Values.webhook.image.repository .Values.global.image.repository .Values.image.repository }}:{{ coalesce .Values.webhook.mcp.image.tag .Values.webhook.image.tag .Values.global.image.tag .Values.image.tag .Chart.AppVersion }}"
+          imagePullPolicy: {{ coalesce .Values.webhook.mcp.image.pullPolicy .Values.webhook.image.pullPolicy .Values.global.image.pullPolicy .Values.image.pullPolicy "IfNotPresent" }}
+          {{- if .Values.webhook.command }}
+          command:
+            {{- toYaml .Values.webhook.command | nindent 12 }}
+          {{- else }}
+          command: ["n8n"]
+          {{- end }}
+          {{- if .Values.webhook.commandArgs }}
+          args:
+            {{- toYaml .Values.webhook.commandArgs | nindent 12 }}
+          {{- else }}
+          args:
+            - "webhook"
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ get (default (dict) .Values.webhook.config.n8n) "port" | default 5678 }}
+              protocol: TCP
+          {{- with .Values.webhook.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.webhook.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- $extraConfigMaps := uniq (concat (default (list) .Values.global.envFromConfigMaps) (default (list) .Values.webhook.envFromConfigMaps) (default (list) .Values.webhook.mcp.envFromConfigMaps)) }}
+          {{- $extraSecrets := uniq (concat (default (list) .Values.global.envFromSecrets) (default (list) .Values.webhook.envFromSecrets) (default (list) .Values.webhook.mcp.envFromSecrets)) }}
+          {{- if or .Values.main.config .Values.main.secret .Values.webhook.config .Values.webhook.secret (gt (len $extraConfigMaps) 0) (gt (len $extraSecrets) 0) }}
+          envFrom:
+            {{- if .Values.main.config }}
+            - configMapRef:
+                name: {{ include "n8n.fullname" . }}-app-config
+            {{- end }}
+            {{- if .Values.main.secret }}
+            - secretRef:
+                name: {{ include "n8n.fullname" . }}-app-secret
+            {{- end }}
+            {{- if .Values.webhook.config }}
+            - configMapRef:
+                name: {{ include "n8n.fullname" . }}-webhook-config
+            {{- end }}
+            {{- if .Values.webhook.secret }}
+            - secretRef:
+                name: {{ include "n8n.fullname" . }}-webhook-secret
+            {{- end }}
+            {{- range $name := $extraConfigMaps }}
+            - configMapRef:
+                name: {{ tpl ($name | toString) $ }}
+            {{- end }}
+            {{- range $name := $extraSecrets }}
+            - secretRef:
+                name: {{ tpl ($name | toString) $ }}
+            {{- end }}
+          {{- end }}
+          {{- $baseExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.global.extraEnv "component" .Values.webhook.extraEnv "context" $) | fromYamlArray }}
+          {{- $mergedExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" $baseExtraEnv "component" .Values.webhook.mcp.extraEnv "context" $) }}
+          {{- if $mergedExtraEnv }}
+          env:
+            {{- $mergedExtraEnv | nindent 12 }}
+          {{- end }}
+          lifecycle:
+            {{- toYaml .Values.webhook.lifecycle | nindent 12 }}
+          securityContext:
+            {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.securityContext)) (default (dict) .Values.webhook.securityContext) (default (dict) .Values.webhook.mcp.securityContext)) | nindent 12 }}
+          resources:
+            {{- toYaml (coalesce .Values.webhook.mcp.resources .Values.webhook.resources .Values.global.resources (dict)) | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/.n8n
+          {{- with .Values.webhook.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.webhook.mcp.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (coalesce .Values.webhook.mcp.nodeSelector .Values.webhook.nodeSelector .Values.global.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (coalesce .Values.webhook.mcp.affinity .Values.webhook.affinity .Values.global.affinity) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (coalesce .Values.webhook.mcp.tolerations .Values.webhook.tolerations .Values.global.tolerations) }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if hasKey .Values.webhook "terminationGracePeriodSeconds" }}
+      terminationGracePeriodSeconds: {{ .Values.webhook.terminationGracePeriodSeconds }}
+      {{- end }}
+      volumes:
+        {{- $mcpPersistence := mergeOverwrite (deepCopy (default (dict) .Values.webhook.persistence)) (default (dict) .Values.webhook.mcp.persistence) }}
+        - name: "data"
+          {{- include "n8n.persistenceVolume" (dict "persistence" $mcpPersistence "claimName" (printf "%s-webhook-mcp" (include "n8n.fullname" .))) | nindent 10 }}
+        {{- with .Values.webhook.extraVolumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.webhook.mcp.extraVolumes }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}
