@@ -77,16 +77,22 @@ persistentVolumeClaim:
 {{- end }}
 {{- end }}
 
-{{/* Resolve image from global and chart values */}}
+{{/* Resolve image from component, global and chart values */}}
 {{- define "n8n.image" -}}
-{{- $repo := coalesce .Values.global.image.repository .Values.image.repository -}}
-{{- $tag := coalesce .Values.global.image.tag .Values.image.tag .Chart.AppVersion -}}
+{{- $ctx := .context -}}
+{{- $component := default (dict) .component -}}
+{{- $componentImage := default (dict) $component.image -}}
+{{- $repo := coalesce $componentImage.repository $ctx.Values.global.image.repository $ctx.Values.image.repository -}}
+{{- $tag := coalesce $componentImage.tag $ctx.Values.global.image.tag $ctx.Values.image.tag $ctx.Chart.AppVersion -}}
 {{- printf "%s:%s" $repo $tag -}}
 {{- end }}
 
-{{/* Resolve imagePullPolicy from global and chart values */}}
+{{/* Resolve imagePullPolicy from component, global and chart values */}}
 {{- define "n8n.imagePullPolicy" -}}
-{{- coalesce .Values.global.image.pullPolicy .Values.image.pullPolicy "IfNotPresent" -}}
+{{- $ctx := .context -}}
+{{- $component := default (dict) .component -}}
+{{- $componentImage := default (dict) $component.image -}}
+{{- coalesce $componentImage.pullPolicy $ctx.Values.global.image.pullPolicy $ctx.Values.image.pullPolicy "IfNotPresent" -}}
 {{- end }}
 
 

@@ -72,8 +72,8 @@ spec:
         - name: {{ .Chart.Name }}-worker
           securityContext:
             {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.securityContext)) (default (dict) .Values.worker.securityContext)) | nindent 12 }}
-          image: "{{ include "n8n.image" . }}"
-          imagePullPolicy: {{ include "n8n.imagePullPolicy" . }}
+          image: "{{ include "n8n.image" (dict "context" . "component" .Values.worker) }}"
+          imagePullPolicy: {{ include "n8n.imagePullPolicy" (dict "context" . "component" .Values.worker) }}
           {{- $extraConfigMaps := uniq (concat (default (list) .Values.global.envFromConfigMaps) (default (list) .Values.worker.envFromConfigMaps)) }}
           {{- $extraSecrets := uniq (concat (default (list) .Values.global.envFromSecrets) (default (list) .Values.worker.envFromSecrets)) }}
           {{- if or .Values.main.config .Values.main.secret .Values.worker.config .Values.worker.secret (gt (len $extraConfigMaps) 0) (gt (len $extraSecrets) 0) }}

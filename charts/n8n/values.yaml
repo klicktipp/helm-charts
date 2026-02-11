@@ -111,6 +111,11 @@ ingress:
   #   secretName: workflow-example-com-tls
 
 main:
+  # -- Optional image override for main workload.
+  # Supports `repository`, `tag`, and `pullPolicy`.
+  # Falls back to `global.image` and then `image`.
+  image: {}
+
   # -- n8n config values converted to env vars in a ConfigMap.
   # See: https://docs.n8n.io/hosting/configuration/environment-variables/
   config: {}
@@ -257,6 +262,11 @@ worker:
   # -- Enable worker deployment.
   enabled: false
 
+  # -- Optional image override for worker workload.
+  # Supports `repository`, `tag`, and `pullPolicy`.
+  # Falls back to `global.image` and then `image`.
+  image: {}
+
   # -- Additional worker-specific n8n config.
   config: {}
 
@@ -380,6 +390,11 @@ worker:
 webhook:
   # -- Enable webhook deployment.
   enabled: false
+
+  # -- Optional image override for webhook workload.
+  # Supports `repository`, `tag`, and `pullPolicy`.
+  # Falls back to `global.image` and then `image`.
+  image: {}
 
   # -- Additional webhook-specific n8n config.
   config: {}
