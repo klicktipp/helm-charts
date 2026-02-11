@@ -523,7 +523,7 @@ webhook:
   terminationGracePeriodSeconds: 30
 
   mcp:
-    # -- Enable a dedicated single-replica webhook deployment for MCP traffic (`/mcp*`).
+    # -- Enable a dedicated single-replica webhook deployment for MCP traffic (`/mcp-server/`).
     enabled: false
 
     # -- Optional image override for MCP webhook workload.
@@ -581,7 +581,7 @@ webhook:
     ingress:
       # -- MCP paths that should be routed to the dedicated MCP webhook service.
       paths:
-        - /mcp
+        - /mcp-server/
       # -- Path type for MCP ingress paths.
       pathType: Prefix
 
