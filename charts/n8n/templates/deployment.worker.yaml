@@ -63,7 +63,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "n8n.serviceAccountName" . }}
       securityContext:
-        {{- toYaml (coalesce .Values.worker.podSecurityContext .Values.global.podSecurityContext (dict)) | nindent 8 }}
+        {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.podSecurityContext)) (default (dict) .Values.worker.podSecurityContext)) | nindent 8 }}
       {{- if .Values.worker.initContainers }}
       initContainers:
       {{ tpl (toYaml .Values.worker.initContainers) . | nindent 8 }}
@@ -71,7 +71,7 @@ spec:
       containers:
         - name: {{ .Chart.Name }}-worker
           securityContext:
-            {{- toYaml (coalesce .Values.worker.securityContext .Values.global.securityContext (dict)) | nindent 12 }}
+            {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.securityContext)) (default (dict) .Values.worker.securityContext)) | nindent 12 }}
           image: "{{ include "n8n.image" . }}"
           imagePullPolicy: {{ include "n8n.imagePullPolicy" . }}
           {{- $extraConfigMaps := uniq (concat (default (list) .Values.global.envFromConfigMaps) (default (list) .Values.worker.envFromConfigMaps)) }}

@@ -65,7 +65,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "n8n.serviceAccountName" . }}
       securityContext:
-        {{- toYaml (coalesce .Values.webhook.podSecurityContext .Values.global.podSecurityContext (dict)) | nindent 8 }}
+        {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.podSecurityContext)) (default (dict) .Values.webhook.podSecurityContext)) | nindent 8 }}
       {{- if .Values.webhook.initContainers }}
       initContainers:
       {{ tpl (toYaml .Values.webhook.initContainers) . | nindent 8 }}
@@ -136,7 +136,7 @@ spec:
           lifecycle:
             {{- toYaml .Values.webhook.lifecycle | nindent 12 }}
           securityContext:
-            {{- toYaml (coalesce .Values.webhook.securityContext .Values.global.securityContext (dict)) | nindent 12 }}
+            {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.securityContext)) (default (dict) .Values.webhook.securityContext)) | nindent 12 }}
           resources:
             {{- toYaml (coalesce .Values.webhook.resources .Values.global.resources (dict)) | nindent 12 }}
           volumeMounts:
