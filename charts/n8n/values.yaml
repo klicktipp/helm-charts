@@ -50,6 +50,7 @@ global:
   # -- Global env vars merged into each component's `extraEnv`.
   # Preferred format is a list of Kubernetes EnvVar objects.
   # Map format is supported for backward compatibility.
+  # For list format, component entries override global entries by `name`.
   extraEnv: []
 
   # -- Global ConfigMaps loaded via `envFrom` for all workloads.
@@ -120,7 +121,7 @@ main:
   # -- Additional env vars for the container.
   # Preferred format is a list of Kubernetes EnvVar objects.
   # Backward-compatible map format is also supported by templates.
-  # Merged with `global.extraEnv`.
+  # Merged with `global.extraEnv`; component entries override by `name`.
   extraEnv: []
   # - name: N8N_DB_POSTGRESDB_NAME
   #   valueFrom:
@@ -265,7 +266,7 @@ worker:
   # -- Additional env vars for worker pods.
   # Preferred format is a list of Kubernetes EnvVar objects.
   # Backward-compatible map format is also supported by templates.
-  # Merged with `global.extraEnv`.
+  # Merged with `global.extraEnv`; component entries override by `name`.
   extraEnv: []
 
   # -- Additional ConfigMaps loaded via `envFrom`.
@@ -389,7 +390,7 @@ webhook:
   # -- Additional env vars for webhook pods.
   # Preferred format is a list of Kubernetes EnvVar objects.
   # Backward-compatible map format is also supported by templates.
-  # Merged with `global.extraEnv`.
+  # Merged with `global.extraEnv`; component entries override by `name`.
   extraEnv: []
 
   # -- Additional ConfigMaps loaded via `envFrom`.
