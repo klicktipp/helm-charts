@@ -77,8 +77,8 @@ spec:
           {{- end }}
           securityContext:
             {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.securityContext)) (default (dict) .Values.main.securityContext)) | nindent 12 }}
-          image: "{{ include "n8n.image" . }}"
-          imagePullPolicy: {{ include "n8n.imagePullPolicy" . }}
+          image: "{{ include "n8n.image" (dict "context" . "component" .Values.main) }}"
+          imagePullPolicy: {{ include "n8n.imagePullPolicy" (dict "context" . "component" .Values.main) }}
           {{- $extraConfigMaps := uniq (concat (default (list) .Values.global.envFromConfigMaps) (default (list) .Values.main.envFromConfigMaps)) }}
           {{- $extraSecrets := uniq (concat (default (list) .Values.global.envFromSecrets) (default (list) .Values.main.envFromSecrets)) }}
           {{- if or .Values.main.config .Values.main.secret (gt (len $extraConfigMaps) 0) (gt (len $extraSecrets) 0) }}
