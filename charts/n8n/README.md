@@ -1,6 +1,6 @@
 # n8n
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.7.3](https://img.shields.io/badge/AppVersion-2.7.3-informational?style=flat-square)
+![Version: 0.1.3](https://img.shields.io/badge/Version-0.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.7.3](https://img.shields.io/badge/AppVersion-2.7.3-informational?style=flat-square)
 
 Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services.
 
@@ -43,9 +43,10 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | global.nodeSelector | object | `{}` | Scheduling defaults inherited by all workloads. |
 | global.tolerations | list | `[]` | Default pod tolerations inherited by all workloads. |
 | global.affinity | object | `{}` | Default pod affinity inherited by all workloads. |
-| global.extraEnv | list | `[]` | Global env vars merged into each component's `extraEnv`. Preferred format is a list of Kubernetes EnvVar objects. Map format is supported for backward compatibility. |
+| global.extraEnv | list | `[]` | Global env vars merged into each component's `extraEnv`. Preferred format is a list of Kubernetes EnvVar objects. Map format is supported for backward compatibility. For list format, component entries override global entries by `name`. |
 | global.envFromConfigMaps | list | `[]` | Global ConfigMaps loaded via `envFrom` for all workloads. Component lists are appended. |
 | global.envFromSecrets | list | `[]` | Global Secrets loaded via `envFrom` for all workloads. Component lists are appended. |
+| global.initContainers | list | `[]` | Global init containers appended to each workload. Component-specific init containers are appended after these entries. |
 | global.serviceAccount.annotations | object | `{}` | Global annotations for the ServiceAccount. |
 | global.serviceAccount.name | string | `""` | Global ServiceAccount name override. |
 | global.persistence.annotations | object | `{}` | Global PVC defaults. Components can override these values. |
@@ -61,9 +62,10 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | ingress.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.hosts[0].paths[0].pathType | string | `"Prefix"` | Ingress path type. |
 | ingress.tls | list | `[]` | Ingress TLS entries. |
+| main.image | object | `{}` | Optional image override for main workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `global.image` and then `image`. |
 | main.config | object | `{}` | n8n config values converted to env vars in a ConfigMap. See: https://docs.n8n.io/hosting/configuration/environment-variables/ |
 | main.secret | object | `{}` | n8n secret values converted to env vars in a Secret. |
-| main.extraEnv | list | `[]` | Additional env vars for the container. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`. |
+| main.extraEnv | list | `[]` | Additional env vars for the container. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`; component entries override by `name`. |
 | main.envFromConfigMaps | list | `[]` | Additional ConfigMaps loaded via `envFrom`. Merged with `global.envFromConfigMaps`. |
 | main.envFromSecrets | list | `[]` | Additional Secrets loaded via `envFrom`. Merged with `global.envFromSecrets`. |
 | main.persistence.enabled | bool | `false` | Enable persistent storage for the main workload. |
@@ -87,7 +89,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | main.livenessProbe.httpGet.port | string | `"http"` | Port for liveness probe. |
 | main.readinessProbe.httpGet.path | string | `"/healthz"` | HTTP path for readiness probe. |
 | main.readinessProbe.httpGet.port | string | `"http"` | Port for readiness probe. |
-| main.initContainers | list | `[]` | Init containers for main deployment. |
+| main.initContainers | list | `[]` | Init containers for main deployment. Appended after `global.initContainers`. |
 | main.service.enabled | bool | `true` | Create service for main deployment. |
 | main.service.annotations | object | `{}` | Service annotations for main deployment. |
 | main.service.type | string | `"ClusterIP"` | Service type for main deployment. |
@@ -102,9 +104,10 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | main.affinity | object | `{}` | Pod affinity for main deployment. |
 | main.terminationGracePeriodSeconds | int | `30` | Pod termination grace period in seconds for main deployment. |
 | worker.enabled | bool | `false` | Enable worker deployment. |
+| worker.image | object | `{}` | Optional image override for worker workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `global.image` and then `image`. |
 | worker.config | object | `{}` | Additional worker-specific n8n config. |
 | worker.secret | object | `{}` | Additional worker-specific n8n secrets. |
-| worker.extraEnv | list | `[]` | Additional env vars for worker pods. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`. |
+| worker.extraEnv | list | `[]` | Additional env vars for worker pods. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`; component entries override by `name`. |
 | worker.envFromConfigMaps | list | `[]` | Additional ConfigMaps loaded via `envFrom`. Merged with `global.envFromConfigMaps`. |
 | worker.envFromSecrets | list | `[]` | Additional Secrets loaded via `envFrom`. Merged with `global.envFromSecrets`. |
 | worker.concurrency | int | `10` | Number of jobs a worker processes in parallel. |
@@ -125,7 +128,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | worker.livenessProbe.httpGet.port | string | `"http"` | Port for worker liveness probe. |
 | worker.readinessProbe.httpGet.path | string | `"/healthz"` | HTTP path for worker readiness probe. |
 | worker.readinessProbe.httpGet.port | string | `"http"` | Port for worker readiness probe. |
-| worker.initContainers | list | `[]` | Init containers for worker deployment. |
+| worker.initContainers | list | `[]` | Init containers for worker deployment. Appended after `global.initContainers`. |
 | worker.service | object | `{"annotations":{},"port":80,"type":"ClusterIP"}` | Currently not used by templates. |
 | worker.resources | object | `{}` | Set to `{}` to inherit from `global.resources`. |
 | worker.autoscaling.enabled | bool | `false` | Enable HPA for worker deployment. |
@@ -139,9 +142,10 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | worker.extraVolumeMounts | list | `[]` | Extra volume mounts for worker pods. |
 | worker.terminationGracePeriodSeconds | int | `30` | Pod termination grace period in seconds for worker deployment. |
 | webhook.enabled | bool | `false` | Enable webhook deployment. |
+| webhook.image | object | `{}` | Optional image override for webhook workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `global.image` and then `image`. |
 | webhook.config | object | `{}` | Additional webhook-specific n8n config. |
 | webhook.secret | object | `{}` | Additional webhook-specific n8n secrets. |
-| webhook.extraEnv | list | `[]` | Additional env vars for webhook pods. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`. |
+| webhook.extraEnv | list | `[]` | Additional env vars for webhook pods. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`; component entries override by `name`. |
 | webhook.envFromConfigMaps | list | `[]` | Additional ConfigMaps loaded via `envFrom`. Merged with `global.envFromConfigMaps`. |
 | webhook.envFromSecrets | list | `[]` | Additional Secrets loaded via `envFrom`. Merged with `global.envFromSecrets`. |
 | webhook.persistence.enabled | bool | `false` | Enable persistent storage for webhook deployment. |
@@ -161,7 +165,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | webhook.livenessProbe.httpGet.port | string | `"http"` | Port for webhook liveness probe. |
 | webhook.readinessProbe.httpGet.path | string | `"/healthz"` | HTTP path for webhook readiness probe. |
 | webhook.readinessProbe.httpGet.port | string | `"http"` | Port for webhook readiness probe. |
-| webhook.initContainers | list | `[]` | Init containers for webhook deployment. |
+| webhook.initContainers | list | `[]` | Init containers for webhook deployment. Appended after `global.initContainers`. |
 | webhook.service.annotations | object | `{}` | Service annotations for webhook deployment. |
 | webhook.service.type | string | `"ClusterIP"` | Service type for webhook deployment. |
 | webhook.service.port | int | `80` | Service port for webhook deployment. |
@@ -176,6 +180,29 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | webhook.extraVolumes | list | `[]` | Extra pod volumes for webhook pods. |
 | webhook.extraVolumeMounts | list | `[]` | Extra volume mounts for webhook pods. |
 | webhook.terminationGracePeriodSeconds | int | `30` | Pod termination grace period in seconds for webhook deployment. |
+| webhook.mcp.enabled | bool | `false` | Enable a dedicated single-replica webhook deployment for MCP traffic (`/mcp-server/`). |
+| webhook.mcp.image | object | `{}` | Optional image override for MCP webhook workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `webhook.image`, then `global.image`, then `image`. |
+| webhook.mcp.extraEnv | list | `[]` | Additional env vars for MCP webhook pods. Merged on top of `global.extraEnv` and `webhook.extraEnv`; same `name` overrides. |
+| webhook.mcp.envFromConfigMaps | list | `[]` | Additional ConfigMaps loaded via `envFrom` for MCP webhook pods. |
+| webhook.mcp.envFromSecrets | list | `[]` | Additional Secrets loaded via `envFrom` for MCP webhook pods. |
+| webhook.mcp.persistence | object | `{}` | Optional overrides for webhook persistence. Unset values inherit from `webhook.persistence`. |
+| webhook.mcp.deploymentAnnotations | object | `{}` | Deployment annotations for MCP webhook deployment. |
+| webhook.mcp.deploymentLabels | object | `{}` | Deployment labels for MCP webhook deployment. |
+| webhook.mcp.podAnnotations | object | `{}` | Pod annotations for MCP webhook deployment. |
+| webhook.mcp.podLabels | object | `{}` | Pod labels for MCP webhook deployment. |
+| webhook.mcp.podSecurityContext | object | `{}` | Security context overrides for MCP webhook deployment. |
+| webhook.mcp.securityContext | object | `{}` | Container security context overrides for MCP webhook deployment. |
+| webhook.mcp.resources | object | `{}` | Pod resource overrides for MCP webhook deployment. |
+| webhook.mcp.nodeSelector | object | `{}` | Scheduling overrides for MCP webhook deployment. |
+| webhook.mcp.tolerations | list | `[]` | Pod tolerations for MCP webhook deployment. |
+| webhook.mcp.affinity | object | `{}` | Pod affinity for MCP webhook deployment. |
+| webhook.mcp.extraVolumes | list | `[]` | Extra pod volumes for MCP webhook pods. |
+| webhook.mcp.extraVolumeMounts | list | `[]` | Extra volume mounts for MCP webhook pods. |
+| webhook.mcp.service.annotations | object | `{}` | Service annotations for MCP webhook service. |
+| webhook.mcp.service.type | string | `"ClusterIP"` | Service type for MCP webhook service. |
+| webhook.mcp.service.port | int | `80` | Service port for MCP webhook service. |
+| webhook.mcp.ingress.paths | list | `["/mcp-server/"]` | MCP paths that should be routed to the dedicated MCP webhook service. |
+| webhook.mcp.ingress.pathType | string | `"Prefix"` | Path type for MCP ingress paths. |
 | extraManifests | list | `[]` | Additional static Kubernetes manifests rendered with the chart. |
 | extraTemplateManifests | list | `[]` | Additional templated manifests rendered with Helm context. |
 | valkey | object | `{"enabled":false}` | Valkey dependency values. |
