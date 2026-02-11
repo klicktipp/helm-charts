@@ -1,27 +1,22 @@
 {{- if .Values.rabbitmq.topology.enabled }}
 
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
-{{- $vhost := include "rabbitmq-cluster.default-vhost" . }}
+{{- $defaultVhost := include "rabbitmq-cluster.default-vhost" . }}
 
-{{- range $name, $queue := .Values.rabbitmq.topology.queues }}
+{{- range $name, $queue := (.Values.rabbitmq.topology.queues | default (dict)) }}
 {{- if ($queue.enabled | default true) }}
 
 {{- $queueName := $queue.name | default $name }}
-{{- $queueType := $queue.type | default "quorum"  }}
+{{- $queueType := $queue.type | default "quorum" }}
 {{- $queueDurable := $queue.durable | default true }}
 {{- $queueAutoDelete := $queue.autoDelete | default false }}
-
-{{- $queueExchange := $queue.exchange | default (dict) }}
-{{- $exchangeName := $queueExchange.name | default $queueName | include "com.klicktipp.slugify-string" }}
-{{- $exchangeType := $queueExchange.type | default "fanout"  }}
-{{- $exchangeDurable := $queueExchange.durable | default true  }}
-{{- $exchangeAutoDelete := $queueExchange.autoDelete | default false  }}
+{{- $queueVhost := $queue.vhost | default $defaultVhost }}
 
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Queue
 metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $vhost $queueName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ (printf "%s-%s-%s" $clusterRef $queueVhost $queueName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
     {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
@@ -29,7 +24,7 @@ spec:
   type: {{ $queueType | quote }}
   durable: {{ $queueDurable }}
   autoDelete: {{ $queueAutoDelete }}
-  vhost: {{ $vhost | quote }}
+  vhost: {{ $queueVhost | quote }}
   {{- with $queue.arguments }}
   arguments:
     {{- toYaml . | nindent 4 }}
@@ -37,11 +32,17 @@ spec:
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
 
+{{- $queueExchange := $queue.exchange | default (dict) }}
+{{- if ($queueExchange.enabled | default true) }}
+{{- $exchangeName := $queueExchange.name | default $queueName | include "com.klicktipp.slugify-string" }}
+{{- $exchangeType := $queueExchange.type | default "fanout" }}
+{{- $exchangeDurable := $queueExchange.durable | default true }}
+{{- $exchangeAutoDelete := $queueExchange.autoDelete | default false }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Exchange
 metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $vhost $exchangeName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ (printf "%s-%s-%s" $clusterRef $queueVhost $exchangeName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
     {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
 spec:
@@ -49,35 +50,113 @@ spec:
   type: {{ $exchangeType | quote }}
   durable: {{ $exchangeDurable }}
   autoDelete: {{ $exchangeAutoDelete }}
-  vhost: {{ $vhost | quote }}
-  rabbitmqClusterReference:
-    name: {{ $clusterRef | quote }}
-
----
-{{- $binding :=  $queue.binding | default (dict) }}
-{{- $bindingName := $binding.name | default $queueName }}
-{{- $routingKey := $binding.routingKey | default "" }}
-{{- if ($binding.enabled | default true) }}
-apiVersion: rabbitmq.com/v1beta1
-kind: Binding
-metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $vhost $bindingName) | include "com.klicktipp.slugify-string" | quote }}
-  labels:
-    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
-spec:
-  vhost: {{ $vhost | quote }}
-  source: {{ $exchangeName | quote }}   # an existing exchange
-  destination: {{ $binding.destination | default $queueName | quote }}        # an existing queue or exchange
-  destinationType: {{ $binding.type | default "queue" | quote }}  # can be 'queue' or 'exchange'
-  {{- if ne $routingKey "" }}
-  routingKey: {{ $routingKey | quote }}
+  vhost: {{ $queueVhost | quote }}
+  {{- with $queueExchange.arguments }}
+  arguments:
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
-{{- end }}  {{/* END binding */}}
+{{- end }} {{/* END queue exchange */}}
+
+{{- $binding := $queue.binding | default (dict) }}
+{{- if ($binding.enabled | default true) }}
+{{- $bindingName := $binding.name | default $queueName }}
+{{- $routingKey := $binding.routingKey | default "" }}
+{{- $bindingSource := $binding.source | default (($queueExchange.name | default $queueName) | include "com.klicktipp.slugify-string") }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: {{ (printf "%s-%s-%s" $clusterRef $queueVhost $bindingName) | include "com.klicktipp.slugify-string" | quote }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+spec:
+  vhost: {{ $queueVhost | quote }}
+  source: {{ $bindingSource | quote }}
+  destination: {{ $binding.destination | default $queueName | quote }}
+  destinationType: {{ $binding.destinationType | default ($binding.type | default "queue") | quote }}
+  {{- if ne $routingKey "" }}
+  routingKey: {{ $routingKey | quote }}
+  {{- end }}
+  {{- with $binding.arguments }}
+  arguments:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+{{- end }} {{/* END queue binding */}}
 
 {{- end }} {{/* END if queue enabled */}}
 {{- end }} {{/* END queue loop */}}
+
+{{- range $name, $exchange := (.Values.rabbitmq.topology.exchanges | default (dict)) }}
+{{- if ($exchange.enabled | default true) }}
+{{- $exchangeName := $exchange.name | default $name }}
+{{- $exchangeType := $exchange.type | default "fanout" }}
+{{- $exchangeDurable := $exchange.durable | default true }}
+{{- $exchangeAutoDelete := $exchange.autoDelete | default false }}
+{{- $exchangeVhost := $exchange.vhost | default $defaultVhost }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: {{ (printf "%s-%s-%s" $clusterRef $exchangeVhost $exchangeName) | include "com.klicktipp.slugify-string" | quote }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+spec:
+  name: {{ $exchangeName | quote }}
+  type: {{ $exchangeType | quote }}
+  durable: {{ $exchangeDurable }}
+  autoDelete: {{ $exchangeAutoDelete }}
+  vhost: {{ $exchangeVhost | quote }}
+  {{- with $exchange.arguments }}
+  arguments:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rabbitmqClusterReference:
+    {{- if $exchange.rabbitmqClusterReference }}
+    {{- toYaml $exchange.rabbitmqClusterReference | nindent 4 }}
+    {{- else }}
+    name: {{ $clusterRef | quote }}
+    {{- end }}
+{{- end }} {{/* END if exchange enabled */}}
+{{- end }} {{/* END exchanges loop */}}
+
+{{- range $name, $binding := (.Values.rabbitmq.topology.bindings | default (dict)) }}
+{{- if ($binding.enabled | default true) }}
+{{- $bindingName := $binding.name | default $name }}
+{{- $bindingVhost := $binding.vhost | default $defaultVhost }}
+{{- $bindingSource := required (printf "rabbitmq.topology.bindings.%s.source is required" $name) $binding.source }}
+{{- $bindingDestination := required (printf "rabbitmq.topology.bindings.%s.destination is required" $name) $binding.destination }}
+{{- $routingKey := $binding.routingKey | default "" }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: {{ (printf "%s-%s-%s" $clusterRef $bindingVhost $bindingName) | include "com.klicktipp.slugify-string" | quote }}
+  labels:
+    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+spec:
+  vhost: {{ $bindingVhost | quote }}
+  source: {{ $bindingSource | quote }}
+  destination: {{ $bindingDestination | quote }}
+  destinationType: {{ $binding.destinationType | default ($binding.type | default "queue") | quote }}
+  {{- if ne $routingKey "" }}
+  routingKey: {{ $routingKey | quote }}
+  {{- end }}
+  {{- with $binding.arguments }}
+  arguments:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rabbitmqClusterReference:
+    {{- if $binding.rabbitmqClusterReference }}
+    {{- toYaml $binding.rabbitmqClusterReference | nindent 4 }}
+    {{- else }}
+    name: {{ $clusterRef | quote }}
+    {{- end }}
+{{- end }} {{/* END if binding enabled */}}
+{{- end }} {{/* END bindings loop */}}
 
 {{- range $name, $policy := (.Values.rabbitmq.topology.policies | default (dict)) }}
 {{- if ($policy.enabled | default true) }}
@@ -86,10 +165,11 @@ spec:
 {{- $pattern := required (printf "rabbitmq.topology.policies.%s.pattern is required" $name) $policy.pattern }}
 {{- $applyTo := required (printf "rabbitmq.topology.policies.%s.applyTo is required" $name) $policy.applyTo }}
 {{- $definition := required (printf "rabbitmq.topology.policies.%s.definition is required" $name) $policy.definition }}
+{{- $policyVhost := $policy.vhost | default $defaultVhost }}
 apiVersion: rabbitmq.com/v1beta1
 kind: Policy
 metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $vhost $policyName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ (printf "%s-%s-%s" $clusterRef $policyVhost $policyName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
     {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
     {{- with $policy.labels }}
@@ -101,8 +181,8 @@ metadata:
   {{- end }}
 spec:
   name: {{ $policyName | quote }}
-  vhost: {{ $vhost | quote }}
-  pattern: {{ $pattern | quote }} # Regular expression used to match exchange or queue names.
+  vhost: {{ $policyVhost | quote }}
+  pattern: {{ $pattern | quote }}
   applyTo: {{ $applyTo | quote }}
   priority: {{ $policy.priority | default 0 }}
   definition:

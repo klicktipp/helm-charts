@@ -156,25 +156,57 @@ rabbitmq:
     # queues item schema:
     #   my_queue:                     # required (RabbitMQ entity name; underscores allowed)
     #     enabled: true               # optional (default true)
+    #     vhost: "/"                  # optional (default: selected default vhost)
     #     durable: true                 # optional (default true)
     #     autoDelete: false             # optional (default false)
     #     arguments:                    # optional
     #       x-message-ttl: 300000
     #     exchange:
+    #       enabled: true               # optional (default true; set false to skip queue-linked exchange)
     #       name: ""                    # optional (default: queue name)
     #       type: fanout                # optional (default fanout) [fanout, direct, topic, headers]
     #       durable: true               # optional (default true)
     #       autoDelete: false           # optional (default false)
+    #       arguments: {}               # optional exchange arguments
     #     binding:
+    #       enabled: true               # optional (default true; set false to skip queue-linked binding)
+    #       source: ""                  # optional (default: queue exchange name)
     #       routingKey: ""              # optional (only relevant for direct/topic exchanges)
     #       destination: ""             # optional (an existing queue or exchange)
-    #       type: queue                 # optional (default queue) [queue, exchange]
+    #       destinationType: queue      # optional (default queue) [queue, exchange]
+    #       type: queue                 # deprecated alias for destinationType
+    #       arguments: {}               # optional binding arguments
+
+    exchanges: {}
+    # exchanges item schema:
+    #   my_exchange:                  # required (RabbitMQ exchange name)
+    #     enabled: true               # optional (default true)
+    #     vhost: "/"                  # optional (default: selected default vhost)
+    #     name: ""                    # optional (default: key)
+    #     type: fanout                # optional (default fanout) [fanout, direct, topic, headers]
+    #     durable: true               # optional (default true)
+    #     autoDelete: false           # optional (default false)
+    #     arguments: {}               # optional exchange arguments
+
+    bindings: {}
+    # bindings item schema:
+    #   queue_to_exchange:            # required (Kubernetes object key/name)
+    #     enabled: true               # optional (default true)
+    #     vhost: "/"                  # optional (default: selected default vhost)
+    #     name: ""                    # optional (default: key)
+    #     source: "my_exchange"       # required (existing exchange name)
+    #     destination: "my_queue"     # required (existing queue or exchange name)
+    #     destinationType: queue      # optional (default queue) [queue, exchange]
+    #     type: queue                 # deprecated alias for destinationType
+    #     routingKey: ""              # optional
+    #     arguments: {}               # optional binding arguments
 
     # -- Configure rabbitmq.topology.policies.
     policies: {}
     # policies item schema:
     #   ha-all:                       # required (Policy name)
     #     enabled: true               # optional (default true)
+    #     vhost: "/"                  # optional (default: selected default vhost)
     #     pattern: ".*"               # required (Regular expression)
     #     applyTo: "all"              # required [all, queues, exchanges]
     #     priority: 0                 # optional (default 0)
