@@ -1,4 +1,4 @@
-{{- if .Values.webhook.mcp.enabled -}}
+{{- if and .Values.webhook.enabled .Values.webhook.mcp.enabled -}}
 {{- /* Validate Valkey/Redis configuration */}}
 {{- include "n8n.validateValkey" . }}
 ---

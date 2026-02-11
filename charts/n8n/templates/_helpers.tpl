@@ -119,8 +119,8 @@ persistentVolumeClaim:
 {{/* Validate Valkey/Redis configuration when webhooks are enabled*/}}
 {{- define "n8n.validateValkey" -}}
 {{- $envVars := fromYaml (include "toEnvVars" (dict "values" .Values.main.config "prefix" "")) -}}
-{{- if and (or .Values.webhook.enabled .Values.webhook.mcp.enabled) (not $envVars.QUEUE_BULL_REDIS_HOST) -}}
-{{- fail "Webhook processes rely on Valkey. Please set a Redis/Valkey host when webhook.enabled=true or webhook.mcp.enabled=true" -}}
+{{- if and .Values.webhook.enabled (not $envVars.QUEUE_BULL_REDIS_HOST) -}}
+{{- fail "Webhook processes rely on Valkey. Please set a Redis/Valkey host when webhook.enabled=true" -}}
 {{- end -}}
 {{- end -}}
 
