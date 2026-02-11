@@ -398,6 +398,40 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/klicktipp.common-0.1.0/klicktipp.common-0.1.0.tgz
     version: 0.1.0
+  n8n:
+  - apiVersion: v2
+    appVersion: 2.7.3
+    created: "2026-02-11T14:52:20.692551523Z"
+    dependencies:
+    - condition: valkey.enabled
+      name: valkey
+      repository: https://valkey.io/valkey-helm/
+      version: 0.8.1
+    description: Helm Chart for deploying n8n on Kubernetes, a fair-code workflow
+      automation platform with native AI capabilities for technical teams. Easily
+      automate tasks across different services.
+    digest: 926cc927a775afabef539afbeaf77c56cd76d171e410432f4942aae3210b2a22
+    home: https://github.com/klicktipp/helm-charts
+    icon: https://n8n.io/favicon.ico
+    keywords:
+    - Workflow Automation
+    - Workflow
+    - iPaaS
+    - integration-framework
+    - low-code-platform
+    - low-code
+    maintainers:
+    - name: vquie
+      url: https://github.com/vquie
+    name: n8n
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    - https://github.com/n8n-io/n8n
+    - https://n8n.io/
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/n8n-0.1.0/n8n-0.1.0.tgz
+    version: 0.1.0
   proxysql:
   - apiVersion: v1
     appVersion: 2.7.1
@@ -764,4 +798,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-02-05T05:28:54.38673251Z"
+generated: "2026-02-11T14:52:20.692618698Z"
