@@ -2,32 +2,47 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# -- Number of replicas.
 replicaCount: 1
 
+# -- Container image configuration.
 image:
+  # -- Container image repository.
   repository: redislabs/redisinsight
+  # -- Image pull policy.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
+  # -- Container image tag.
   tag: latest
 
+# -- Image pull secrets.
 imagePullSecrets: []
+# -- Partially override generated resource names.
 nameOverride: ""
+# -- Fully override generated resource names.
 fullnameOverride: ""
 
+# -- ServiceAccount configuration.
 serviceAccount:
   # Specifies whether a service account should be created
+  # -- Set serviceAccount.create.
   create: true
   # Annotations to add to the service account
+  # -- Annotations map.
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
+  # -- Set serviceAccount.name.
   name: ""
 
+# -- Pod annotations.
 podAnnotations: {}
 
+# -- Pod security context.
 podSecurityContext: {}
   # fsGroup: 2000
 
+# -- Container security context.
 securityContext: {}
   # capabilities:
   #   drop:
@@ -36,26 +51,38 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+# -- Service configuration.
 service:
+  # -- Type configuration value.
   type: ClusterIP
+  # -- Network port.
   port: 80
 
+# -- Ingress configuration.
 ingress:
+  # -- Enable this feature.
   enabled: false
+  # -- Set ingress.className.
   className: ""
+  # -- Annotations map.
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+  # -- Host definitions.
   hosts:
     - host: chart-example.local
+      # -- Ingress path definitions.
       paths:
         - path: /
+          # -- Ingress path type.
           pathType: ImplementationSpecific
+  # -- TLS configuration.
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
 
+# -- Container resource requests and limits.
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -68,25 +95,40 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# -- Horizontal Pod Autoscaler settings.
 autoscaling:
+  # -- Enable this feature.
   enabled: false
+  # -- Minimum number of replicas.
   minReplicas: 1
+  # -- Maximum number of replicas.
   maxReplicas: 100
+  # -- Target average CPU utilization percentage.
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# -- Node selector for pod scheduling.
 nodeSelector: {}
 
+# -- Tolerations for pod scheduling.
 tolerations: []
 
+# -- Affinity rules for pod scheduling.
 affinity: {}
 
+# -- Set redisinsight.
 redisinsight:
+  # -- Hostname value.
   host: "0.0.0.0"
+  # -- Network port.
   port: 8001
+  # -- Configure redisinsight.trusted_origins.
   trusted_origins: []
+  # -- Set redisinsight.home_dir.
   home_dir: "/db"
+  # -- Set redisinsight.log_dir.
   log_dir: "/db"
+  # -- Configure redisinsight.redis_servers.
   redis_servers: []
 #    # Adding Redis Databases Programmatically
 #    #  ref: https://docs.redis.com/latest/ri/using-redisinsight/api/

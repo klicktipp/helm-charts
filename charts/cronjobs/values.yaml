@@ -1,6 +1,9 @@
+# -- Partially override generated resource names.
 nameOverride: ""
+# -- Fully override generated resource names.
 fullnameOverride: ""
 
+# -- Image pull secrets.
 imagePullSecrets: []
 
 # will create a kubernetes.io/dockerconfigjson secret
@@ -10,6 +13,7 @@ imagePullSecrets: []
 # DOCKER_CONFIG_JSON=$(echo -n '{ "auths": { "${REGISTRY_URL}": { "auth": "${AUTH}" } } }' | base64 | tr -d \"\n\")
 # dockerConfigJson: $DOCKER_CONFIG_JSON
 
+# -- Configure secrets.
 secrets: {}
 #  # strings and file contents are automatically base64 encoded
 #  ssh-creds:
@@ -19,9 +23,11 @@ secrets: {}
 #      id-rsa.pub: ci/files/id-rsa.pub
 
 # a global custom configMap that is mounted in every job
+# -- Set customConfigMap.
 customConfigMap:
 
 # global configMaps from string or files
+# -- Configure configMaps.
 configMaps: {}
 #  # name of the configMap
 #  config:
@@ -44,14 +50,17 @@ configMaps: {}
 #      example.sh: ci/files/example.sh
 
 # List of existing secrets to mount as volume
+# -- Set secretEnvFrom.
 secretEnvFrom: []
 #  - name: MY_SECRET_ENV_VAR
 #    secretName: my-secret
 #    key: my-key
 
 # environment variables for all jobs
+# -- Environment variable entries.
 env: {}
 
+# -- Configure jobs.
 jobs: {}
 #  test:
 #    containerName: cronjob
@@ -102,28 +111,39 @@ jobs: {}
 #       #   #!/bin/bash
 #       #   echo "Hello from script"
 
+# -- ServiceAccount configuration.
 serviceAccount:
   # Specifies whether a service account should be created
+  # -- Set serviceAccount.create.
   create: true
   # Automatically mount a ServiceAccount's API credentials?
+  # -- Set serviceAccount.automount.
   automount: true
   # Annotations to add to the service account
+  # -- Annotations map.
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
+  # -- Set serviceAccount.name.
   name: ""
 
+# -- Set rbac.
 rbac:
   # Enable creation of Roles and Roles Binding
+  # -- Set rbac.create.
   create: false
 
   # (Namespaced) Role configuration
+  # -- Set rbac.role.
   role:
     # Enable creation of Role/RoleBinding
+    # -- Set rbac.role.create.
     create: false
     # Annotations to add to the role and rolebinding
+    # -- Annotations map.
     annotations: {}
     # Rules for the role
+    # -- Configure rbac.role.rules.
     rules: []
       # - apiGroups: [""]
       #   resources: ["pods", "pods/log"]
@@ -133,12 +153,16 @@ rbac:
       #   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
   # ClusterRole configuration
+  # -- Set rbac.clusterRole.
   clusterRole:
     # Enable creation of ClusterRole/ClusterRoleBinding
+    # -- Set rbac.clusterRole.create.
     create: false
     # Annotations specific to ClusterRole
+    # -- Annotations map.
     annotations: {}
     # Rules for the ClusterRole
+    # -- Configure rbac.clusterRole.rules.
     rules: []
       # node-labeler
       # - apiGroups: [""]
@@ -146,18 +170,23 @@ rbac:
       #   verbs: ["get", "list", "patch", "update"]
 
 # Common annotations to add to all resources. Evaluated as a template
+# -- Configure commonAnnotations.
 commonAnnotations: {}
 
 # Common labels to add to all resources. Evaluated as a template
+# -- Configure commonLabels.
 commonLabels: {}
 
 # Given name given to the job container inside the Pod.
 #   Can be oveeriden with .jobs.KEY.containerName
+# -- Set commonContainerName.
 commonContainerName: cronjob
 
+# -- Pod security context.
 podSecurityContext: {}
   # fsGroup: 2000
 
+# -- Container security context.
 securityContext: {}
   # capabilities:
   #   drop:
@@ -166,6 +195,7 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+# -- Container resource requests and limits.
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances cronjobs run on environments with little
@@ -178,8 +208,11 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+# -- Node selector for pod scheduling.
 nodeSelector: {}
 
+# -- Tolerations for pod scheduling.
 tolerations: []
 
+# -- Affinity rules for pod scheduling.
 affinity: {}
