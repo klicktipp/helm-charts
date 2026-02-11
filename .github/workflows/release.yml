@@ -25,7 +25,27 @@ jobs:
 
       - name: Add Helm dependency repos
         run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
+          set -euo pipefail
+
+          mapfile -t repos < <(
+            grep -hE '^[[:space:]]*repository:[[:space:]]*https?://[^[:space:]]+' charts/*/Chart.yaml \
+              | sed -E 's/^[[:space:]]*repository:[[:space:]]*//' \
+              | sort -u
+          )
+
+          if [ "${#repos[@]}" -eq 0 ]; then
+            echo "No HTTP(S) chart repositories found in Chart.yaml dependencies."
+            exit 0
+          fi
+
+          i=0
+          for repo in "${repos[@]}"; do
+            i=$((i + 1))
+            name="dep-repo-${i}"
+            echo "Adding Helm repo ${name}: ${repo}"
+            helm repo add "${name}" "${repo}"
+          done
+
           helm repo update
 
       - name: Run chart-releaser
