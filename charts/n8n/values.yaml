@@ -61,6 +61,10 @@ global:
   # Component lists are appended.
   envFromSecrets: []
 
+  # -- Global init containers appended to each workload.
+  # Component-specific init containers are appended after these entries.
+  initContainers: []
+
   serviceAccount:
     # -- Global annotations for the ServiceAccount.
     annotations: {}
@@ -222,6 +226,7 @@ main:
       port: http
 
   # -- Init containers for main deployment.
+  # Appended after `global.initContainers`.
   initContainers: []
 
   service:
@@ -349,6 +354,7 @@ worker:
       port: http
 
   # -- Init containers for worker deployment.
+  # Appended after `global.initContainers`.
   initContainers: []
 
   # -- Currently not used by templates.
@@ -475,6 +481,7 @@ webhook:
       port: http
 
   # -- Init containers for webhook deployment.
+  # Appended after `global.initContainers`.
   initContainers: []
 
   service:

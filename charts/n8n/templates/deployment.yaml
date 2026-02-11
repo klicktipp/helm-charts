@@ -63,11 +63,10 @@ spec:
       serviceAccountName: {{ include "n8n.serviceAccountName" . }}
       securityContext:
         {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.podSecurityContext)) (default (dict) .Values.main.podSecurityContext)) | nindent 8 }}
-      {{- if or .Values.main.initContainers }}
+      {{- $mergedInitContainers := concat (default (list) .Values.global.initContainers) (default (list) .Values.main.initContainers) }}
+      {{- if gt (len $mergedInitContainers) 0 }}
       initContainers:
-      {{- if .Values.main.initContainers }}
-        {{ tpl (toYaml .Values.main.initContainers) . | nindent 10 }}
-      {{- end }}
+        {{ tpl (toYaml $mergedInitContainers) . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}

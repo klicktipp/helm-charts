@@ -76,9 +76,10 @@ spec:
       serviceAccountName: {{ include "n8n.serviceAccountName" . }}
       securityContext:
         {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.podSecurityContext)) (default (dict) .Values.webhook.podSecurityContext) (default (dict) .Values.webhook.mcp.podSecurityContext)) | nindent 8 }}
-      {{- if .Values.webhook.initContainers }}
+      {{- $mergedInitContainers := concat (default (list) .Values.global.initContainers) (default (list) .Values.webhook.initContainers) }}
+      {{- if gt (len $mergedInitContainers) 0 }}
       initContainers:
-      {{ tpl (toYaml .Values.webhook.initContainers) . | nindent 8 }}
+      {{ tpl (toYaml $mergedInitContainers) . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-webhook-mcp
