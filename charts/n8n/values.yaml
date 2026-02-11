@@ -555,6 +555,7 @@ webhook:
 
     # -- Security context overrides for MCP webhook deployment.
     podSecurityContext: {}
+    # -- Container security context overrides for MCP webhook deployment.
     securityContext: {}
 
     # -- Pod resource overrides for MCP webhook deployment.
@@ -562,7 +563,9 @@ webhook:
 
     # -- Scheduling overrides for MCP webhook deployment.
     nodeSelector: {}
+    # -- Pod tolerations for MCP webhook deployment.
     tolerations: []
+    # -- Pod affinity for MCP webhook deployment.
     affinity: {}
 
     # -- Extra pod volumes for MCP webhook pods.
