@@ -1,0 +1,154 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "n8n.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "n8n.labels" . | nindent 4 }}
+    {{- with .Values.global.deploymentLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if .Values.main.deploymentLabels }}
+    {{- toYaml .Values.main.deploymentLabels | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.global.deploymentAnnotations .Values.main.deploymentAnnotations }}
+  annotations:
+    {{- with .Values.global.deploymentAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.main.deploymentAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if not .Values.main.autoscaling.enabled }}
+  replicas: {{ .Values.main.replicaCount }}
+  {{- end }}
+  strategy:
+    type: {{ .Values.main.deploymentStrategy.type }}
+    {{- if eq .Values.main.deploymentStrategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ default "25%" .Values.main.deploymentStrategy.maxSurge  }}
+      maxUnavailable: {{ default "25%" .Values.main.deploymentStrategy.maxUnavailable }}
+    {{- end }}
+  selector:
+    matchLabels:
+      {{- include "n8n.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/type: master
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ print .Values.main | sha256sum }}
+        {{- with .Values.global.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.main.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "n8n.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/type: master
+        {{- with .Values.global.podLabels }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.main.podLabels }}
+          {{ toYaml .Values.main.podLabels | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with (coalesce .Values.imagePullSecrets .Values.global.imagePullSecrets) }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "n8n.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml (coalesce .Values.main.podSecurityContext .Values.global.podSecurityContext (dict)) | nindent 8 }}
+      {{- if or .Values.main.initContainers }}
+      initContainers:
+      {{- if .Values.main.initContainers }}
+        {{ tpl (toYaml .Values.main.initContainers) . | nindent 10 }}
+      {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.main.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          securityContext:
+            {{- toYaml (coalesce .Values.main.securityContext .Values.global.securityContext (dict)) | nindent 12 }}
+          image: "{{ include "n8n.image" . }}"
+          imagePullPolicy: {{ include "n8n.imagePullPolicy" . }}
+          {{- $extraConfigMaps := uniq (concat (default (list) .Values.global.envFromConfigMaps) (default (list) .Values.main.envFromConfigMaps)) }}
+          {{- $extraSecrets := uniq (concat (default (list) .Values.global.envFromSecrets) (default (list) .Values.main.envFromSecrets)) }}
+          {{- if or .Values.main.config .Values.main.secret (gt (len $extraConfigMaps) 0) (gt (len $extraSecrets) 0) }}
+          envFrom:
+            {{- if .Values.main.config }}
+            - configMapRef:
+                name: {{ include "n8n.fullname" . }}-app-config
+            {{- end }}
+            {{- if .Values.main.secret }}
+            - secretRef:
+                name: {{ include "n8n.fullname" . }}-app-secret
+            {{- end }}
+            {{- range $name := $extraConfigMaps }}
+            - configMapRef:
+                name: {{ tpl ($name | toString) $ }}
+            {{- end }}
+            {{- range $name := $extraSecrets }}
+            - secretRef:
+                name: {{ tpl ($name | toString) $ }}
+            {{- end }}
+          {{- end }}
+          {{- $mergedExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.global.extraEnv "component" .Values.main.extraEnv "context" $) }}
+          {{- if $mergedExtraEnv }}
+          env:
+            {{- $mergedExtraEnv | nindent 12 }}
+          {{- end }}
+          lifecycle:
+            {{- toYaml .Values.main.lifecycle | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ get (default (dict) .Values.main.config.n8n) "port" | default 5678 }}
+              protocol: TCP
+          {{- with .Values.main.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.main.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml (coalesce .Values.main.resources .Values.global.resources (dict)) | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/.n8n
+          {{- if .Values.main.extraVolumeMounts }}
+            {{- toYaml .Values.main.extraVolumeMounts | nindent 12 }}
+          {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (coalesce .Values.main.nodeSelector .Values.global.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (coalesce .Values.main.affinity .Values.global.affinity) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (coalesce .Values.main.tolerations .Values.global.tolerations) }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if hasKey .Values.main "terminationGracePeriodSeconds" }}
+      terminationGracePeriodSeconds: {{ .Values.main.terminationGracePeriodSeconds }}
+      {{- end }}
+      volumes:
+        - name: "data"
+          {{- include "n8n.persistenceVolume" (dict "persistence" .Values.main.persistence "claimName" (include "n8n.fullname" .)) | nindent 10 }}
+        {{- if .Values.main.extraVolumes }}
+          {{- toYaml .Values.main.extraVolumes | nindent 8 }}
+        {{- end }}
