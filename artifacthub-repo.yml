@@ -4,3 +4,6 @@ owners:
   - name: noudAndi
   - name: reixd
   - name: vquie
+ignore:
+  - name: klicktipp.common
+  - name: klicktipp-common
