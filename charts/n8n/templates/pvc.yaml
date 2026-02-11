@@ -101,3 +101,38 @@ spec:
   {{- end }}
   {{- end }}
 {{- end }}
+{{- $mcpPersistence := mergeOverwrite (deepCopy (default (dict) .Values.webhook.persistence)) (default (dict) .Values.webhook.mcp.persistence) -}}
+{{- if and .Values.webhook.mcp.enabled $mcpPersistence.enabled (eq $mcpPersistence.type "dynamic") (not $mcpPersistence.existingClaim) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "n8n.fullname" . }}-webhook-mcp
+  namespace: {{ .Release.Namespace }}
+  {{- if or $globalPersistence.annotations $mcpPersistence.annotations }}
+  annotations:
+    {{- range $key, $value := (default (dict) $globalPersistence.annotations) }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+    {{- range $key, $value := (default (dict) $mcpPersistence.annotations) }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
+  labels:
+    {{- include "n8n.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    {{- range (coalesce $mcpPersistence.accessModes $globalPersistence.accessModes (list "ReadWriteOnce")) }}
+    - {{ . | quote }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ coalesce $mcpPersistence.size $globalPersistence.size "1Gi" }}
+  {{- if $mcpPersistence.storageClass }}
+  {{- if eq "-" $mcpPersistence.storageClass }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ $mcpPersistence.storageClass }}
+  {{- end }}
+  {{- end }}
+{{- end }}
