@@ -1,0 +1,604 @@
+# Default values for n8n.
+
+# -- Default image settings. `tag` defaults to chart `appVersion` when empty.
+image:
+  repository: n8nio/n8n
+  pullPolicy: IfNotPresent
+  tag: ""
+
+# -- Image pull secrets for all workloads (legacy key; `global.imagePullSecrets` is preferred).
+imagePullSecrets: []
+
+global:
+  # -- Global image override for all workloads (main/worker/webhook).
+  image: {}
+
+  # -- Global image pull secrets used by all workloads.
+  imagePullSecrets: []
+
+  # -- Additional labels added to all rendered resources.
+  labels: {}
+
+  # -- Deployment metadata inherited by all workloads.
+  deploymentAnnotations: {}
+  # -- Additional deployment labels inherited by all workloads.
+  deploymentLabels: {}
+
+  # -- Pod metadata inherited by all workloads.
+  podAnnotations: {}
+  # -- Additional pod labels inherited by all workloads.
+  podLabels: {}
+
+  # -- Pod/container defaults inherited by all workloads.
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  # -- Default container security context inherited by all workloads.
+  securityContext: {}
+  # -- Default container resources inherited by all workloads.
+  resources: {}
+
+  # -- Scheduling defaults inherited by all workloads.
+  nodeSelector: {}
+  # -- Default pod tolerations inherited by all workloads.
+  tolerations: []
+  # -- Default pod affinity inherited by all workloads.
+  affinity: {}
+
+  # -- Global env vars merged into each component's `extraEnv`.
+  # Preferred format is a list of Kubernetes EnvVar objects.
+  # Map format is supported for backward compatibility.
+  # For list format, component entries override global entries by `name`.
+  extraEnv: []
+
+  # -- Global ConfigMaps loaded via `envFrom` for all workloads.
+  # Component lists are appended.
+  envFromConfigMaps: []
+
+  # -- Global Secrets loaded via `envFrom` for all workloads.
+  # Component lists are appended.
+  envFromSecrets: []
+
+  serviceAccount:
+    # -- Global annotations for the ServiceAccount.
+    annotations: {}
+    # -- Global ServiceAccount name override.
+    name: ""
+
+  persistence:
+    # -- Global PVC defaults. Components can override these values.
+    annotations: {}
+    # -- Global PVC access modes.
+    accessModes:
+      - ReadWriteOnce
+    # -- Global PVC size.
+    size: 1Gi
+
+# -- Partially override generated resource names.
+nameOverride:
+
+# -- Fully override generated resource names.
+fullnameOverride:
+
+# -- Additional `/etc/hosts` entries for pods.
+hostAliases: []
+# - ip: 10.0.0.10
+#   hostnames:
+#     - internal.service.local
+
+ingress:
+  # -- Enable ingress resource.
+  enabled: false
+  # -- Ingress annotations.
+  annotations: {}
+
+  # -- Ingress class name (for example `nginx` or `traefik`).
+  className: ""
+
+  hosts:
+    - host: workflow.example.com
+      paths:
+        - path: /
+          # -- Ingress path type.
+          pathType: Prefix
+
+  # -- Ingress TLS entries.
+  tls: []
+  # - hosts:
+  #     - workflow.example.com
+  #   secretName: workflow-example-com-tls
+
+main:
+  # -- Optional image override for main workload.
+  # Supports `repository`, `tag`, and `pullPolicy`.
+  # Falls back to `global.image` and then `image`.
+  image: {}
+
+  # -- n8n config values converted to env vars in a ConfigMap.
+  # See: https://docs.n8n.io/hosting/configuration/environment-variables/
+  config: {}
+
+  # -- n8n secret values converted to env vars in a Secret.
+  secret: {}
+
+  # -- Additional env vars for the container.
+  # Preferred format is a list of Kubernetes EnvVar objects.
+  # Backward-compatible map format is also supported by templates.
+  # Merged with `global.extraEnv`; component entries override by `name`.
+  extraEnv: []
+  # - name: N8N_DB_POSTGRESDB_NAME
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: db-app
+  #       key: dbname
+
+  # -- Additional ConfigMaps loaded via `envFrom`.
+  # Merged with `global.envFromConfigMaps`.
+  envFromConfigMaps: []
+
+  # -- Additional Secrets loaded via `envFrom`.
+  # Merged with `global.envFromSecrets`.
+  envFromSecrets: []
+
+  persistence:
+    # -- Enable persistent storage for the main workload.
+    enabled: false
+
+    # -- Persistence type: `emptyDir`, `existing`, or `dynamic`.
+    type: emptyDir
+
+    # -- Existing PVC name when `type: existing`.
+    # existingClaim: ""
+
+    # -- StorageClass name. Use `"-"` to set `storageClassName: ""`.
+    # storageClass: ""
+
+    # -- Optional PVC annotations.
+    # annotations: {}
+
+    # -- Optional overrides for global persistence defaults.
+    # accessModes:
+    #   - ReadWriteOnce
+    # size: 1Gi
+
+  # -- Extra pod volumes for the main workload.
+  extraVolumes: []
+
+  # -- Extra volume mounts for the main workload.
+  extraVolumeMounts: []
+
+  # -- Number of main pods to run.
+  replicaCount: 1
+
+  deploymentStrategy:
+    # -- Deployment strategy type.
+    type: Recreate
+    # maxSurge: 25%
+    # maxUnavailable: 25%
+
+  serviceAccount:
+    # -- Create a ServiceAccount for main deployment.
+    create: true
+    # -- ServiceAccount annotations for main deployment.
+    annotations: {}
+    # -- Existing ServiceAccount name for main deployment.
+    name: ""
+
+  # -- Deployment annotations for main deployment.
+  deploymentAnnotations: {}
+  # -- Deployment labels for main deployment.
+  deploymentLabels: {}
+  # -- Pod annotations for main deployment.
+  podAnnotations: {}
+  # -- Pod labels for main deployment.
+  podLabels: {}
+
+  # -- Set to `{}` to inherit from `global.podSecurityContext`.
+  podSecurityContext: {}
+
+  # -- Set to `{}` to inherit from `global.securityContext`.
+  securityContext: {}
+
+  # -- Container lifecycle hooks for main deployment.
+  lifecycle: {}
+
+  # -- Override container command.
+  command: []
+
+  livenessProbe:
+    httpGet:
+      # -- HTTP path for liveness probe.
+      path: /healthz
+      # -- Port for liveness probe.
+      port: http
+
+  readinessProbe:
+    httpGet:
+      # -- HTTP path for readiness probe.
+      path: /healthz
+      # -- Port for readiness probe.
+      port: http
+
+  # -- Init containers for main deployment.
+  initContainers: []
+
+  service:
+    # -- Create service for main deployment.
+    enabled: true
+    # -- Service annotations for main deployment.
+    annotations: {}
+    # -- Service type for main deployment.
+    type: ClusterIP
+    # -- Service port for main deployment.
+    port: 80
+
+  # -- Set to `{}` to inherit from `global.resources`.
+  resources: {}
+
+  autoscaling:
+    # -- Enable HPA for main deployment.
+    enabled: false
+    # -- Minimum replicas for HPA.
+    minReplicas: 1
+    # -- Maximum replicas for HPA.
+    maxReplicas: 100
+    # -- Target average CPU utilization (percent).
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  # -- Set to empty values to inherit from global scheduling settings.
+  nodeSelector: {}
+  # -- Pod tolerations for main deployment.
+  tolerations: []
+  # -- Pod affinity for main deployment.
+  affinity: {}
+
+  # -- Pod termination grace period in seconds for main deployment.
+  terminationGracePeriodSeconds: 30
+
+worker:
+  # -- Enable worker deployment.
+  enabled: false
+
+  # -- Optional image override for worker workload.
+  # Supports `repository`, `tag`, and `pullPolicy`.
+  # Falls back to `global.image` and then `image`.
+  image: {}
+
+  # -- Additional worker-specific n8n config.
+  config: {}
+
+  # -- Additional worker-specific n8n secrets.
+  secret: {}
+
+  # -- Additional env vars for worker pods.
+  # Preferred format is a list of Kubernetes EnvVar objects.
+  # Backward-compatible map format is also supported by templates.
+  # Merged with `global.extraEnv`; component entries override by `name`.
+  extraEnv: []
+
+  # -- Additional ConfigMaps loaded via `envFrom`.
+  # Merged with `global.envFromConfigMaps`.
+  envFromConfigMaps: []
+
+  # -- Additional Secrets loaded via `envFrom`.
+  # Merged with `global.envFromSecrets`.
+  envFromSecrets: []
+
+  # -- Number of jobs a worker processes in parallel.
+  concurrency: 10
+
+  persistence:
+    # -- Enable persistent storage for worker deployment.
+    enabled: false
+    # -- Persistence type for worker (`emptyDir`, `existing`, `dynamic`).
+    type: emptyDir
+    # existingClaim: ""
+    # storageClass: ""
+    # annotations: {}
+    # accessModes:
+    #   - ReadWriteOnce
+    # size: 1Gi
+
+  # -- Number of worker pods to run.
+  replicaCount: 1
+
+  deploymentStrategy:
+    # -- Deployment strategy type for worker.
+    type: Recreate
+    # maxSurge: 25%
+    # maxUnavailable: 25%
+
+  # -- Deployment annotations for worker deployment.
+  deploymentAnnotations: {}
+  # -- Deployment labels for worker deployment.
+  deploymentLabels: {}
+  # -- Pod annotations for worker deployment.
+  podAnnotations: {}
+  # -- Pod labels for worker deployment.
+  podLabels: {}
+
+  # -- Set to `{}` to inherit from `global.podSecurityContext`.
+  podSecurityContext: {}
+
+  # -- Set to `{}` to inherit from `global.securityContext`.
+  securityContext: {}
+
+  # -- Container lifecycle hooks for worker deployment.
+  lifecycle: {}
+
+  # -- Override worker container command.
+  command: []
+  # -- Override worker container args.
+  commandArgs: []
+
+  livenessProbe:
+    httpGet:
+      # -- HTTP path for worker liveness probe.
+      path: /healthz
+      # -- Port for worker liveness probe.
+      port: http
+
+  readinessProbe:
+    httpGet:
+      # -- HTTP path for worker readiness probe.
+      path: /healthz
+      # -- Port for worker readiness probe.
+      port: http
+
+  # -- Init containers for worker deployment.
+  initContainers: []
+
+  # -- Currently not used by templates.
+  service:
+    annotations: {}
+    type: ClusterIP
+    port: 80
+
+  # -- Set to `{}` to inherit from `global.resources`.
+  resources: {}
+
+  autoscaling:
+    # -- Enable HPA for worker deployment.
+    enabled: false
+    # -- Minimum replicas for worker HPA.
+    minReplicas: 1
+    # -- Maximum replicas for worker HPA.
+    maxReplicas: 100
+    # -- Target average CPU utilization (percent) for worker HPA.
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  # -- Pod node selector for worker deployment.
+  nodeSelector: {}
+  # -- Pod tolerations for worker deployment.
+  tolerations: []
+  # -- Pod affinity for worker deployment.
+  affinity: {}
+
+  # -- Extra pod volumes for worker pods.
+  extraVolumes: []
+
+  # -- Extra volume mounts for worker pods.
+  extraVolumeMounts: []
+
+  # -- Pod termination grace period in seconds for worker deployment.
+  terminationGracePeriodSeconds: 30
+
+webhook:
+  # -- Enable webhook deployment.
+  enabled: false
+
+  # -- Optional image override for webhook workload.
+  # Supports `repository`, `tag`, and `pullPolicy`.
+  # Falls back to `global.image` and then `image`.
+  image: {}
+
+  # -- Additional webhook-specific n8n config.
+  config: {}
+
+  # -- Additional webhook-specific n8n secrets.
+  secret: {}
+
+  # -- Additional env vars for webhook pods.
+  # Preferred format is a list of Kubernetes EnvVar objects.
+  # Backward-compatible map format is also supported by templates.
+  # Merged with `global.extraEnv`; component entries override by `name`.
+  extraEnv: []
+
+  # -- Additional ConfigMaps loaded via `envFrom`.
+  # Merged with `global.envFromConfigMaps`.
+  envFromConfigMaps: []
+
+  # -- Additional Secrets loaded via `envFrom`.
+  # Merged with `global.envFromSecrets`.
+  envFromSecrets: []
+
+  persistence:
+    # -- Enable persistent storage for webhook deployment.
+    enabled: false
+    # -- Persistence type for webhook (`emptyDir`, `existing`, `dynamic`).
+    type: emptyDir
+    # existingClaim: ""
+    # storageClass: ""
+    # annotations: {}
+    # accessModes:
+    #   - ReadWriteOnce
+    # size: 1Gi
+
+  # -- Number of webhook pods to run.
+  replicaCount: 1
+
+  deploymentStrategy:
+    # -- Deployment strategy type for webhook.
+    type: Recreate
+    # maxSurge: 25%
+    # maxUnavailable: 25%
+
+  # -- Deployment annotations for webhook deployment.
+  deploymentAnnotations: {}
+  # -- Deployment labels for webhook deployment.
+  deploymentLabels: {}
+  # -- Pod annotations for webhook deployment.
+  podAnnotations: {}
+  # -- Pod labels for webhook deployment.
+  podLabels: {}
+
+  # -- Set to `{}` to inherit from `global.podSecurityContext`.
+  podSecurityContext: {}
+
+  # -- Set to `{}` to inherit from `global.securityContext`.
+  securityContext: {}
+
+  # -- Container lifecycle hooks for webhook deployment.
+  lifecycle: {}
+
+  # -- Override webhook container command.
+  command: []
+  # -- Override webhook container args.
+  commandArgs: []
+
+  livenessProbe:
+    httpGet:
+      # -- HTTP path for webhook liveness probe.
+      path: /healthz
+      # -- Port for webhook liveness probe.
+      port: http
+
+  readinessProbe:
+    httpGet:
+      # -- HTTP path for webhook readiness probe.
+      path: /healthz
+      # -- Port for webhook readiness probe.
+      port: http
+
+  # -- Init containers for webhook deployment.
+  initContainers: []
+
+  service:
+    # -- Service annotations for webhook deployment.
+    annotations: {}
+    # -- Service type for webhook deployment.
+    type: ClusterIP
+    # -- Service port for webhook deployment.
+    port: 80
+
+  # -- Set to `{}` to inherit from `global.resources`.
+  resources: {}
+
+  autoscaling:
+    # -- Enable HPA for webhook deployment.
+    enabled: false
+    # -- Minimum replicas for webhook HPA.
+    minReplicas: 1
+    # -- Maximum replicas for webhook HPA.
+    maxReplicas: 100
+    # -- Target average CPU utilization (percent) for webhook HPA.
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  # -- Pod node selector for webhook deployment.
+  nodeSelector: {}
+  # -- Pod tolerations for webhook deployment.
+  tolerations: []
+  # -- Pod affinity for webhook deployment.
+  affinity: {}
+
+  # -- Extra pod volumes for webhook pods.
+  extraVolumes: []
+
+  # -- Extra volume mounts for webhook pods.
+  extraVolumeMounts: []
+
+  # -- Pod termination grace period in seconds for webhook deployment.
+  terminationGracePeriodSeconds: 30
+
+  mcp:
+    # -- Enable a dedicated single-replica webhook deployment for MCP traffic (`/mcp*`).
+    enabled: false
+
+    # -- Optional image override for MCP webhook workload.
+    # Supports `repository`, `tag`, and `pullPolicy`.
+    # Falls back to `webhook.image`, then `global.image`, then `image`.
+    image: {}
+
+    # -- Additional env vars for MCP webhook pods.
+    # Merged on top of `global.extraEnv` and `webhook.extraEnv`; same `name` overrides.
+    extraEnv: []
+
+    # -- Additional ConfigMaps loaded via `envFrom` for MCP webhook pods.
+    envFromConfigMaps: []
+
+    # -- Additional Secrets loaded via `envFrom` for MCP webhook pods.
+    envFromSecrets: []
+
+    # -- Optional overrides for webhook persistence. Unset values inherit from `webhook.persistence`.
+    persistence: {}
+
+    # -- Deployment annotations for MCP webhook deployment.
+    deploymentAnnotations: {}
+    # -- Deployment labels for MCP webhook deployment.
+    deploymentLabels: {}
+    # -- Pod annotations for MCP webhook deployment.
+    podAnnotations: {}
+    # -- Pod labels for MCP webhook deployment.
+    podLabels: {}
+
+    # -- Security context overrides for MCP webhook deployment.
+    podSecurityContext: {}
+    securityContext: {}
+
+    # -- Pod resource overrides for MCP webhook deployment.
+    resources: {}
+
+    # -- Scheduling overrides for MCP webhook deployment.
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+    # -- Extra pod volumes for MCP webhook pods.
+    extraVolumes: []
+    # -- Extra volume mounts for MCP webhook pods.
+    extraVolumeMounts: []
+
+    service:
+      # -- Service annotations for MCP webhook service.
+      annotations: {}
+      # -- Service type for MCP webhook service.
+      type: ClusterIP
+      # -- Service port for MCP webhook service.
+      port: 80
+
+    ingress:
+      # -- MCP paths that should be routed to the dedicated MCP webhook service.
+      paths:
+        - /mcp
+      # -- Path type for MCP ingress paths.
+      pathType: Prefix
+
+# -- Additional static Kubernetes manifests rendered with the chart.
+extraManifests: []
+# - apiVersion: v1
+#   kind: ConfigMap
+#   metadata:
+#     name: example-config
+#   data:
+#     key: value
+
+# -- Additional templated manifests rendered with Helm context.
+extraTemplateManifests: []
+# - |
+#   apiVersion: v1
+#   kind: ConfigMap
+#   metadata:
+#     name: example-templated
+#   data:
+#     image: "{{ .Values.image.repository }}"
+
+# -- Valkey dependency values.
+valkey:
+  enabled: false
+  # auth:
+  #   enabled: false
