@@ -1,0 +1,29 @@
+{{- if .Values.webhook.mcp.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "n8n.fullname" . }}-webhook-mcp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "n8n.labels" . | nindent 4 }}
+  {{- if or .Values.webhook.service.annotations .Values.webhook.mcp.service.annotations }}
+  annotations:
+    {{- with .Values.webhook.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.webhook.mcp.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  type: {{ .Values.webhook.mcp.service.type | default .Values.webhook.service.type | default "ClusterIP" }}
+  ports:
+    - port: {{ .Values.webhook.mcp.service.port | default .Values.webhook.service.port | default 80  }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "n8n.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/type: webhook-mcp
+{{- end }}
