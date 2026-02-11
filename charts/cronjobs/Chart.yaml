@@ -9,7 +9,7 @@ home: https://github.com/klicktipp/helm-charts
 keywords:
   - cronjob
 sources:
-  - hhttps://github.com/klicktipp/helm-charts
+  - https://github.com/klicktipp/helm-charts
 annotations:
   artifacthub.io/links: |
     - name: Image source
