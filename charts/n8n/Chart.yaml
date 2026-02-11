@@ -1,7 +1,7 @@
 ---
 apiVersion: v2
 name: n8n
-version: 0.1.1
+version: 0.1.2
 appVersion: 2.7.3
 type: application
 description: "Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services."
