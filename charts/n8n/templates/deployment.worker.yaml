@@ -1,0 +1,171 @@
+{{- if .Values.worker.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "n8n.fullname" . }}-worker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "n8n.labels" . | nindent 4 }}
+    {{- with .Values.global.deploymentLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if .Values.worker.deploymentLabels }}
+    {{- toYaml .Values.worker.deploymentLabels | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.global.deploymentAnnotations .Values.worker.deploymentAnnotations }}
+  annotations:
+    {{- with .Values.global.deploymentAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.worker.deploymentAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if not .Values.worker.autoscaling.enabled }}
+  replicas: {{ .Values.worker.replicaCount }}
+  {{- end }}
+  strategy:
+    type: {{ .Values.worker.deploymentStrategy.type }}
+    {{- if eq .Values.worker.deploymentStrategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxSurge: {{ default "25%" .Values.worker.deploymentStrategy.maxSurge  }}
+      maxUnavailable: {{ default "25%" .Values.worker.deploymentStrategy.maxUnavailable }}
+    {{- end }}
+  selector:
+    matchLabels:
+      {{- include "n8n.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/type: worker
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ print .Values.worker .Values.main | sha256sum }}
+        {{- with .Values.global.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.worker.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "n8n.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/type: worker
+        {{- with .Values.global.podLabels }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.worker.podLabels }}
+          {{ toYaml .Values.worker.podLabels | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with (coalesce .Values.imagePullSecrets .Values.global.imagePullSecrets) }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "n8n.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.podSecurityContext)) (default (dict) .Values.worker.podSecurityContext)) | nindent 8 }}
+      {{- $mergedInitContainers := concat (default (list) .Values.global.initContainers) (default (list) .Values.worker.initContainers) }}
+      {{- if gt (len $mergedInitContainers) 0 }}
+      initContainers:
+      {{ tpl (toYaml $mergedInitContainers) . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}-worker
+          securityContext:
+            {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.global.securityContext)) (default (dict) .Values.worker.securityContext)) | nindent 12 }}
+          image: "{{ include "n8n.image" (dict "context" . "component" .Values.worker) }}"
+          imagePullPolicy: {{ include "n8n.imagePullPolicy" (dict "context" . "component" .Values.worker) }}
+          {{- $extraConfigMaps := uniq (concat (default (list) .Values.global.envFromConfigMaps) (default (list) .Values.worker.envFromConfigMaps)) }}
+          {{- $extraSecrets := uniq (concat (default (list) .Values.global.envFromSecrets) (default (list) .Values.worker.envFromSecrets)) }}
+          {{- if or .Values.main.config .Values.main.secret .Values.worker.config .Values.worker.secret (gt (len $extraConfigMaps) 0) (gt (len $extraSecrets) 0) }}
+          envFrom:
+            {{- if .Values.main.config }}
+            - configMapRef:
+                name: {{ include "n8n.fullname" . }}-app-config
+            {{- end }}
+            {{- if .Values.main.secret }}
+            - secretRef:
+                name: {{ include "n8n.fullname" . }}-app-secret
+            {{- end }}
+            {{- if .Values.worker.config }}
+            - configMapRef:
+                name: {{ include "n8n.fullname" . }}-worker-config
+            {{- end }}
+            {{- if .Values.worker.secret }}
+            - secretRef:
+                name: {{ include "n8n.fullname" . }}-worker-secret
+            {{- end }}
+            {{- range $name := $extraConfigMaps }}
+            - configMapRef:
+                name: {{ tpl ($name | toString) $ }}
+            {{- end }}
+            {{- range $name := $extraSecrets }}
+            - secretRef:
+                name: {{ tpl ($name | toString) $ }}
+            {{- end }}
+          {{- end }}
+          {{- $mergedExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.global.extraEnv "component" .Values.worker.extraEnv "context" $) }}
+          {{- if $mergedExtraEnv }}
+          env:
+            {{- $mergedExtraEnv | nindent 12 }}
+          {{- end }}
+          {{- if .Values.worker.command }}
+          command:
+            {{- toYaml .Values.worker.command | nindent 12 }}
+          {{- else }}
+          command: ["n8n"]
+          {{- end }}
+          {{- if .Values.worker.commandArgs }}
+          args:
+            {{- toYaml .Values.worker.commandArgs | nindent 12 }}
+          {{- else }}
+          args:
+            - "worker"
+            - "--concurrency={{ .Values.worker.concurrency }}"
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ get (default (dict) .Values.worker.config.n8n) "port" | default 5678 }}
+              protocol: TCP
+          {{- with .Values.worker.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.worker.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml (coalesce .Values.worker.resources .Values.global.resources (dict)) | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/.n8n
+          {{- if .Values.worker.extraVolumeMounts }}
+            {{- toYaml .Values.worker.extraVolumeMounts | nindent 12 }}
+          {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (coalesce .Values.worker.nodeSelector .Values.global.nodeSelector) }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (coalesce .Values.worker.affinity .Values.global.affinity) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with (coalesce .Values.worker.tolerations .Values.global.tolerations) }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if hasKey .Values.worker "terminationGracePeriodSeconds" }}
+      terminationGracePeriodSeconds: {{ .Values.worker.terminationGracePeriodSeconds }}
+      {{- end }}
+      volumes:
+        - name: "data"
+          {{- include "n8n.persistenceVolume" (dict "persistence" .Values.worker.persistence "claimName" (printf "%s-worker" (include "n8n.fullname" .))) | nindent 10 }}
+        {{- if .Values.worker.extraVolumes }}
+          {{- toYaml .Values.worker.extraVolumes | nindent 8 }}
+        {{- end }}
+{{- end }}
