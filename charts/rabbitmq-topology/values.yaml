@@ -102,6 +102,9 @@ rabbitmq:
     # -- Default values applied to user permission entries when not set per user.
     # Fallback chain: user.permission field -> permissionDefaults field -> template fallback.
     permissionDefaults:
+      # -- Default value for `users.<name>.permission.referenceType` (`userReference` or `user`).
+      # Final template fallback: `userReference`.
+      referenceType: userReference
       # -- Default value for `users.<name>.permission.enabled`.
       # Final template fallback: `true`.
       enabled: true
@@ -120,6 +123,7 @@ rabbitmq:
 
     # -- Map of user definitions.
     # Per entry you can set `metadataName` for User and `permission.metadataName` for Permission.
+    # For migration, `permission.referenceType` supports `userReference` (default) or legacy `user`.
     users: {}
 
   # -- Map of vhost definitions.

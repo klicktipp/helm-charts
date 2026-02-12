@@ -162,6 +162,9 @@ rabbitmq-topology:
         applyTo: ""
 
       permissionDefaults:
+        # -- Default value for `users.<name>.permission.referenceType` in the topology subchart (`userReference` or `user`).
+        # Final template fallback: `userReference`.
+        referenceType: userReference
         # -- Default value for `users.<name>.permission.enabled` in the topology subchart.
         # Final template fallback: `true`.
         enabled: true
@@ -192,6 +195,7 @@ rabbitmq-topology:
       policies: {}
       # -- Map of user definitions.
       # Per entry you can set `metadataName` for User and `permission.metadataName` for Permission.
+      # For migration, `permission.referenceType` supports `userReference` (default) or legacy `user`.
       users: {}
 
     # -- Map of vhost definitions.

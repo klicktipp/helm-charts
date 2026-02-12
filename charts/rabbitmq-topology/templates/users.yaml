@@ -43,6 +43,10 @@ stringData:
 {{- $vhost := coalesce $user.vhost $permission.vhost $permissionDefaults.vhost $defaultVhost }}
 {{- $permissionName := $permission.name | default (printf "%s-%s" $clusterRef $userName) | include "com.klicktipp.slugify-string" }}
 {{- $permissionMetadataName := $permission.metadataName | default $permissionName }}
+{{- $permissionReferenceType := hasKey $permission "referenceType" | ternary $permission.referenceType ($permissionDefaults.referenceType | default "userReference") }}
+{{- if and (ne $permissionReferenceType "userReference") (ne $permissionReferenceType "user") }}
+{{- fail (printf "rabbitmq.topology.users.%s.permission.referenceType must be 'userReference' or 'user'" $name) }}
+{{- end }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Permission
@@ -50,8 +54,12 @@ metadata:
   name: {{ $permissionMetadataName | quote }}
 spec:
   vhost: {{ $vhost | quote }}
+  {{- if eq $permissionReferenceType "user" }}
+  user: {{ $permission.user | default $userName | quote }}
+  {{- else }}
   userReference:
     name: {{ $userMetadataName | quote }}
+  {{- end }}
   permissions:
     write: {{ $permission.write | default ($permissionDefaults.write | default ".*") | quote }}
     configure: {{ $permission.configure | default ($permissionDefaults.configure | default ".*") | quote }}
