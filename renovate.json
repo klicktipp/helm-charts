@@ -4,7 +4,7 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/Chart\\.yaml$/"
+        "/(^|/)Chart\\.ya?ml$/"
       ],
       "matchStrings": [
         "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s*depName=(?<depName>\\S+)(?:\\s*versioning=(?<versioning>\\S+))?[\\s\\S]*?appVersion\\s*:\\s*(?<currentValue>[^\\n\\r]*)"
