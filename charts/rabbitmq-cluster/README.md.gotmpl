@@ -1,0 +1,88 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.description" . }}
+
+## Values
+
+{{ template "chart.valuesSection" . }}
+
+## Examples
+
+### 1. Cluster only
+
+```yaml
+rabbitmq:
+  cluster:
+    enabled: true
+    name: halon-rabbitmq
+    replicas: 3
+    persistence:
+      enabled: true
+      storage: 20Gi
+      storageClassName: kt-gp3
+```
+
+### 2. Cluster + topology subchart
+
+```yaml
+rabbitmq:
+  cluster:
+    enabled: true
+    name: halon-rabbitmq
+
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    cluster:
+      name: halon-rabbitmq
+    vhosts:
+      halon:
+        enabled: true
+        default: true
+        name: halon
+    topology:
+      exchanges:
+        halon-events:
+          type: direct
+          durable: true
+          autoDelete: false
+          vhost: halon
+      queues:
+        email-request:
+          name: email_request
+          type: quorum
+          durable: true
+          autoDelete: false
+          vhost: halon
+          exchange:
+            enabled: false
+          binding:
+            enabled: false
+      bindings:
+        email-request:
+          source: halon-events
+          destination: email_request
+          destinationType: queue
+          routingKey: email_request
+          vhost: halon
+```
+
+### 3. Topology to external cluster
+
+```yaml
+rabbitmq:
+  cluster:
+    enabled: false
+
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    cluster:
+      name: existing-rabbitmq
+    topology:
+      exchanges:
+        app-events:
+          type: topic
+```

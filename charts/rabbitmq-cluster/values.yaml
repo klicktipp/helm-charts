@@ -1,34 +1,31 @@
 # Optional Helm name overrides
 # -- Partially override generated resource names.
+# -- Override for the Helm chart name.
 nameOverride: ""
-# -- Fully override generated resource names.
+
+# -- Override for the fully-qualified release name.
 fullnameOverride: ""
 
 # -- Container image configuration.
 image:
-  # -- Container image repository.
+  # -- RabbitMQ container image repository.
   repository: rabbitmq
-  # -- Container image tag.
+  # -- RabbitMQ container image tag.
   tag: 4.2-management-alpine
 
 # -- Set pdb.
 pdb:
-  # -- Enable this feature.
+  # -- Create a PodDisruptionBudget for RabbitMQ pods.
   enabled: false
   # Can be an integer (e.g., 1) or a percentage string (e.g., "25%")
-  # -- Set pdb.maxUnavailable.
   maxUnavailable: 1
 
 # -- Ingress configuration.
 ingress:
-  # -- Enable this feature.
   enabled: false
-  # -- Set ingress.className.
   className: ""
-  # -- Annotations map.
   annotations: {}
     # cert-manager.io/cluster-issuer: foo
-  # -- Host definitions.
   hosts:
     - host: chart-example.local
       # -- Ingress path definitions.
@@ -36,72 +33,39 @@ ingress:
         - path: /
           # -- Ingress path type.
           pathType: ImplementationSpecific
-  # -- TLS configuration.
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 # -- Set monitoring.
 monitoring:
-  # -- Enable this feature.
   enabled: false
   # -- Set monitoring.serviceMonitor.
   serviceMonitor:
-    # -- Enable this feature.
     enabled: false
 
-# -- Termination grace period in seconds.
 terminationGracePeriodSeconds: 600
 
+# -- Additional raw Kubernetes objects rendered as-is via `tpl`.
 extraObjects: []
-# Raw objects rendered as-is (similar to a raw chart).
-# Supports list items as either YAML objects or raw YAML strings.
-# Template expressions are supported via tpl.
-# Example:
-# extraObjects:
-#   - apiVersion: v1
-#     kind: Secret
-#     metadata:
-#       name: "{{ include \"rabbitmq-cluster.fullname\" . }}-extra"
-#     type: Opaque
-#     stringData:
-#       foo: bar
-#   - |
-#     apiVersion: v1
-#     kind: ConfigMap
-#     metadata:
-#       name: {{ include "rabbitmq-cluster.fullname" . }}-extra
-#     data:
-#       key: value
 
 rabbitmq:
   # -- Set rabbitmq.cluster.
   cluster:
     # If false, this chart will NOT create a RabbitmqCluster; you must point topology at an existing cluster.
-    # -- Enable this feature.
     enabled: true
 
     # RabbitmqCluster metadata.name (K8s object name). If empty, defaults to the Helm release fullname.
-    # -- Set rabbitmq.cluster.name.
     name: ""
 
-    # -- Configure rabbitmq.cluster.replicas.
     replicas: 1
 
-    # -- Configure rabbitmq.cluster.delayStartSeconds.
     delayStartSeconds: 10
 
     # -- Persistence configuration.
     persistence:
-      # -- Enable this feature.
       enabled: false
-      # -- Set rabbitmq.cluster.persistence.storage.
       storage: 10Gi
-      # -- Set rabbitmq.cluster.persistence.storageClassName.
       storageClassName: ""
 
-    # -- Container resource requests and limits.
     resources: {}
       # limits:
       #   cpu: 250m
@@ -113,27 +77,22 @@ rabbitmq:
     # Configuration profile preset (PROD, STAGING, DEV or custom).
     # If set, it applies predefined RabbitMQ configuration snippets.
     # Supported values: "PROD", "STAGING", "DEV". If empty or null, no preset is applied.
-    # -- Set rabbitmq.cluster.configProfile.
     configProfile: null
 
     # Additional RabbitMQ configuration as a multiline string.
     # This will be appended to the environment-specific configuration.
-    # -- Set rabbitmq.cluster.extraConfig.
     extraConfig: ""
 
     # Default plugins
-    # -- Configure rabbitmq.cluster.additionalPlugins.
     additionalPlugins:
       - rabbitmq_management
       - rabbitmq_prometheus
       - rabbitmq_peer_discovery_k8s
 
     # Additional plugins to enable
-    # -- Configure rabbitmq.cluster.extraPlugins.
     extraPlugins:  []
 
     # Overrides for the RabbitmqCluster spec (e.g., for StatefulSet annotations)
-    # -- Set rabbitmq.cluster.override.
     override: {}
     #  statefulSet:
     #    spec:
@@ -142,36 +101,21 @@ rabbitmq:
     #          annotations:
     #            foo: bar
 
-    # -- Affinity rules for pod scheduling.
     affinity: {}
-    #  nodeAffinity:
-    #    requiredDuringSchedulingIgnoredDuringExecution:
-    #      nodeSelectorTerms:
-    #        - matchExpressions:
-    #          - key: nodepool
-    #            operator: In
-    #            values:
-    #              - workers
-    #  podAntiAffinity:
-    #    preferredDuringSchedulingIgnoredDuringExecution:
-    #      - weight: 100
-    #        podAffinityTerm:
-    #          labelSelector:
-    #            matchExpressions:
-    #              - key: app.kubernetes.io/name
-    #                operator: In
-    #                values:
-    #                  - rabbitmq-cluster
-    #          topologyKey: kubernetes.io/hostname
 
+rabbitmq-topology:
+  # -- Enable the `rabbitmq-topology` dependency chart.
+  enabled: false
 
-  # -- Set rabbitmq.topology.
+  rabbitmq:
+    # -- Optional override for topology target cluster name.
+    # cluster:
+    #   name: "my-rabbitmq-cluster"
+
   topology:
-    # -- Enable this feature.
     enabled: false
 
     # List of queue definitions. Empty by default (generic chart).
-    # -- Configure rabbitmq.topology.queues.
     queues: {}
     # queues item schema:
     #   my_queue:                     # required (RabbitMQ entity name; underscores allowed)
@@ -221,7 +165,6 @@ rabbitmq:
     #     routingKey: ""              # optional
     #     arguments: {}               # optional binding arguments
 
-    # -- Configure rabbitmq.topology.policies.
     policies: {}
     # policies item schema:
     #   ha-all:                       # required (Policy name)
@@ -234,7 +177,6 @@ rabbitmq:
     #       ha-mode: all
     #       ha-sync-mode: automatic
 
-    # -- Configure rabbitmq.topology.users.
     users: {}
     #   alice:                  # required
     #     enabled: true         # optional (default true)
@@ -249,7 +191,6 @@ rabbitmq:
     #       write: ".*"       # optional, default: ".*"
     #       read: ".*"        # optional, default: ".*"
 
-  # -- Configure rabbitmq.vhosts.
   vhosts: {}
     # example:
     #   my-vhost:

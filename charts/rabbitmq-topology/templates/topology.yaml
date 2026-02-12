@@ -1,7 +1,5 @@
-{{- if .Values.rabbitmq.topology.enabled }}
-
-{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
-{{- $defaultVhost := include "rabbitmq-cluster.default-vhost" . }}
+{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-topology.fullname" .) }}
+{{- $defaultVhost := include "rabbitmq-topology.default-vhost" . }}
 
 {{- range $name, $queue := (.Values.rabbitmq.topology.queues | default (dict)) }}
 {{- $queueEnabled := hasKey $queue "enabled" | ternary $queue.enabled true }}
@@ -19,7 +17,7 @@ kind: Queue
 metadata:
   name: {{ (printf "%s-%s-%s" $clusterRef $queueVhost $queueName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+    {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
   name: {{ $queueName | quote }}
   type: {{ $queueType | quote }}
@@ -46,7 +44,7 @@ kind: Exchange
 metadata:
   name: {{ (printf "%s-%s-%s" $clusterRef $queueVhost $exchangeName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+    {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
   name: {{ $exchangeName | quote }}
   type: {{ $exchangeType | quote }}
@@ -73,7 +71,7 @@ kind: Binding
 metadata:
   name: {{ (printf "%s-%s-%s" $clusterRef $queueVhost $bindingName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+    {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
   vhost: {{ $queueVhost | quote }}
   source: {{ $bindingSource | quote }}
@@ -107,7 +105,7 @@ kind: Exchange
 metadata:
   name: {{ (printf "%s-%s-%s" $clusterRef $exchangeVhost $exchangeName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+    {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
   name: {{ $exchangeName | quote }}
   type: {{ $exchangeType | quote }}
@@ -141,7 +139,7 @@ kind: Binding
 metadata:
   name: {{ (printf "%s-%s-%s" $clusterRef $bindingVhost $bindingName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+    {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
   vhost: {{ $bindingVhost | quote }}
   source: {{ $bindingSource | quote }}
@@ -177,7 +175,7 @@ kind: Policy
 metadata:
   name: {{ (printf "%s-%s-%s" $clusterRef $policyVhost $policyName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+    {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
     {{- with $policy.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -201,5 +199,3 @@ spec:
     {{- end }}
 {{- end }} {{/* END if policy enabled */}}
 {{- end }} {{/* END policies loop */}}
-
-{{- end }} {{/* END if enabled */}}

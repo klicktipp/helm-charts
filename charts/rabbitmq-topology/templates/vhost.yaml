@@ -1,18 +1,17 @@
----
-{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
+{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-topology.fullname" .) }}
 {{- range $key, $vhost := .Values.rabbitmq.vhosts }}
 {{- if (hasKey $vhost "enabled" | ternary $vhost.enabled true) }}
 {{- $vhostName := $vhost.name | default $key }}
+---
 apiVersion: rabbitmq.com/v1beta1
 kind: Vhost
 metadata:
   name: {{ (printf "%s-%s" $clusterRef $vhostName) | include "com.klicktipp.slugify-string" | quote }}
   labels:
-    {{- include "rabbitmq-cluster.labels" $ | nindent 4 }}
+    {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
   name: {{ $vhostName | quote }}
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
----
 {{- end }}
 {{- end }}

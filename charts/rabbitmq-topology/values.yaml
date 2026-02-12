@@ -1,0 +1,26 @@
+# -- Override for the Helm chart name.
+nameOverride: ""
+
+# -- Override for the fully-qualified release name.
+fullnameOverride: ""
+
+rabbitmq:
+  cluster:
+    # -- Target `RabbitmqCluster` resource name for all topology objects.
+    # If empty, chart fullname is used.
+    name: ""
+
+  topology:
+    # -- Map of queue definitions.
+    queues: {}
+    # -- Map of exchange definitions.
+    exchanges: {}
+    # -- Map of binding definitions.
+    bindings: {}
+    # -- Map of policy definitions.
+    policies: {}
+    # -- Map of user definitions.
+    users: {}
+
+  # -- Map of vhost definitions.
+  vhosts: {}
