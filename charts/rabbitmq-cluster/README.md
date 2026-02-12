@@ -57,6 +57,11 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | rabbitmq-topology.rabbitmq.topology.policyDefaults.vhost | string | `""` | Default value for `policies.<name>.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
 | rabbitmq-topology.rabbitmq.topology.policyDefaults.priority | int | `0` | Default value for `policies.<name>.priority` in the topology subchart. Final template fallback: `0`. |
 | rabbitmq-topology.rabbitmq.topology.policyDefaults.applyTo | string | `""` | Default value for `policies.<name>.applyTo` in the topology subchart. Final template fallback: required on each policy if empty here. |
+| rabbitmq-topology.rabbitmq.topology.permissionDefaults.enabled | bool | `true` | Default value for `users.<name>.permission.enabled` in the topology subchart. Final template fallback: `true`. |
+| rabbitmq-topology.rabbitmq.topology.permissionDefaults.vhost | string | `""` | Default value for `users.<name>.permission.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
+| rabbitmq-topology.rabbitmq.topology.permissionDefaults.configure | string | `".*"` | Default value for `users.<name>.permission.configure` in the topology subchart. Final template fallback: `.*`. |
+| rabbitmq-topology.rabbitmq.topology.permissionDefaults.write | string | `".*"` | Default value for `users.<name>.permission.write` in the topology subchart. Final template fallback: `.*`. |
+| rabbitmq-topology.rabbitmq.topology.permissionDefaults.read | string | `".*"` | Default value for `users.<name>.permission.read` in the topology subchart. Final template fallback: `.*`. |
 | rabbitmq-topology.rabbitmq.topology.queues | object | `{}` | Map of queue definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 | rabbitmq-topology.rabbitmq.topology.exchanges | object | `{}` | Map of exchange definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 | rabbitmq-topology.rabbitmq.topology.bindings | object | `{}` | Map of binding definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |

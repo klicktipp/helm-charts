@@ -1,5 +1,6 @@
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-topology.fullname" .) }}
 {{- $defaultVhost := include "rabbitmq-topology.default-vhost" . }}
+{{- $permissionDefaults := .Values.rabbitmq.topology.permissionDefaults | default (dict) }}
 
 {{- range $name, $user := .Values.rabbitmq.topology.users }}
 {{- if ($user.enabled | default true) }}
@@ -37,8 +38,9 @@ stringData:
 {{- end }}
 
 {{- $permission := $user.permission | default (dict) }}
-{{- if $permission.enabled | default true }}
-{{- $vhost := coalesce $user.vhost $permission.vhost $defaultVhost }}
+{{- $permissionEnabled := hasKey $permission "enabled" | ternary $permission.enabled (hasKey $permissionDefaults "enabled" | ternary $permissionDefaults.enabled true) }}
+{{- if $permissionEnabled }}
+{{- $vhost := coalesce $user.vhost $permission.vhost $permissionDefaults.vhost $defaultVhost }}
 {{- $permissionName := $permission.name | default (printf "%s-%s" $clusterRef $userName) | include "com.klicktipp.slugify-string" }}
 {{- $permissionMetadataName := $permission.metadataName | default $permissionName }}
 ---
@@ -51,9 +53,9 @@ spec:
   userReference:
     name: {{ $userMetadataName | quote }}
   permissions:
-    write: {{ $permission.write | default ".*" | quote }}
-    configure: {{ $permission.configure | default ".*" | quote }}
-    read: {{ $permission.read | default ".*" | quote }}
+    write: {{ $permission.write | default ($permissionDefaults.write | default ".*") | quote }}
+    configure: {{ $permission.configure | default ($permissionDefaults.configure | default ".*") | quote }}
+    read: {{ $permission.read | default ($permissionDefaults.read | default ".*") | quote }}
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
 {{- end }} {{/* END if permission enabled */}}

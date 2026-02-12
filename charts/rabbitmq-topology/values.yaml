@@ -98,6 +98,26 @@ rabbitmq:
     # -- Map of policy definitions.
     # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
     policies: {}
+
+    # -- Default values applied to user permission entries when not set per user.
+    # Fallback chain: user.permission field -> permissionDefaults field -> template fallback.
+    permissionDefaults:
+      # -- Default value for `users.<name>.permission.enabled`.
+      # Final template fallback: `true`.
+      enabled: true
+      # -- Default value for `users.<name>.permission.vhost`.
+      # Final template fallback: selected default vhost (`/` if none marked default).
+      vhost: ""
+      # -- Default value for `users.<name>.permission.configure`.
+      # Final template fallback: `.*`.
+      configure: ".*"
+      # -- Default value for `users.<name>.permission.write`.
+      # Final template fallback: `.*`.
+      write: ".*"
+      # -- Default value for `users.<name>.permission.read`.
+      # Final template fallback: `.*`.
+      read: ".*"
+
     # -- Map of user definitions.
     # Per entry you can set `metadataName` for User and `permission.metadataName` for Permission.
     users: {}
