@@ -95,6 +95,9 @@ rabbitmq-topology:
       # -- Pass-through defaults for the rabbitmq-topology subchart.
       # Fallback chain in subchart: object field -> these defaults -> template fallback.
       queueDefaults:
+        # -- Default value for `queues.<name>.arguments` in the topology subchart.
+        # Queue-level `arguments` override keys from this map.
+        arguments: {}
         # -- Default value for `queues.<name>.durable` in the topology subchart.
         # Final template fallback: `true`.
         durable: true

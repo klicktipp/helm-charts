@@ -1,6 +1,7 @@
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-topology.fullname" .) }}
 {{- $defaultVhost := include "rabbitmq-topology.default-vhost" . }}
 {{- $queueDefaults := .Values.rabbitmq.topology.queueDefaults | default (dict) }}
+{{- $queueArgumentDefaults := $queueDefaults.arguments | default (dict) }}
 {{- $queueExchangeDefaults := $queueDefaults.exchange | default (dict) }}
 {{- $queueBindingDefaults := $queueDefaults.binding | default (dict) }}
 {{- $exchangeDefaults := .Values.rabbitmq.topology.exchangeDefaults | default (dict) }}
@@ -17,6 +18,7 @@
 {{- $queueDurable := hasKey $queue "durable" | ternary $queue.durable (hasKey $queueDefaults "durable" | ternary $queueDefaults.durable true) }}
 {{- $queueAutoDelete := hasKey $queue "autoDelete" | ternary $queue.autoDelete (hasKey $queueDefaults "autoDelete" | ternary $queueDefaults.autoDelete false) }}
 {{- $queueVhost := $queue.vhost | default ($queueDefaults.vhost | default $defaultVhost) }}
+{{- $queueArguments := mergeOverwrite (deepCopy $queueArgumentDefaults) ($queue.arguments | default (dict)) }}
 {{- $queueMetadataName := $queue.metadataName | default ((printf "%s-%s-%s" $clusterRef $queueVhost $queueName) | include "com.klicktipp.slugify-string") }}
 
 ---
@@ -31,9 +33,9 @@ spec:
   durable: {{ $queueDurable }}
   autoDelete: {{ $queueAutoDelete }}
   vhost: {{ $queueVhost | quote }}
-  {{- with $queue.arguments }}
+  {{- if gt (len $queueArguments) 0 }}
   arguments:
-    {{- toYaml . | nindent 4 }}
+    {{- toYaml $queueArguments | nindent 4 }}
   {{- end }}
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
