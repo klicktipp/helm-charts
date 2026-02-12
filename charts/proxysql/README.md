@@ -1,121 +1,171 @@
-# ProxySQL
+# proxysql
 
-[ProxySQL](/https://www.proxysql.com/) is a High-performance MySQL proxy with a GPL license.
+![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![AppVersion: 2.7.1](https://img.shields.io/badge/AppVersion-2.7.1-informational?style=flat-square)
 
-## TL;DR;
+ProxySQL Helm chart for Kubernetes
 
-```bash
-$ helm repo add klicktipp https://klicktipp.github.io/helm-charts/
-$ helm install my-release klicktipp/proxysql
-```
+**Homepage:** <https://www.proxysql.com/>
 
-## Introduction
+## Maintainers
 
-This chart bootstraps a [ProxySQL](https://hub.docker.com/r/proxysql/proxysql) proxy deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+| Name | Email | Url |
+| ---- | ------ | --- |
+| Dysnix | <services@dysnix.com> |  |
 
-## Prerequisites
+## Source Code
 
-- Kubernetes 1.12+
-- Helm 2.11+ or Helm 3.0-beta3+
-- PV provisioner support in the underlying infrastructure
+* <https://github.com/dysnix/charts>
+* <https://github.com/sysown/proxysql>
 
-## Installing the Chart
+## Values
 
-To install the chart with the release name `my-release`:
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| image | object | `{"pullPolicy":"IfNotPresent","registry":"docker.io","repository":"proxysql/proxysql","tag":null}` | Container image configuration. |
+| image.registry | string | `"docker.io"` | Set image.registry. |
+| image.repository | string | `"proxysql/proxysql"` | Container image repository. |
+| image.tag | string | `nil` | Container image tag. |
+| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy. |
+| imagePullSecrets | list | `[]` | Image pull secrets. |
+| nameOverride | string | `""` | Partially override generated resource names. |
+| fullnameOverride | string | `""` | Fully override generated resource names. |
+| serviceAccount | object | `{"create":true,"name":null}` | ServiceAccount configuration. |
+| serviceAccount.create | bool | `true` | Set serviceAccount.create. |
+| serviceAccount.name | string | `nil` | Set serviceAccount.name. |
+| priorityClassName | string | `""` | Set priorityClassName. |
+| podSecurityContext | object | `{"fsGroup":999,"runAsGroup":999,"runAsNonRoot":true,"runAsUser":999}` | Pod security context. |
+| podSecurityContext.runAsNonRoot | bool | `true` | Set podSecurityContext.runAsNonRoot. |
+| podSecurityContext.fsGroup | int | `999` | Set podSecurityContext.fsGroup. |
+| podSecurityContext.runAsUser | int | `999` | Set podSecurityContext.runAsUser. |
+| podSecurityContext.runAsGroup | int | `999` | Set podSecurityContext.runAsGroup. |
+| securityContext | object | `{}` | Container security context. |
+| service | object | `{"adminPort":6032,"annotations":{},"proxyPort":6033,"type":"ClusterIP","webPort":6080}` | Service configuration. |
+| service.type | string | `"ClusterIP"` | Type configuration value. |
+| service.proxyPort | int | `6033` | Set service.proxyPort. |
+| service.adminPort | int | `6032` | Set service.adminPort. |
+| service.webPort | int | `6080` | Set service.webPort. |
+| service.annotations | object | `{}` | Annotations map. |
+| resources | object | `{}` | Container resource requests and limits. |
+| nodeSelector | object | `{}` | Node selector for pod scheduling. |
+| tolerations | list | `[]` | Tolerations for pod scheduling. |
+| affinity | object | `{}` | Affinity rules for pod scheduling. |
+| podAntiAffinity | object | `{"enabled":false}` | Set podAntiAffinity. |
+| podAntiAffinity.enabled | bool | `false` | Enable this feature. |
+| commonAnnotations | object | `{}` | Configure commonAnnotations. |
+| commonLabels | object | `{}` | Configure commonLabels. |
+| podAnnotations | object | `{}` | Pod annotations. |
+| podLabels | object | `{}` | Pod labels. |
+| podDisruptionBudget | object | `{}` | Set podDisruptionBudget. |
+| startupProbe | object | `{"enabled":false,"failureThreshold":10,"initialDelaySeconds":5,"periodSeconds":3,"successThreshold":1,"timeoutSeconds":1}` | Startup probe configuration. |
+| startupProbe.enabled | bool | `false` | Enable this feature. |
+| startupProbe.initialDelaySeconds | int | `5` | Configure startupProbe.initialDelaySeconds. |
+| startupProbe.periodSeconds | int | `3` | Configure startupProbe.periodSeconds. |
+| startupProbe.timeoutSeconds | int | `1` | Configure startupProbe.timeoutSeconds. |
+| startupProbe.failureThreshold | int | `10` | Set startupProbe.failureThreshold. |
+| startupProbe.successThreshold | int | `1` | Set startupProbe.successThreshold. |
+| readinessProbe | object | `{"enabled":false,"failureThreshold":60,"initialDelaySeconds":0,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":5}` | Readiness probe configuration. |
+| readinessProbe.enabled | bool | `false` | Enable this feature. |
+| readinessProbe.initialDelaySeconds | int | `0` | Configure readinessProbe.initialDelaySeconds. |
+| readinessProbe.periodSeconds | int | `10` | Configure readinessProbe.periodSeconds. |
+| readinessProbe.timeoutSeconds | int | `5` | Configure readinessProbe.timeoutSeconds. |
+| readinessProbe.failureThreshold | int | `60` | Set readinessProbe.failureThreshold. |
+| readinessProbe.successThreshold | int | `1` | Set readinessProbe.successThreshold. |
+| livenessProbe | object | `{"enabled":false,"failureThreshold":3,"initialDelaySeconds":5,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":5}` | Liveness probe configuration. |
+| livenessProbe.enabled | bool | `false` | Enable this feature. |
+| livenessProbe.initialDelaySeconds | int | `5` | Configure livenessProbe.initialDelaySeconds. |
+| livenessProbe.periodSeconds | int | `10` | Configure livenessProbe.periodSeconds. |
+| livenessProbe.timeoutSeconds | int | `5` | Configure livenessProbe.timeoutSeconds. |
+| livenessProbe.failureThreshold | int | `3` | Set livenessProbe.failureThreshold. |
+| livenessProbe.successThreshold | int | `1` | Set livenessProbe.successThreshold. |
+| ssl | object | `{"auto":true,"ca":"","ca_file":"ca.pem","cert":"","cert_file":"cert.pem","fromSecret":"","key":"","key_file":"key.pem","sslDir":"/etc/proxysql"}` | Set ssl. |
+| ssl.auto | bool | `true` | Set ssl.auto. |
+| ssl.ca | string | `""` | Set ssl.ca. |
+| ssl.cert | string | `""` | Set ssl.cert. |
+| ssl.key | string | `""` | Set ssl.key. |
+| ssl.sslDir | string | `"/etc/proxysql"` | Set ssl.sslDir. |
+| ssl.ca_file | string | `"ca.pem"` | Set ssl.ca_file. |
+| ssl.cert_file | string | `"cert.pem"` | Set ssl.cert_file. |
+| ssl.key_file | string | `"key.pem"` | Set ssl.key_file. |
+| ssl.fromSecret | string | `""` | Set ssl.fromSecret. |
+| secret | object | `{"admin_password":"proxysql","admin_user":"proxysql-admin"}` | Component secret configuration map. |
+| secret.admin_user | string | `"proxysql-admin"` | Set secret.admin_user. |
+| secret.admin_password | string | `"proxysql"` | Set secret.admin_password. |
+| admin_variables | object | `{"debug":false}` | Configure admin_variables. |
+| admin_variables.debug | bool | `false` | Set admin_variables.debug. |
+| mysql_variables | object | `{"default_query_delay":0,"default_query_timeout":3600000,"max_connections":2048,"monitor_enabled":false,"threads":4}` | Configure mysql_variables. |
+| mysql_variables.threads | int | `4` | Configure mysql_variables.threads. |
+| mysql_variables.max_connections | int | `2048` | Configure mysql_variables.max_connections. |
+| mysql_variables.default_query_delay | int | `0` | Set mysql_variables.default_query_delay. |
+| mysql_variables.default_query_timeout | int | `3600000` | Set mysql_variables.default_query_timeout. |
+| mysql_variables.monitor_enabled | bool | `false` | Set mysql_variables.monitor_enabled. |
+| mysql_users | string | `nil` | Configure mysql_users. |
+| mysql_servers | string | `nil` | Configure mysql_servers. |
+| mysql_query_rules | string | `nil` | Configure mysql_query_rules. |
+| use_default_proxysql_servers | bool | `true` | Configure use_default_proxysql_servers. |
+| additional_proxysql_servers | string | `nil` | Configure additional_proxysql_servers. |
+| proxysql_cluster | object | `{"core":{"enabled":true,"exit_on_error":false,"podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""},"statefullset":{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]}},"enabled":false,"healthcheck":{"command":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh"],"diff_check_limit":10,"kill_if_healthcheck_failed":true,"psql_host":"127.0.0.1","psql_host_port":null,"psql_pass":null,"psql_user":null,"verbose":false},"job":{"affinity":{},"backoffLimit":3,"enabled":true,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"ttlSecondsAfterFinished":86400},"satellite":{"daemonset":{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]},"enabled":true,"exit_on_error":false,"kind":"DaemonSet","podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""}},"secret":{"cluster_password":"proxysql","cluster_username":"proxysql-cluster"}}` | Set proxysql_cluster. |
+| proxysql_cluster.enabled | bool | `false` | Enable this feature. |
+| proxysql_cluster.secret | object | `{"cluster_password":"proxysql","cluster_username":"proxysql-cluster"}` | Component secret configuration map. |
+| proxysql_cluster.secret.cluster_username | string | `"proxysql-cluster"` | Set proxysql_cluster.secret.cluster_username. |
+| proxysql_cluster.secret.cluster_password | string | `"proxysql"` | Set proxysql_cluster.secret.cluster_password. |
+| proxysql_cluster.core | object | `{"enabled":true,"exit_on_error":false,"podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""},"statefullset":{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]}}` | Set proxysql_cluster.core. |
+| proxysql_cluster.core.enabled | bool | `true` | Enable this feature. |
+| proxysql_cluster.core.replicas | int | `3` | Configure proxysql_cluster.core.replicas. |
+| proxysql_cluster.core.exit_on_error | bool | `false` | Set proxysql_cluster.core.exit_on_error. |
+| proxysql_cluster.core.podDisruptionBudget | object | `{}` | Set proxysql_cluster.core.podDisruptionBudget. |
+| proxysql_cluster.core.priorityClassName | string | `""` | Set proxysql_cluster.core.priorityClassName. |
+| proxysql_cluster.core.statefullset | object | `{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]}` | Set proxysql_cluster.core.statefullset. |
+| proxysql_cluster.core.statefullset.nodeSelector | object | `{}` | Node selector for pod scheduling. |
+| proxysql_cluster.core.statefullset.tolerations | list | `[]` | Tolerations for pod scheduling. |
+| proxysql_cluster.core.statefullset.affinity | object | `{}` | Affinity rules for pod scheduling. |
+| proxysql_cluster.core.statefullset.podAnnotations | object | `{}` | Pod annotations. |
+| proxysql_cluster.core.statefullset.resources | object | `{}` | Container resource requests and limits. |
+| proxysql_cluster.core.service | object | `{"name":""}` | Service configuration. |
+| proxysql_cluster.core.service.name | string | `""` | Set proxysql_cluster.core.service.name. |
+| proxysql_cluster.satellite | object | `{"daemonset":{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]},"enabled":true,"exit_on_error":false,"kind":"DaemonSet","podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""}}` | Set proxysql_cluster.satellite. |
+| proxysql_cluster.satellite.kind | string | `"DaemonSet"` | Set proxysql_cluster.satellite.kind. |
+| proxysql_cluster.satellite.enabled | bool | `true` | Enable this feature. |
+| proxysql_cluster.satellite.replicas | int | `3` | Configure proxysql_cluster.satellite.replicas. |
+| proxysql_cluster.satellite.exit_on_error | bool | `false` | Set proxysql_cluster.satellite.exit_on_error. |
+| proxysql_cluster.satellite.podDisruptionBudget | object | `{}` | Set proxysql_cluster.satellite.podDisruptionBudget. |
+| proxysql_cluster.satellite.priorityClassName | string | `""` | Set proxysql_cluster.satellite.priorityClassName. |
+| proxysql_cluster.satellite.daemonset | object | `{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]}` | Set proxysql_cluster.satellite.daemonset. |
+| proxysql_cluster.satellite.daemonset.nodeSelector | object | `{}` | Node selector for pod scheduling. |
+| proxysql_cluster.satellite.daemonset.tolerations | list | `[]` | Tolerations for pod scheduling. |
+| proxysql_cluster.satellite.daemonset.affinity | object | `{}` | Affinity rules for pod scheduling. |
+| proxysql_cluster.satellite.daemonset.podAnnotations | object | `{}` | Pod annotations. |
+| proxysql_cluster.satellite.daemonset.resources | object | `{}` | Container resource requests and limits. |
+| proxysql_cluster.satellite.service | object | `{"name":""}` | Service configuration. |
+| proxysql_cluster.satellite.service.name | string | `""` | Set proxysql_cluster.satellite.service.name. |
+| proxysql_cluster.job | object | `{"affinity":{},"backoffLimit":3,"enabled":true,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"ttlSecondsAfterFinished":86400}` | Set proxysql_cluster.job. |
+| proxysql_cluster.job.enabled | bool | `true` | Enable this feature. |
+| proxysql_cluster.job.backoffLimit | int | `3` | Set proxysql_cluster.job.backoffLimit. |
+| proxysql_cluster.job.ttlSecondsAfterFinished | int | `86400` | Set proxysql_cluster.job.ttlSecondsAfterFinished. |
+| proxysql_cluster.job.nodeSelector | object | `{}` | Node selector for pod scheduling. |
+| proxysql_cluster.job.tolerations | list | `[]` | Tolerations for pod scheduling. |
+| proxysql_cluster.job.affinity | object | `{}` | Affinity rules for pod scheduling. |
+| proxysql_cluster.job.podAnnotations | object | `{}` | Pod annotations. |
+| proxysql_cluster.job.resources | object | `{}` | Container resource requests and limits. |
+| proxysql_cluster.healthcheck | object | `{"command":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh"],"diff_check_limit":10,"kill_if_healthcheck_failed":true,"psql_host":"127.0.0.1","psql_host_port":null,"psql_pass":null,"psql_user":null,"verbose":false}` | Set proxysql_cluster.healthcheck. |
+| proxysql_cluster.healthcheck.psql_user | string | `nil` | Set proxysql_cluster.healthcheck.psql_user. |
+| proxysql_cluster.healthcheck.psql_pass | string | `nil` | Configure proxysql_cluster.healthcheck.psql_pass. |
+| proxysql_cluster.healthcheck.psql_host | string | `"127.0.0.1"` | Set proxysql_cluster.healthcheck.psql_host. |
+| proxysql_cluster.healthcheck.psql_host_port | string | `nil` | Set proxysql_cluster.healthcheck.psql_host_port. |
+| proxysql_cluster.healthcheck.diff_check_limit | int | `10` | Set proxysql_cluster.healthcheck.diff_check_limit. |
+| proxysql_cluster.healthcheck.kill_if_healthcheck_failed | bool | `true` | Set proxysql_cluster.healthcheck.kill_if_healthcheck_failed. |
+| proxysql_cluster.healthcheck.verbose | bool | `false` | Set proxysql_cluster.healthcheck.verbose. |
+| proxysql_cluster.healthcheck.command | list | `["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh"]` | Override container command. |
+| debug | object | `{"sidecar":{"command":["/bin/sleep","infinity"],"enabled":false,"image":"mysql:debian","securityContext":{"runAsGroup":999,"runAsUser":999}}}` | Set debug. |
+| debug.sidecar | object | `{"command":["/bin/sleep","infinity"],"enabled":false,"image":"mysql:debian","securityContext":{"runAsGroup":999,"runAsUser":999}}` | Set debug.sidecar. |
+| debug.sidecar.enabled | bool | `false` | Enable this feature. |
+| debug.sidecar.image | string | `"mysql:debian"` | Container image configuration. |
+| debug.sidecar.command | list | `["/bin/sleep","infinity"]` | Override container command. |
+| debug.sidecar.securityContext | object | `{"runAsGroup":999,"runAsUser":999}` | Container security context. |
+| debug.sidecar.securityContext.runAsUser | int | `999` | Set debug.sidecar.securityContext.runAsUser. |
+| debug.sidecar.securityContext.runAsGroup | int | `999` | Set debug.sidecar.securityContext.runAsGroup. |
+| terminationGracePeriodSeconds | int | `60` | Termination grace period in seconds. |
+| topologySpreadConstraints | string | `nil` | Configure topologySpreadConstraints. |
+| sleep_before_connection_check | int | `15` | Set sleep_before_connection_check. |
 
-```bash
-$ helm install my-release dysnix/proxysql
-```
-
-The command deploys ProxySQL on the Kubernetes cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
-
-> **Tip**: List all releases using `helm list`
-
-## Uninstalling the Chart
-
-To uninstall/delete the `my-release` deployment:
-
-```bash
-$ helm delete my-release
-```
-
-The command removes all the Kubernetes components associated with the chart and deletes the release.
-
-## Parameters
-
-The following table lists the configurable parameters of the ProxySQL chart and their default values.
-
-| Parameter                                   | Description                                                                                                                                                            | Default                                                 |
-|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
-| `image.registry`                            | ProxySQL image registry                                                                                                                                                | `docker.io`                                             |
-| `image.repository`                          | ProxySQL Image name                                                                                                                                                    | `proxysql/proxysql`                                     |
-| `image.tag`                                 | ProxySQL Image tag                                                                                                                                                     | `2.0.9`                                                 |
-| `image.pullPolicy`                          | ProxySQL image pull policy                                                                                                                                             | `IfNotPresent`                                          |
-| `image.pullSecrets`                         | Specify docker-registry secret names as an array                                                                                                                       | `[]` (does not add image pull secrets to deployed pods) |
-| `nameOverride`                              | String to partially override proxysql.fullname template with a string (will prepend the release name)                                                                  | `nil`                                                   |
-| `fullnameOverride`                          | String to fully override proxysql.fullname template with a string                                                                                                      | `nil`                                                   |
-| `service.type`                              | Kubernetes service type                                                                                                                                                | `ClusterIP`                                             |
-| `service.clusterIP`                         | Specific cluster IP when service type is cluster IP. Use None for headless service                                                                                     | `nil`                                                   |
-| `service.port`                              | ProxySQL service port                                                                                                                                                  | `6033`                                                  |
-| `serviceAccount.create`                     | Specifies whether a ServiceAccount should be created                                                                                                                   | `false`                                                 |
-| `serviceAccount.name`                       | The name of the ServiceAccount to create                                                                                                                               | Generated using the proxysql.fullname template          |
-| `securityContext.enabled`                   | Enable [a container security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)             | `false`                                                 |
-| `podSecurityContext.runAsNonRoot`           | Run pod as unprivileged user                                                                                                                                           | `true`                                                  |
-| `podSecurityContext.fsGroup`                | Filesystem group ID for the pod containers                                                                                                                             | `999`                                                   |
-| `podSecurityContext.runAsUser`              | Run pod containers with the specified user ID                                                                                                                          | `999`                                                   |
-| `podSecurityContext.runAsGroup`             | Run pod containers with the specified group ID                                                                                                                         | `999`                                                   |
-| `podDisruptionBudget.enabled`               | If true, create a pod disruption budget for master pods.                                                                                                               | `false`                                                 |
-| `podDisruptionBudget.minAvailable`          | Minimum number / percentage of pods that should remain scheduled                                                                                                       | `1`                                                     |
-| `podDisruptionBudget.maxUnavailable`        | Maximum number / percentage of pods that may be made unavailable                                                                                                       | 
-| `admin_variables.admin_credentials`         | ProxySQL admin credentials for the management (127.0.0.1:6032)                                                                                                         | `admin:admin`                                           |
-| `admin_variables.debug`                     | ProxySQL debug mode                                                                                                                                                    | `false`                                                 |
-| `mysql_variables.threads`                   | The number of background threads that ProxySQL uses in order to process MySQL traffic.                                                                                 | `4`                                                     |
-| `mysql_variables.max_connections`           | The maximum number of client connections that the proxy can handle.                                                                                                    | `2048`                                                  |
-| `mysql_variables.default_query_delay`       | Simple throttling mechanism for queries to the backends. Setting this variable to a non-zero value (in miliseconds) will delay the execution of all queries, globally. | `0`                                                     |
-| `mysql_variables.default_query_timeout`     | Mechanism for specifying the maximal duration of queries to the backend MySQL servers until ProxySQL should return an error to the MySQL client.                       | `3600000` milliseconds                                  |
-| `mysql_variables.monitor`                   | Enables or disables MySQL Monitor module.                                                                                                                              | `false`                                                 |
-| `mysql_users`                               | Defines ProxySQL [users configuration](https://github.com/sysown/proxysql/wiki/Users-configuration)                                                                    | `[]`                                                    |
-| `mysql_servers`                             | Defines ProxySQL [backend servers configuration](https://github.com/sysown/proxysql/wiki/MySQL-Server-Configuration)                                                   | `[]`                                                    |
-| `mysql_query_rules`                         | Defines ProxySQL [Query Rules (routing)] (https://github.com/sysown/proxysql#configuring-proxysql-through-the-config-file)                                             | `[]`                                                    |
-| `ssl.auto`                                  | Automatically set `use_ssl` to `1` when the SSL configuration is provided                                                                                              | `true`                                                  |
-| `ssl.ca`                                    | CA authority certificate to use                                                                                                                                        | `""`                                                    |
-| `ssl.cert`                                  | ProxySQL SSL certificate                                                                                                                                               | `""`                                                    |
-| `ssl.key`                                   | ProxySQL SSL key                                                                                                                                                       | `""`                                                    |
-| `ssl.fromSecret`                            | Specify a secret containing `ca.pem`, `cert.pem` and `key.pem` SSL configuration                                                                                       | `""`                                                    |
-| `sleep_before_connection_check`             | Shutdown Sleep time in seconds before checking for open connections                                                                                                    | 15s                                                     |
-| `terminationGracePeriodSeconds`             | Duration the pod needs to terminate gracefully                                                                                                                         | 30s                                                     |
-
-For more information please refer to the proxysql [config file](https://github.com/sysown/proxysql#configuring-proxysql-through-the-config-file) and [global variables](https://github.com/sysown/proxysql/wiki/Global-variables).
-
-> **Tip**: You can use the default [values.yaml](values.yaml)
-
-## Configuration and installation details
-
-ProxySQL persists its configuration in SQLite, however this deployment is stateless i.e. no data is persisted. Since the configuration is managed via kubernetes and admin ProxySQL CLI is not meant for the configuration purposes all you need is to provide a `values.yaml` input file, for example:
-
-```yaml
-mysql_servers:
-  - address: "172.17.0.1"
-    port: 3306
-    hostgroup: 0
-    max_connections: 200
-
-mysql_users:
-  - username: "test"
-    password: "p@ssword"
-    default_hostgroup: 0
-```
-
-```bash
-$ helm install my-release dysnix/proxysql -f values.yaml
-```
-
-The configuration is immutable thus the ProxySQL helm chart sets `active` to *1* for `mysql_users` and substitutes the `rule_id` for `mysql_query_rules` automatically.
-
-### SSL configuration
-
-ProxySQL can be used to safely route unencrypted MySQL traffic from applications wrapping it into SSL in case these applications do not support SSL configuration. To enable this you need to provide `ssl.*` options. When either `ssl.fromSecret` or `ssl.cert` together with `ssl.key` is provided and the `ssl.auto` is set to *true* (which is default) `mysql_servers` will get `use_ssl` set to *1* automatically if not specifically provided.
-
-### ProxySQL and MySQL 8.0
-
-ProxySQL supports MySQL 8.0 , although there are some limitations for the [details refer to the documentation](https://github.com/sysown/proxysql/wiki/MySQL-8.0).
+----------------------------------------------
+Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)

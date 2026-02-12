@@ -1,0 +1,41 @@
+name: Update Chart READMEs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-readmes:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install helm-docs
+        run: |
+          go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Generate chart READMEs
+        run: scripts/generate-chart-readmes.sh
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs(charts): regenerate chart READMEs"
+          title: "docs(charts): regenerate chart READMEs"
+          body: |
+            Automated README update generated from chart `values.yaml` files using `helm-docs`.
+          branch: "codex/update-chart-readmes"
+          delete-branch: true
+          labels: |
+            documentation
+            helm
