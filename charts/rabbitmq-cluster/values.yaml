@@ -161,6 +161,23 @@ rabbitmq-topology:
         # Final template fallback: required on each policy if empty here.
         applyTo: ""
 
+      permissionDefaults:
+        # -- Default value for `users.<name>.permission.enabled` in the topology subchart.
+        # Final template fallback: `true`.
+        enabled: true
+        # -- Default value for `users.<name>.permission.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
+        # -- Default value for `users.<name>.permission.configure` in the topology subchart.
+        # Final template fallback: `.*`.
+        configure: ".*"
+        # -- Default value for `users.<name>.permission.write` in the topology subchart.
+        # Final template fallback: `.*`.
+        write: ".*"
+        # -- Default value for `users.<name>.permission.read` in the topology subchart.
+        # Final template fallback: `.*`.
+        read: ".*"
+
       # -- Map of queue definitions.
       # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
       queues: {}

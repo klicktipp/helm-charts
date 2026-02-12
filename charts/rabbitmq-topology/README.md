@@ -36,6 +36,12 @@ Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology Operator 
 | rabbitmq.topology.exchanges | object | `{}` | Map of exchange definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 | rabbitmq.topology.bindings | object | `{}` | Map of binding definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 | rabbitmq.topology.policies | object | `{}` | Map of policy definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
+| rabbitmq.topology.permissionDefaults | object | `{"configure":".*","enabled":true,"read":".*","vhost":"","write":".*"}` | Default values applied to user permission entries when not set per user. Fallback chain: user.permission field -> permissionDefaults field -> template fallback. |
+| rabbitmq.topology.permissionDefaults.enabled | bool | `true` | Default value for `users.<name>.permission.enabled`. Final template fallback: `true`. |
+| rabbitmq.topology.permissionDefaults.vhost | string | `""` | Default value for `users.<name>.permission.vhost`. Final template fallback: selected default vhost (`/` if none marked default). |
+| rabbitmq.topology.permissionDefaults.configure | string | `".*"` | Default value for `users.<name>.permission.configure`. Final template fallback: `.*`. |
+| rabbitmq.topology.permissionDefaults.write | string | `".*"` | Default value for `users.<name>.permission.write`. Final template fallback: `.*`. |
+| rabbitmq.topology.permissionDefaults.read | string | `".*"` | Default value for `users.<name>.permission.read`. Final template fallback: `.*`. |
 | rabbitmq.topology.users | object | `{}` | Map of user definitions. Per entry you can set `metadataName` for User and `permission.metadataName` for Permission. |
 | rabbitmq.vhosts | object | `{}` | Map of vhost definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 
