@@ -16,7 +16,7 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | ingress.enabled | bool | `false` | Create an Ingress for RabbitMQ management UI. |
 | ingress.className | string | `""` | IngressClass name. |
 | ingress.annotations | object | `{}` | Additional annotations for Ingress. |
-| ingress.hosts | list | `[{"host":"chart-example.local","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}]` | Ingress host/path rules. |
+| ingress.hosts | list | `[{"host":"chart-example.local","paths":[{"path":"/","pathType":"Prefix"}]}]` | Ingress host/path rules. |
 | ingress.tls | list | `[]` | TLS configuration entries for Ingress. |
 | monitoring.enabled | bool | `false` | Enable monitoring resources created by this chart. |
 | monitoring.serviceMonitor.enabled | bool | `false` | Create a ServiceMonitor (requires Prometheus Operator CRDs). |
