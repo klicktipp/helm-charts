@@ -8,6 +8,7 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 |-----|------|---------|-------------|
 | nameOverride | string | `""` | Override for the Helm chart name. |
 | fullnameOverride | string | `""` | Override for the fully-qualified release name. |
+| image.registry | string | `""` | RabbitMQ container image registry (e.g. `docker.io`, `ghcr.io`, ECR registry host). Empty means no registry prefix. |
 | image.repository | string | `"rabbitmq"` | RabbitMQ container image repository. |
 | image.tag | string | `"4.2-management-alpine"` | RabbitMQ container image tag. |
 | pdb.enabled | bool | `false` | Create a PodDisruptionBudget for RabbitMQ pods. |

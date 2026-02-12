@@ -5,6 +5,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
+  # -- RabbitMQ container image registry (e.g. `docker.io`, `ghcr.io`, ECR registry host). Empty means no registry prefix.
+  registry: ""
   # -- RabbitMQ container image repository.
   repository: rabbitmq
   # -- RabbitMQ container image tag.
