@@ -162,15 +162,21 @@ rabbitmq-topology:
         applyTo: ""
 
       # -- Map of queue definitions.
+      # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
       queues: {}
       # -- Map of exchange definitions.
+      # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
       exchanges: {}
       # -- Map of binding definitions.
+      # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
       bindings: {}
       # -- Map of policy definitions.
+      # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
       policies: {}
       # -- Map of user definitions.
+      # Per entry you can set `metadataName` for User and `permission.metadataName` for Permission.
       users: {}
 
     # -- Map of vhost definitions.
+    # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
     vhosts: {}

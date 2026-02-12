@@ -111,11 +111,57 @@ rabbitmq:
   topology:
     users:
       app-user:
+        metadataName: app-user
         existingSecret: rabbitmq-user-app
         permission:
+          metadataName: app-user
           enabled: true
           vhost: "/"
           configure: ".*"
           write: ".*"
           read: ".*"
+```
+
+### 5. Preserve existing Kubernetes resource names (`metadata.name`)
+
+```yaml
+rabbitmq:
+  cluster:
+    name: app-rabbitmq
+  vhosts:
+    app:
+      name: app
+      metadataName: app
+  topology:
+    exchanges:
+      app-events:
+        name: app-events
+        metadataName: app-events
+        type: direct
+        vhost: app
+    queues:
+      email-request:
+        name: email_request
+        metadataName: email-request
+        vhost: app
+        exchange:
+          enabled: false
+        binding:
+          enabled: false
+    bindings:
+      email-request:
+        metadataName: email-request
+        source: app-events
+        destination: email_request
+        destinationType: queue
+        vhost: app
+    policies:
+      app-exchanges-ae:
+        name: app-exchanges-ae
+        metadataName: app-exchanges-ae
+        pattern: "^app-events$"
+        applyTo: exchanges
+        vhost: app
+        definition:
+          alternate-exchange: app-events-fallback
 ```
