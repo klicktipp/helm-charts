@@ -84,3 +84,39 @@ rabbitmq-topology:
         app-events:
           type: topic
 ```
+
+### 4. Users from existing secrets (e.g. 1Password)
+
+```yaml
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    topology:
+      users:
+        app-user:
+          existingSecret: rabbitmq-user-app
+          permission:
+            enabled: true
+            vhost: "/"
+            configure: ".*"
+            write: ".*"
+            read: ".*"
+```
+
+### 5. Users with chart-managed secrets
+
+```yaml
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    topology:
+      users:
+        smtp-user:
+          password: "change-me"
+          permission:
+            enabled: true
+            vhost: "/"
+            configure: ".*"
+            write: ".*"
+            read: ".*"
+```
