@@ -88,6 +88,7 @@ jobs:
         uses: helm/chart-releaser-action@v1.7.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_SKIP_EXISTING: "true"
 
       - name: Skip release (no chart version bump)
         if: steps.version_bump.outputs.has_bump != 'true'
