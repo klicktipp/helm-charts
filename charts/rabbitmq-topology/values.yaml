@@ -14,6 +14,9 @@ rabbitmq:
     # -- Default values applied to queue entries when not set per queue.
     # Fallback chain: queue field -> queueDefaults field -> template fallback.
     queueDefaults:
+      # -- Default queue arguments merged into each queue's `arguments`.
+      # Queue-level `arguments` override keys from this map.
+      arguments: {}
       # -- Default queue durable flag.
       # Final template fallback: `true`.
       durable: true

@@ -21,6 +21,8 @@ rabbitmq:
       name: app
   topology:
     queueDefaults:
+      arguments:
+        x-queue-type: quorum
       exchange:
         enabled: false
       binding:
@@ -32,8 +34,6 @@ rabbitmq:
     queues:
       email-request:
         name: email_request
-        arguments:
-          x-queue-type: quorum
         vhost: app
     bindings:
       email-request:

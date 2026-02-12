@@ -42,6 +42,8 @@ rabbitmq-topology:
         name: app
     topology:
       queueDefaults:
+        arguments:
+          x-queue-type: quorum
         exchange:
           enabled: false
         binding:
@@ -55,8 +57,6 @@ rabbitmq-topology:
       queues:
         email-request:
           name: email_request
-          arguments:
-            x-queue-type: quorum
           durable: true
           autoDelete: false
           vhost: app

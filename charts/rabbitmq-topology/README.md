@@ -9,7 +9,8 @@ Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology Operator 
 | nameOverride | string | `""` | Override for the Helm chart name. |
 | fullnameOverride | string | `""` | Override for the fully-qualified release name. |
 | rabbitmq.cluster.name | string | `""` | Target `RabbitmqCluster` resource name for all topology objects. If empty, chart fullname is used. |
-| rabbitmq.topology.queueDefaults | object | `{"autoDelete":false,"binding":{"destinationType":"queue","enabled":true},"durable":true,"exchange":{"autoDelete":false,"durable":true,"enabled":true,"type":"fanout"},"vhost":""}` | Default values applied to queue entries when not set per queue. Fallback chain: queue field -> queueDefaults field -> template fallback. |
+| rabbitmq.topology.queueDefaults | object | `{"arguments":{},"autoDelete":false,"binding":{"destinationType":"queue","enabled":true},"durable":true,"exchange":{"autoDelete":false,"durable":true,"enabled":true,"type":"fanout"},"vhost":""}` | Default values applied to queue entries when not set per queue. Fallback chain: queue field -> queueDefaults field -> template fallback. |
+| rabbitmq.topology.queueDefaults.arguments | object | `{}` | Default queue arguments merged into each queue's `arguments`. Queue-level `arguments` override keys from this map. |
 | rabbitmq.topology.queueDefaults.durable | bool | `true` | Default queue durable flag. Final template fallback: `true`. |
 | rabbitmq.topology.queueDefaults.autoDelete | bool | `false` | Default queue autoDelete flag. Final template fallback: `false`. |
 | rabbitmq.topology.queueDefaults.vhost | string | `""` | Default queue vhost. Final template fallback: selected default vhost (`/` if none marked default). |
@@ -59,6 +60,8 @@ rabbitmq:
       name: app
   topology:
     queueDefaults:
+      arguments:
+        x-queue-type: quorum
       exchange:
         enabled: false
       binding:
@@ -70,8 +73,6 @@ rabbitmq:
     queues:
       email-request:
         name: email_request
-        arguments:
-          x-queue-type: quorum
         vhost: app
     bindings:
       email-request:
