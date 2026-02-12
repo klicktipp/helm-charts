@@ -37,6 +37,26 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | rabbitmq.cluster.override | object | `{}` | Raw override merged into RabbitmqCluster spec. |
 | rabbitmq.cluster.affinity | object | `{}` | Pod affinity/anti-affinity for RabbitMQ pods. |
 | rabbitmq-topology.enabled | bool | `false` | Enable the `rabbitmq-topology` dependency chart. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults | object | `{"autoDelete":false,"binding":{"destinationType":"queue","enabled":true},"durable":true,"exchange":{"autoDelete":false,"durable":true,"enabled":true,"type":"fanout"},"type":"quorum","vhost":""}` | Pass-through defaults for the rabbitmq-topology subchart. Fallback chain in subchart: object field -> these defaults -> template fallback. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.type | string | `"quorum"` | Default value for `queues.<name>.type` in the topology subchart. Final template fallback: `quorum`. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.durable | bool | `true` | Default value for `queues.<name>.durable` in the topology subchart. Final template fallback: `true`. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.autoDelete | bool | `false` | Default value for `queues.<name>.autoDelete` in the topology subchart. Final template fallback: `false`. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.vhost | string | `""` | Default value for `queues.<name>.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.exchange.enabled | bool | `true` | Default value for `queues.<name>.exchange.enabled` in the topology subchart. Final template fallback: `true`. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.exchange.type | string | `"fanout"` | Default value for `queues.<name>.exchange.type` in the topology subchart. Final template fallback: `fanout`. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.exchange.durable | bool | `true` | Default value for `queues.<name>.exchange.durable` in the topology subchart. Final template fallback: `true`. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.exchange.autoDelete | bool | `false` | Default value for `queues.<name>.exchange.autoDelete` in the topology subchart. Final template fallback: `false`. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.binding.enabled | bool | `true` | Default value for `queues.<name>.binding.enabled` in the topology subchart. Final template fallback: `true`. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults.binding.destinationType | string | `"queue"` | Default value for `queues.<name>.binding.destinationType` in the topology subchart. Final template fallback: `queue`. |
+| rabbitmq-topology.rabbitmq.topology.exchangeDefaults.type | string | `"fanout"` | Default value for `exchanges.<name>.type` in the topology subchart. Final template fallback: `fanout`. |
+| rabbitmq-topology.rabbitmq.topology.exchangeDefaults.durable | bool | `true` | Default value for `exchanges.<name>.durable` in the topology subchart. Final template fallback: `true`. |
+| rabbitmq-topology.rabbitmq.topology.exchangeDefaults.autoDelete | bool | `false` | Default value for `exchanges.<name>.autoDelete` in the topology subchart. Final template fallback: `false`. |
+| rabbitmq-topology.rabbitmq.topology.exchangeDefaults.vhost | string | `""` | Default value for `exchanges.<name>.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
+| rabbitmq-topology.rabbitmq.topology.bindingDefaults.vhost | string | `""` | Default value for `bindings.<name>.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
+| rabbitmq-topology.rabbitmq.topology.bindingDefaults.destinationType | string | `"queue"` | Default value for `bindings.<name>.destinationType` in the topology subchart. Final template fallback: `queue`. |
+| rabbitmq-topology.rabbitmq.topology.policyDefaults.vhost | string | `""` | Default value for `policies.<name>.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
+| rabbitmq-topology.rabbitmq.topology.policyDefaults.priority | int | `0` | Default value for `policies.<name>.priority` in the topology subchart. Final template fallback: `0`. |
+| rabbitmq-topology.rabbitmq.topology.policyDefaults.applyTo | string | `""` | Default value for `policies.<name>.applyTo` in the topology subchart. Final template fallback: required on each policy if empty here. |
 | rabbitmq-topology.rabbitmq.topology.queues | object | `{}` | Map of queue definitions. |
 | rabbitmq-topology.rabbitmq.topology.exchanges | object | `{}` | Map of exchange definitions. |
 | rabbitmq-topology.rabbitmq.topology.bindings | object | `{}` | Map of binding definitions. |
@@ -79,6 +99,11 @@ rabbitmq-topology:
         default: true
         name: app
     topology:
+      queueDefaults:
+        exchange:
+          enabled: false
+        binding:
+          enabled: false
       exchanges:
         app-events:
           type: direct
@@ -92,10 +117,6 @@ rabbitmq-topology:
           durable: true
           autoDelete: false
           vhost: app
-          exchange:
-            enabled: false
-          binding:
-            enabled: false
       bindings:
         email-request:
           source: app-events

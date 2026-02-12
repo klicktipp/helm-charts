@@ -11,6 +11,81 @@ rabbitmq:
     name: ""
 
   topology:
+    # -- Default values applied to queue entries when not set per queue.
+    # Fallback chain: queue field -> queueDefaults field -> template fallback.
+    queueDefaults:
+      # -- Default queue type.
+      # Final template fallback: `quorum`.
+      type: quorum
+      # -- Default queue durable flag.
+      # Final template fallback: `true`.
+      durable: true
+      # -- Default queue autoDelete flag.
+      # Final template fallback: `false`.
+      autoDelete: false
+      # -- Default queue vhost.
+      # Final template fallback: selected default vhost (`/` if none marked default).
+      vhost: ""
+      exchange:
+        # -- Default value for `queues.<name>.exchange.enabled` when not set per queue.
+        # Final template fallback: `true`.
+        enabled: true
+        # -- Default value for `queues.<name>.exchange.type`.
+        # Final template fallback: `fanout`.
+        type: fanout
+        # -- Default value for `queues.<name>.exchange.durable`.
+        # Final template fallback: `true`.
+        durable: true
+        # -- Default value for `queues.<name>.exchange.autoDelete`.
+        # Final template fallback: `false`.
+        autoDelete: false
+      binding:
+        # -- Default value for `queues.<name>.binding.enabled` when not set per queue.
+        # Final template fallback: `true`.
+        enabled: true
+        # -- Default value for `queues.<name>.binding.destinationType`.
+        # Final template fallback: `queue`.
+        destinationType: queue
+
+    # -- Default values applied to top-level exchange entries when not set per exchange.
+    # Fallback chain: exchange field -> exchangeDefaults field -> template fallback.
+    exchangeDefaults:
+      # -- Default exchange type.
+      # Final template fallback: `fanout`.
+      type: fanout
+      # -- Default exchange durable flag.
+      # Final template fallback: `true`.
+      durable: true
+      # -- Default exchange autoDelete flag.
+      # Final template fallback: `false`.
+      autoDelete: false
+      # -- Default exchange vhost.
+      # Final template fallback: selected default vhost (`/` if none marked default).
+      vhost: ""
+
+    # -- Default values applied to top-level binding entries when not set per binding.
+    # Fallback chain: binding field -> bindingDefaults field -> template fallback.
+    bindingDefaults:
+      # -- Default binding vhost.
+      # Final template fallback: selected default vhost (`/` if none marked default).
+      vhost: ""
+      # -- Default binding destinationType.
+      # Final template fallback: `queue`.
+      destinationType: queue
+
+    # -- Default values applied to top-level policy entries when not set per policy.
+    # Fallback chain: policy field -> policyDefaults field -> template fallback.
+    policyDefaults:
+      # -- Default policy vhost.
+      # Final template fallback: selected default vhost (`/` if none marked default).
+      vhost: ""
+      # -- Default policy priority.
+      # Final template fallback: `0`.
+      priority: 0
+      # -- Optional default policy applyTo (`all`, `queues`, `exchanges`).
+      # Final template fallback: required on each policy if empty here.
+      applyTo: ""
+
     # -- Map of queue definitions.
     queues: {}
     # -- Map of exchange definitions.

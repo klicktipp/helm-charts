@@ -92,6 +92,75 @@ rabbitmq-topology:
 
   rabbitmq:
     topology:
+      # -- Pass-through defaults for the rabbitmq-topology subchart.
+      # Fallback chain in subchart: object field -> these defaults -> template fallback.
+      queueDefaults:
+        # -- Default value for `queues.<name>.type` in the topology subchart.
+        # Final template fallback: `quorum`.
+        type: quorum
+        # -- Default value for `queues.<name>.durable` in the topology subchart.
+        # Final template fallback: `true`.
+        durable: true
+        # -- Default value for `queues.<name>.autoDelete` in the topology subchart.
+        # Final template fallback: `false`.
+        autoDelete: false
+        # -- Default value for `queues.<name>.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
+        exchange:
+          # -- Default value for `queues.<name>.exchange.enabled` in the topology subchart.
+          # Final template fallback: `true`.
+          enabled: true
+          # -- Default value for `queues.<name>.exchange.type` in the topology subchart.
+          # Final template fallback: `fanout`.
+          type: fanout
+          # -- Default value for `queues.<name>.exchange.durable` in the topology subchart.
+          # Final template fallback: `true`.
+          durable: true
+          # -- Default value for `queues.<name>.exchange.autoDelete` in the topology subchart.
+          # Final template fallback: `false`.
+          autoDelete: false
+        binding:
+          # -- Default value for `queues.<name>.binding.enabled` in the topology subchart.
+          # Final template fallback: `true`.
+          enabled: true
+          # -- Default value for `queues.<name>.binding.destinationType` in the topology subchart.
+          # Final template fallback: `queue`.
+          destinationType: queue
+
+      exchangeDefaults:
+        # -- Default value for `exchanges.<name>.type` in the topology subchart.
+        # Final template fallback: `fanout`.
+        type: fanout
+        # -- Default value for `exchanges.<name>.durable` in the topology subchart.
+        # Final template fallback: `true`.
+        durable: true
+        # -- Default value for `exchanges.<name>.autoDelete` in the topology subchart.
+        # Final template fallback: `false`.
+        autoDelete: false
+        # -- Default value for `exchanges.<name>.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
+
+      bindingDefaults:
+        # -- Default value for `bindings.<name>.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
+        # -- Default value for `bindings.<name>.destinationType` in the topology subchart.
+        # Final template fallback: `queue`.
+        destinationType: queue
+
+      policyDefaults:
+        # -- Default value for `policies.<name>.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
+        # -- Default value for `policies.<name>.priority` in the topology subchart.
+        # Final template fallback: `0`.
+        priority: 0
+        # -- Default value for `policies.<name>.applyTo` in the topology subchart.
+        # Final template fallback: required on each policy if empty here.
+        applyTo: ""
+
       # -- Map of queue definitions.
       queues: {}
       # -- Map of exchange definitions.

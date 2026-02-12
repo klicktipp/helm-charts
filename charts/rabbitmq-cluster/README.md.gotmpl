@@ -41,6 +41,11 @@ rabbitmq-topology:
         default: true
         name: app
     topology:
+      queueDefaults:
+        exchange:
+          enabled: false
+        binding:
+          enabled: false
       exchanges:
         app-events:
           type: direct
@@ -54,10 +59,6 @@ rabbitmq-topology:
           durable: true
           autoDelete: false
           vhost: app
-          exchange:
-            enabled: false
-          binding:
-            enabled: false
       bindings:
         email-request:
           source: app-events
