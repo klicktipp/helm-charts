@@ -1,5 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices"
+  ],
   "packageRules": [
     {
       "changelogUrl": "https://github.com/n8n-io/n8n",
