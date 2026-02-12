@@ -51,7 +51,7 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 rabbitmq:
   cluster:
     enabled: true
-    name: halon-rabbitmq
+    name: app-rabbitmq
     replicas: 3
     persistence:
       enabled: true
@@ -65,43 +65,43 @@ rabbitmq:
 rabbitmq:
   cluster:
     enabled: true
-    name: halon-rabbitmq
+    name: app-rabbitmq
 
 rabbitmq-topology:
   enabled: true
   rabbitmq:
     cluster:
-      name: halon-rabbitmq
+      name: app-rabbitmq
     vhosts:
-      halon:
+      app:
         enabled: true
         default: true
-        name: halon
+        name: app
     topology:
       exchanges:
-        halon-events:
+        app-events:
           type: direct
           durable: true
           autoDelete: false
-          vhost: halon
+          vhost: app
       queues:
         email-request:
           name: email_request
           type: quorum
           durable: true
           autoDelete: false
-          vhost: halon
+          vhost: app
           exchange:
             enabled: false
           binding:
             enabled: false
       bindings:
         email-request:
-          source: halon-events
+          source: app-events
           destination: email_request
           destinationType: queue
           routingKey: email_request
-          vhost: halon
+          vhost: app
 ```
 
 ### 3. Topology to external cluster

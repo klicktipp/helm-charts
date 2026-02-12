@@ -13,33 +13,33 @@
 ```yaml
 rabbitmq:
   cluster:
-    name: halon-rabbitmq
+    name: app-rabbitmq
   vhosts:
-    halon:
+    app:
       enabled: true
       default: true
-      name: halon
+      name: app
   topology:
     exchanges:
-      halon-events:
+      app-events:
         type: direct
-        vhost: halon
+        vhost: app
     queues:
       email-request:
         name: email_request
         type: quorum
-        vhost: halon
+        vhost: app
         exchange:
           enabled: false
         binding:
           enabled: false
     bindings:
       email-request:
-        source: halon-events
+        source: app-events
         destination: email_request
         destinationType: queue
         routingKey: email_request
-        vhost: halon
+        vhost: app
 ```
 
 ### 2. Add fallback queue and policy (alternate exchange)
@@ -47,37 +47,37 @@ rabbitmq:
 ```yaml
 rabbitmq:
   cluster:
-    name: halon-rabbitmq
+    name: app-rabbitmq
   topology:
     exchanges:
-      halon-events:
+      app-events:
         type: direct
-        vhost: halon
-      halon-events-fallback:
+        vhost: app
+      app-events-fallback:
         type: fanout
-        vhost: halon
+        vhost: app
     queues:
-      halon-events-fallback:
-        name: halon_events_fallback
+      app-events-fallback:
+        name: app_events_fallback
         type: quorum
-        vhost: halon
+        vhost: app
         exchange:
           enabled: false
         binding:
           enabled: false
     bindings:
-      halon-events-fallback:
-        source: halon-events-fallback
-        destination: halon_events_fallback
+      app-events-fallback:
+        source: app-events-fallback
+        destination: app_events_fallback
         destinationType: queue
-        vhost: halon
+        vhost: app
     policies:
-      halon-exchanges-ae:
-        pattern: "^halon-events$"
+      app-exchanges-ae:
+        pattern: "^app-events$"
         applyTo: exchanges
-        vhost: halon
+        vhost: app
         definition:
-          alternate-exchange: halon-events-fallback
+          alternate-exchange: app-events-fallback
 ```
 
 ### 3. Users and permissions
@@ -85,7 +85,7 @@ rabbitmq:
 ```yaml
 rabbitmq:
   cluster:
-    name: halon-rabbitmq
+    name: app-rabbitmq
   topology:
     users:
       app-user:
@@ -94,7 +94,7 @@ rabbitmq:
           - management
         permission:
           enabled: true
-          vhost: halon
+          vhost: app
           configure: ".*"
           write: ".*"
           read: ".*"
