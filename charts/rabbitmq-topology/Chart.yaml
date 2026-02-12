@@ -3,10 +3,14 @@ apiVersion: v2
 name: rabbitmq-topology
 description: Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology Operator CRDs.
 type: application
-version: "1.0.0"
-appVersion: "4.2-management"
+version: "0.1.0"
+appVersion: "1.18.2"
 kubeVersion: ">= 1.33.0-0"
 home: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+sources:
+  - https://github.com/klicktipp/helm-charts
+  - https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+  - https://github.com/rabbitmq/messaging-topology-operator
 keywords:
   - rabbitmq
   - topology

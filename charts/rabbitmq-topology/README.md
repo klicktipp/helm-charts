@@ -4,8 +4,6 @@ Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology Operator 
 
 ## Values
 
-## Values
-
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | nameOverride | string | `""` | Override for the Helm chart name. |
