@@ -1,15 +1,23 @@
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-topology.fullname" .) }}
 {{- $defaultVhost := include "rabbitmq-topology.default-vhost" . }}
+{{- $queueDefaults := .Values.rabbitmq.topology.queueDefaults | default (dict) }}
+{{- $queueExchangeDefaults := $queueDefaults.exchange | default (dict) }}
+{{- $queueBindingDefaults := $queueDefaults.binding | default (dict) }}
+{{- $exchangeDefaults := .Values.rabbitmq.topology.exchangeDefaults | default (dict) }}
+{{- $bindingDefaults := .Values.rabbitmq.topology.bindingDefaults | default (dict) }}
+{{- $policyDefaults := .Values.rabbitmq.topology.policyDefaults | default (dict) }}
+{{- $defaultQueueExchangeEnabled := hasKey $queueExchangeDefaults "enabled" | ternary $queueExchangeDefaults.enabled true }}
+{{- $defaultQueueBindingEnabled := hasKey $queueBindingDefaults "enabled" | ternary $queueBindingDefaults.enabled true }}
 
 {{- range $name, $queue := (.Values.rabbitmq.topology.queues | default (dict)) }}
 {{- $queueEnabled := hasKey $queue "enabled" | ternary $queue.enabled true }}
 {{- if $queueEnabled }}
 
 {{- $queueName := $queue.name | default $name }}
-{{- $queueType := $queue.type | default "quorum" }}
-{{- $queueDurable := $queue.durable | default true }}
-{{- $queueAutoDelete := $queue.autoDelete | default false }}
-{{- $queueVhost := $queue.vhost | default $defaultVhost }}
+{{- $queueType := $queue.type | default ($queueDefaults.type | default "quorum") }}
+{{- $queueDurable := hasKey $queue "durable" | ternary $queue.durable (hasKey $queueDefaults "durable" | ternary $queueDefaults.durable true) }}
+{{- $queueAutoDelete := hasKey $queue "autoDelete" | ternary $queue.autoDelete (hasKey $queueDefaults "autoDelete" | ternary $queueDefaults.autoDelete false) }}
+{{- $queueVhost := $queue.vhost | default ($queueDefaults.vhost | default $defaultVhost) }}
 
 ---
 apiVersion: rabbitmq.com/v1beta1
@@ -32,12 +40,12 @@ spec:
     name: {{ $clusterRef | quote }}
 
 {{- $queueExchange := $queue.exchange | default (dict) }}
-{{- $queueExchangeEnabled := hasKey $queueExchange "enabled" | ternary $queueExchange.enabled true }}
+{{- $queueExchangeEnabled := hasKey $queueExchange "enabled" | ternary $queueExchange.enabled $defaultQueueExchangeEnabled }}
 {{- if $queueExchangeEnabled }}
 {{- $exchangeName := $queueExchange.name | default $queueName }}
-{{- $exchangeType := $queueExchange.type | default "fanout" }}
-{{- $exchangeDurable := $queueExchange.durable | default true }}
-{{- $exchangeAutoDelete := $queueExchange.autoDelete | default false }}
+{{- $exchangeType := $queueExchange.type | default ($queueExchangeDefaults.type | default "fanout") }}
+{{- $exchangeDurable := hasKey $queueExchange "durable" | ternary $queueExchange.durable (hasKey $queueExchangeDefaults "durable" | ternary $queueExchangeDefaults.durable true) }}
+{{- $exchangeAutoDelete := hasKey $queueExchange "autoDelete" | ternary $queueExchange.autoDelete (hasKey $queueExchangeDefaults "autoDelete" | ternary $queueExchangeDefaults.autoDelete false) }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Exchange
@@ -60,7 +68,7 @@ spec:
 {{- end }} {{/* END queue exchange */}}
 
 {{- $binding := $queue.binding | default (dict) }}
-{{- $queueBindingEnabled := hasKey $binding "enabled" | ternary $binding.enabled true }}
+{{- $queueBindingEnabled := hasKey $binding "enabled" | ternary $binding.enabled $defaultQueueBindingEnabled }}
 {{- if $queueBindingEnabled }}
 {{- $bindingName := $binding.name | default $queueName }}
 {{- $routingKey := $binding.routingKey | default "" }}
@@ -76,7 +84,7 @@ spec:
   vhost: {{ $queueVhost | quote }}
   source: {{ $bindingSource | quote }}
   destination: {{ $binding.destination | default $queueName | quote }}
-  destinationType: {{ $binding.destinationType | default ($binding.type | default "queue") | quote }}
+  destinationType: {{ $binding.destinationType | default ($binding.type | default ($queueBindingDefaults.destinationType | default "queue")) | quote }}
   {{- if ne $routingKey "" }}
   routingKey: {{ $routingKey | quote }}
   {{- end }}
@@ -95,10 +103,10 @@ spec:
 {{- $exchangeEnabled := hasKey $exchange "enabled" | ternary $exchange.enabled true }}
 {{- if $exchangeEnabled }}
 {{- $exchangeName := $exchange.name | default $name }}
-{{- $exchangeType := $exchange.type | default "fanout" }}
-{{- $exchangeDurable := $exchange.durable | default true }}
-{{- $exchangeAutoDelete := $exchange.autoDelete | default false }}
-{{- $exchangeVhost := $exchange.vhost | default $defaultVhost }}
+{{- $exchangeType := $exchange.type | default ($exchangeDefaults.type | default "fanout") }}
+{{- $exchangeDurable := hasKey $exchange "durable" | ternary $exchange.durable (hasKey $exchangeDefaults "durable" | ternary $exchangeDefaults.durable true) }}
+{{- $exchangeAutoDelete := hasKey $exchange "autoDelete" | ternary $exchange.autoDelete (hasKey $exchangeDefaults "autoDelete" | ternary $exchangeDefaults.autoDelete false) }}
+{{- $exchangeVhost := $exchange.vhost | default ($exchangeDefaults.vhost | default $defaultVhost) }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Exchange
@@ -129,7 +137,7 @@ spec:
 {{- $bindingEnabled := hasKey $binding "enabled" | ternary $binding.enabled true }}
 {{- if $bindingEnabled }}
 {{- $bindingName := $binding.name | default $name }}
-{{- $bindingVhost := $binding.vhost | default $defaultVhost }}
+{{- $bindingVhost := $binding.vhost | default ($bindingDefaults.vhost | default $defaultVhost) }}
 {{- $bindingSource := required (printf "rabbitmq.topology.bindings.%s.source is required" $name) $binding.source }}
 {{- $bindingDestination := required (printf "rabbitmq.topology.bindings.%s.destination is required" $name) $binding.destination }}
 {{- $routingKey := $binding.routingKey | default "" }}
@@ -144,7 +152,7 @@ spec:
   vhost: {{ $bindingVhost | quote }}
   source: {{ $bindingSource | quote }}
   destination: {{ $bindingDestination | quote }}
-  destinationType: {{ $binding.destinationType | default ($binding.type | default "queue") | quote }}
+  destinationType: {{ $binding.destinationType | default ($binding.type | default ($bindingDefaults.destinationType | default "queue")) | quote }}
   {{- if ne $routingKey "" }}
   routingKey: {{ $routingKey | quote }}
   {{- end }}
@@ -167,9 +175,9 @@ spec:
 ---
 {{- $policyName := $policy.name | default $name }}
 {{- $pattern := required (printf "rabbitmq.topology.policies.%s.pattern is required" $name) $policy.pattern }}
-{{- $applyTo := required (printf "rabbitmq.topology.policies.%s.applyTo is required" $name) $policy.applyTo }}
+{{- $applyTo := required (printf "rabbitmq.topology.policies.%s.applyTo is required" $name) ($policy.applyTo | default $policyDefaults.applyTo) }}
 {{- $definition := required (printf "rabbitmq.topology.policies.%s.definition is required" $name) $policy.definition }}
-{{- $policyVhost := $policy.vhost | default $defaultVhost }}
+{{- $policyVhost := $policy.vhost | default ($policyDefaults.vhost | default $defaultVhost) }}
 apiVersion: rabbitmq.com/v1beta1
 kind: Policy
 metadata:
@@ -188,7 +196,7 @@ spec:
   vhost: {{ $policyVhost | quote }}
   pattern: {{ $pattern | quote }}
   applyTo: {{ $applyTo | quote }}
-  priority: {{ $policy.priority | default 0 }}
+  priority: {{ $policy.priority | default ($policyDefaults.priority | default 0) }}
   definition:
     {{- toYaml $definition | nindent 4 }}
   rabbitmqClusterReference:
