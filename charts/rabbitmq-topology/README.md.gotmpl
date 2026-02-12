@@ -32,7 +32,8 @@ rabbitmq:
     queues:
       email-request:
         name: email_request
-        type: quorum
+        arguments:
+          x-queue-type: quorum
         vhost: app
     bindings:
       email-request:
@@ -65,7 +66,8 @@ rabbitmq:
     queues:
       app-events-fallback:
         name: app_events_fallback
-        type: quorum
+        arguments:
+          x-queue-type: quorum
         vhost: app
     bindings:
       app-events-fallback:

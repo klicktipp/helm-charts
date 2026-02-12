@@ -14,9 +14,6 @@ rabbitmq:
     # -- Default values applied to queue entries when not set per queue.
     # Fallback chain: queue field -> queueDefaults field -> template fallback.
     queueDefaults:
-      # -- Default queue type.
-      # Final template fallback: `quorum`.
-      type: quorum
       # -- Default queue durable flag.
       # Final template fallback: `true`.
       durable: true

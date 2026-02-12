@@ -55,7 +55,8 @@ rabbitmq-topology:
       queues:
         email-request:
           name: email_request
-          type: quorum
+          arguments:
+            x-queue-type: quorum
           durable: true
           autoDelete: false
           vhost: app

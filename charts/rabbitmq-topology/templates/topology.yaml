@@ -14,7 +14,6 @@
 {{- if $queueEnabled }}
 
 {{- $queueName := $queue.name | default $name }}
-{{- $queueType := $queue.type | default ($queueDefaults.type | default "quorum") }}
 {{- $queueDurable := hasKey $queue "durable" | ternary $queue.durable (hasKey $queueDefaults "durable" | ternary $queueDefaults.durable true) }}
 {{- $queueAutoDelete := hasKey $queue "autoDelete" | ternary $queue.autoDelete (hasKey $queueDefaults "autoDelete" | ternary $queueDefaults.autoDelete false) }}
 {{- $queueVhost := $queue.vhost | default ($queueDefaults.vhost | default $defaultVhost) }}
@@ -29,7 +28,6 @@ metadata:
     {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
   name: {{ $queueName | quote }}
-  type: {{ $queueType | quote }}
   durable: {{ $queueDurable }}
   autoDelete: {{ $queueAutoDelete }}
   vhost: {{ $queueVhost | quote }}
