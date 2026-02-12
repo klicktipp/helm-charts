@@ -28,7 +28,7 @@ jobs:
         run: scripts/generate-chart-readmes.sh
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "docs(charts): regenerate chart READMEs"
           title: "docs(charts): regenerate chart READMEs"
