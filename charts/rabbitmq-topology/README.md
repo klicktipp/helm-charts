@@ -109,3 +109,21 @@ rabbitmq:
           write: ".*"
           read: ".*"
 ```
+
+### 4. Users from existing secrets (e.g. 1Password)
+
+```yaml
+rabbitmq:
+  cluster:
+    name: app-rabbitmq
+  topology:
+    users:
+      app-user:
+        existingSecret: rabbitmq-user-app
+        permission:
+          enabled: true
+          vhost: "/"
+          configure: ".*"
+          write: ".*"
+          read: ".*"
+```
