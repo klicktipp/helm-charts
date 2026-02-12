@@ -30,7 +30,7 @@ ingress:
     - host: chart-example.local
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   # -- TLS configuration entries for Ingress.
   tls: []
 
