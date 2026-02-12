@@ -57,12 +57,12 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | rabbitmq-topology.rabbitmq.topology.policyDefaults.vhost | string | `""` | Default value for `policies.<name>.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
 | rabbitmq-topology.rabbitmq.topology.policyDefaults.priority | int | `0` | Default value for `policies.<name>.priority` in the topology subchart. Final template fallback: `0`. |
 | rabbitmq-topology.rabbitmq.topology.policyDefaults.applyTo | string | `""` | Default value for `policies.<name>.applyTo` in the topology subchart. Final template fallback: required on each policy if empty here. |
-| rabbitmq-topology.rabbitmq.topology.queues | object | `{}` | Map of queue definitions. |
-| rabbitmq-topology.rabbitmq.topology.exchanges | object | `{}` | Map of exchange definitions. |
-| rabbitmq-topology.rabbitmq.topology.bindings | object | `{}` | Map of binding definitions. |
-| rabbitmq-topology.rabbitmq.topology.policies | object | `{}` | Map of policy definitions. |
-| rabbitmq-topology.rabbitmq.topology.users | object | `{}` | Map of user definitions. |
-| rabbitmq-topology.rabbitmq.vhosts | object | `{}` | Map of vhost definitions. |
+| rabbitmq-topology.rabbitmq.topology.queues | object | `{}` | Map of queue definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
+| rabbitmq-topology.rabbitmq.topology.exchanges | object | `{}` | Map of exchange definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
+| rabbitmq-topology.rabbitmq.topology.bindings | object | `{}` | Map of binding definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
+| rabbitmq-topology.rabbitmq.topology.policies | object | `{}` | Map of policy definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
+| rabbitmq-topology.rabbitmq.topology.users | object | `{}` | Map of user definitions. Per entry you can set `metadataName` for User and `permission.metadataName` for Permission. |
+| rabbitmq-topology.rabbitmq.vhosts | object | `{}` | Map of vhost definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 
 ## Examples
 
@@ -153,8 +153,10 @@ rabbitmq-topology:
     topology:
       users:
         app-user:
+          metadataName: app-user
           existingSecret: rabbitmq-user-app
           permission:
+            metadataName: app-user
             enabled: true
             vhost: "/"
             configure: ".*"
@@ -171,11 +173,57 @@ rabbitmq-topology:
     topology:
       users:
         smtp-user:
+          metadataName: smtp-user
           password: "change-me"
           permission:
+            metadataName: smtp-user
             enabled: true
             vhost: "/"
             configure: ".*"
             write: ".*"
             read: ".*"
+```
+
+### 6. Preserve existing Kubernetes resource names (`metadata.name`)
+
+```yaml
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    vhosts:
+      app:
+        name: app
+        metadataName: app
+    topology:
+      exchanges:
+        app-events:
+          name: app-events
+          metadataName: app-events
+          type: direct
+          vhost: app
+      queues:
+        email-request:
+          name: email_request
+          metadataName: email-request
+          vhost: app
+          exchange:
+            enabled: false
+          binding:
+            enabled: false
+      bindings:
+        email-request:
+          metadataName: email-request
+          source: app-events
+          destination: email_request
+          destinationType: queue
+          vhost: app
+      policies:
+        app-exchanges-ae:
+          name: app-exchanges-ae
+          metadataName: app-exchanges-ae
+          pattern: "^app-events$"
+          applyTo: exchanges
+          vhost: app
+          definition:
+            alternate-exchange: app-events-fallback
 ```

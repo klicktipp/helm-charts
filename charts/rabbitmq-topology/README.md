@@ -32,12 +32,12 @@ Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology Operator 
 | rabbitmq.topology.policyDefaults.vhost | string | `""` | Default policy vhost. Final template fallback: selected default vhost (`/` if none marked default). |
 | rabbitmq.topology.policyDefaults.priority | int | `0` | Default policy priority. Final template fallback: `0`. |
 | rabbitmq.topology.policyDefaults.applyTo | string | `""` | Optional default policy applyTo (`all`, `queues`, `exchanges`). Final template fallback: required on each policy if empty here. |
-| rabbitmq.topology.queues | object | `{}` | Map of queue definitions. |
-| rabbitmq.topology.exchanges | object | `{}` | Map of exchange definitions. |
-| rabbitmq.topology.bindings | object | `{}` | Map of binding definitions. |
-| rabbitmq.topology.policies | object | `{}` | Map of policy definitions. |
-| rabbitmq.topology.users | object | `{}` | Map of user definitions. |
-| rabbitmq.vhosts | object | `{}` | Map of vhost definitions. |
+| rabbitmq.topology.queues | object | `{}` | Map of queue definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
+| rabbitmq.topology.exchanges | object | `{}` | Map of exchange definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
+| rabbitmq.topology.bindings | object | `{}` | Map of binding definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
+| rabbitmq.topology.policies | object | `{}` | Map of policy definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
+| rabbitmq.topology.users | object | `{}` | Map of user definitions. Per entry you can set `metadataName` for User and `permission.metadataName` for Permission. |
+| rabbitmq.vhosts | object | `{}` | Map of vhost definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 
 ## Examples
 
@@ -144,11 +144,57 @@ rabbitmq:
   topology:
     users:
       app-user:
+        metadataName: app-user
         existingSecret: rabbitmq-user-app
         permission:
+          metadataName: app-user
           enabled: true
           vhost: "/"
           configure: ".*"
           write: ".*"
           read: ".*"
+```
+
+### 5. Preserve existing Kubernetes resource names (`metadata.name`)
+
+```yaml
+rabbitmq:
+  cluster:
+    name: app-rabbitmq
+  vhosts:
+    app:
+      name: app
+      metadataName: app
+  topology:
+    exchanges:
+      app-events:
+        name: app-events
+        metadataName: app-events
+        type: direct
+        vhost: app
+    queues:
+      email-request:
+        name: email_request
+        metadataName: email-request
+        vhost: app
+        exchange:
+          enabled: false
+        binding:
+          enabled: false
+    bindings:
+      email-request:
+        metadataName: email-request
+        source: app-events
+        destination: email_request
+        destinationType: queue
+        vhost: app
+    policies:
+      app-exchanges-ae:
+        name: app-exchanges-ae
+        metadataName: app-exchanges-ae
+        pattern: "^app-events$"
+        applyTo: exchanges
+        vhost: app
+        definition:
+          alternate-exchange: app-events-fallback
 ```

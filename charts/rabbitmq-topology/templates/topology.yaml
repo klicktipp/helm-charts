@@ -18,12 +18,13 @@
 {{- $queueDurable := hasKey $queue "durable" | ternary $queue.durable (hasKey $queueDefaults "durable" | ternary $queueDefaults.durable true) }}
 {{- $queueAutoDelete := hasKey $queue "autoDelete" | ternary $queue.autoDelete (hasKey $queueDefaults "autoDelete" | ternary $queueDefaults.autoDelete false) }}
 {{- $queueVhost := $queue.vhost | default ($queueDefaults.vhost | default $defaultVhost) }}
+{{- $queueMetadataName := $queue.metadataName | default ((printf "%s-%s-%s" $clusterRef $queueVhost $queueName) | include "com.klicktipp.slugify-string") }}
 
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Queue
 metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $queueVhost $queueName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $queueMetadataName | quote }}
   labels:
     {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
@@ -46,11 +47,12 @@ spec:
 {{- $exchangeType := $queueExchange.type | default ($queueExchangeDefaults.type | default "fanout") }}
 {{- $exchangeDurable := hasKey $queueExchange "durable" | ternary $queueExchange.durable (hasKey $queueExchangeDefaults "durable" | ternary $queueExchangeDefaults.durable true) }}
 {{- $exchangeAutoDelete := hasKey $queueExchange "autoDelete" | ternary $queueExchange.autoDelete (hasKey $queueExchangeDefaults "autoDelete" | ternary $queueExchangeDefaults.autoDelete false) }}
+{{- $queueExchangeMetadataName := $queueExchange.metadataName | default ((printf "%s-%s-%s" $clusterRef $queueVhost $exchangeName) | include "com.klicktipp.slugify-string") }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Exchange
 metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $queueVhost $exchangeName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $queueExchangeMetadataName | quote }}
   labels:
     {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
@@ -73,11 +75,12 @@ spec:
 {{- $bindingName := $binding.name | default $queueName }}
 {{- $routingKey := $binding.routingKey | default "" }}
 {{- $bindingSource := $binding.source | default ($queueExchange.name | default $queueName) }}
+{{- $queueBindingMetadataName := $binding.metadataName | default ((printf "%s-%s-%s" $clusterRef $queueVhost $bindingName) | include "com.klicktipp.slugify-string") }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Binding
 metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $queueVhost $bindingName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $queueBindingMetadataName | quote }}
   labels:
     {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
@@ -107,11 +110,12 @@ spec:
 {{- $exchangeDurable := hasKey $exchange "durable" | ternary $exchange.durable (hasKey $exchangeDefaults "durable" | ternary $exchangeDefaults.durable true) }}
 {{- $exchangeAutoDelete := hasKey $exchange "autoDelete" | ternary $exchange.autoDelete (hasKey $exchangeDefaults "autoDelete" | ternary $exchangeDefaults.autoDelete false) }}
 {{- $exchangeVhost := $exchange.vhost | default ($exchangeDefaults.vhost | default $defaultVhost) }}
+{{- $exchangeMetadataName := $exchange.metadataName | default ((printf "%s-%s-%s" $clusterRef $exchangeVhost $exchangeName) | include "com.klicktipp.slugify-string") }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Exchange
 metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $exchangeVhost $exchangeName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $exchangeMetadataName | quote }}
   labels:
     {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
@@ -141,11 +145,12 @@ spec:
 {{- $bindingSource := required (printf "rabbitmq.topology.bindings.%s.source is required" $name) $binding.source }}
 {{- $bindingDestination := required (printf "rabbitmq.topology.bindings.%s.destination is required" $name) $binding.destination }}
 {{- $routingKey := $binding.routingKey | default "" }}
+{{- $bindingMetadataName := $binding.metadataName | default ((printf "%s-%s-%s" $clusterRef $bindingVhost $bindingName) | include "com.klicktipp.slugify-string") }}
 ---
 apiVersion: rabbitmq.com/v1beta1
 kind: Binding
 metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $bindingVhost $bindingName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $bindingMetadataName | quote }}
   labels:
     {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
 spec:
@@ -178,10 +183,11 @@ spec:
 {{- $applyTo := required (printf "rabbitmq.topology.policies.%s.applyTo is required" $name) ($policy.applyTo | default $policyDefaults.applyTo) }}
 {{- $definition := required (printf "rabbitmq.topology.policies.%s.definition is required" $name) $policy.definition }}
 {{- $policyVhost := $policy.vhost | default ($policyDefaults.vhost | default $defaultVhost) }}
+{{- $policyMetadataName := $policy.metadataName | default ((printf "%s-%s-%s" $clusterRef $policyVhost $policyName) | include "com.klicktipp.slugify-string") }}
 apiVersion: rabbitmq.com/v1beta1
 kind: Policy
 metadata:
-  name: {{ (printf "%s-%s-%s" $clusterRef $policyVhost $policyName) | include "com.klicktipp.slugify-string" | quote }}
+  name: {{ $policyMetadataName | quote }}
   labels:
     {{- include "rabbitmq-topology.labels" $ | nindent 4 }}
     {{- with $policy.labels }}
