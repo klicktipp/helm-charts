@@ -1,0 +1,6 @@
+dependencies:
+- name: klicktipp-common
+  repository: file://../klicktipp-common
+  version: 1.0.0
+digest: sha256:395d2877003c27d43b37d0eae85e2786053d1890256209b07184f63fdf727902
+generated: "2026-02-12T12:53:04.903112+01:00"

@@ -1,0 +1,9 @@
+dependencies:
+- name: klicktipp-common
+  repository: file://../klicktipp-common
+  version: 1.0.0
+- name: rabbitmq-topology
+  repository: file://../rabbitmq-topology
+  version: 1.0.0
+digest: sha256:181f54eb3595ac049ca2b458ecad4155ce5a5347ceffae72d37db5be3bd478f5
+generated: "2026-02-12T12:53:04.933086+01:00"

@@ -1,6 +1,5 @@
----
-{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
-{{- $defaultVhost := include "rabbitmq-cluster.default-vhost" . }}
+{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-topology.fullname" .) }}
+{{- $defaultVhost := include "rabbitmq-topology.default-vhost" . }}
 
 {{- range $name, $user := .Values.rabbitmq.topology.users }}
 {{- if ($user.enabled | default true) }}
@@ -13,7 +12,6 @@ kind: User
 metadata:
   name: {{ printf "%s-%s" $clusterRef $userName | include "com.klicktipp.slugify-string" | quote }}
   annotations:
-    # Workaround to trigger a re-creation of the user / setting the password
     checksum/user: {{ $user.existingSecret | default (printf "%s-%s" $userName $user.password) | sha256sum }}
 spec:
   tags:

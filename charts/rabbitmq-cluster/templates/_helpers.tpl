@@ -57,8 +57,11 @@ Otherwise, always use "/".
 */}}
 {{- define "rabbitmq-cluster.default-vhost" -}}
 {{- $vhost := "/" }}
-{{- if .Values.rabbitmq.vhosts }}
-  {{- range $key, $val := .Values.rabbitmq.vhosts }}
+{{- $topologyValues := index .Values "rabbitmq-topology" | default (dict) }}
+{{- $rabbitmqValues := index $topologyValues "rabbitmq" | default (dict) }}
+{{- $vhosts := index $rabbitmqValues "vhosts" | default (dict) }}
+{{- if $vhosts }}
+  {{- range $key, $val := $vhosts }}
     {{- if and ($val.enabled | default true) $val.default }}
       {{- $vhost = $val.name | default $key }}
       {{- break }}
