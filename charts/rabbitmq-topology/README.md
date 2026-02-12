@@ -36,13 +36,14 @@ Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology Operator 
 | rabbitmq.topology.exchanges | object | `{}` | Map of exchange definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 | rabbitmq.topology.bindings | object | `{}` | Map of binding definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 | rabbitmq.topology.policies | object | `{}` | Map of policy definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
-| rabbitmq.topology.permissionDefaults | object | `{"configure":".*","enabled":true,"read":".*","vhost":"","write":".*"}` | Default values applied to user permission entries when not set per user. Fallback chain: user.permission field -> permissionDefaults field -> template fallback. |
+| rabbitmq.topology.permissionDefaults | object | `{"configure":".*","enabled":true,"read":".*","referenceType":"userReference","vhost":"","write":".*"}` | Default values applied to user permission entries when not set per user. Fallback chain: user.permission field -> permissionDefaults field -> template fallback. |
+| rabbitmq.topology.permissionDefaults.referenceType | string | `"userReference"` | Default value for `users.<name>.permission.referenceType` (`userReference` or `user`). Final template fallback: `userReference`. |
 | rabbitmq.topology.permissionDefaults.enabled | bool | `true` | Default value for `users.<name>.permission.enabled`. Final template fallback: `true`. |
 | rabbitmq.topology.permissionDefaults.vhost | string | `""` | Default value for `users.<name>.permission.vhost`. Final template fallback: selected default vhost (`/` if none marked default). |
 | rabbitmq.topology.permissionDefaults.configure | string | `".*"` | Default value for `users.<name>.permission.configure`. Final template fallback: `.*`. |
 | rabbitmq.topology.permissionDefaults.write | string | `".*"` | Default value for `users.<name>.permission.write`. Final template fallback: `.*`. |
 | rabbitmq.topology.permissionDefaults.read | string | `".*"` | Default value for `users.<name>.permission.read`. Final template fallback: `.*`. |
-| rabbitmq.topology.users | object | `{}` | Map of user definitions. Per entry you can set `metadataName` for User and `permission.metadataName` for Permission. |
+| rabbitmq.topology.users | object | `{}` | Map of user definitions. Per entry you can set `metadataName` for User and `permission.metadataName` for Permission. For migration, `permission.referenceType` supports `userReference` (default) or legacy `user`. |
 | rabbitmq.vhosts | object | `{}` | Map of vhost definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 
 ## Examples
@@ -136,6 +137,7 @@ rabbitmq:
         tags:
           - management
         permission:
+          referenceType: userReference
           enabled: true
           vhost: app
           configure: ".*"
@@ -155,12 +157,34 @@ rabbitmq:
         metadataName: app-user
         existingSecret: rabbitmq-user-app
         permission:
+          referenceType: userReference
           metadataName: app-user
           enabled: true
           vhost: "/"
           configure: ".*"
           write: ".*"
           read: ".*"
+
+### 4b. Legacy Permission migration (`spec.user`)
+
+Use this if an existing `Permission` object was originally created with `spec.user`
+and you want to avoid immutable-field update errors during migration.
+
+```yaml
+rabbitmq:
+  cluster:
+    name: app-rabbitmq
+  topology:
+    users:
+      app-user:
+        name: app-user
+        existingSecret: rabbitmq-user-app
+        permission:
+          metadataName: app-user
+          referenceType: user
+          user: app-user
+          vhost: "/"
+```
 ```
 
 ### 5. Preserve existing Kubernetes resource names (`metadata.name`)

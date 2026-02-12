@@ -97,6 +97,7 @@ rabbitmq:
         tags:
           - management
         permission:
+          referenceType: userReference
           enabled: true
           vhost: app
           configure: ".*"
@@ -116,12 +117,34 @@ rabbitmq:
         metadataName: app-user
         existingSecret: rabbitmq-user-app
         permission:
+          referenceType: userReference
           metadataName: app-user
           enabled: true
           vhost: "/"
           configure: ".*"
           write: ".*"
           read: ".*"
+
+### 4b. Legacy Permission migration (`spec.user`)
+
+Use this if an existing `Permission` object was originally created with `spec.user`
+and you want to avoid immutable-field update errors during migration.
+
+```yaml
+rabbitmq:
+  cluster:
+    name: app-rabbitmq
+  topology:
+    users:
+      app-user:
+        name: app-user
+        existingSecret: rabbitmq-user-app
+        permission:
+          metadataName: app-user
+          referenceType: user
+          user: app-user
+          vhost: "/"
+```
 ```
 
 ### 5. Preserve existing Kubernetes resource names (`metadata.name`)

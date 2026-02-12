@@ -99,6 +99,7 @@ rabbitmq-topology:
           metadataName: app-user
           existingSecret: rabbitmq-user-app
           permission:
+            referenceType: userReference
             metadataName: app-user
             enabled: true
             vhost: "/"
@@ -119,6 +120,7 @@ rabbitmq-topology:
           metadataName: smtp-user
           password: "change-me"
           permission:
+            referenceType: userReference
             metadataName: smtp-user
             enabled: true
             vhost: "/"
@@ -127,7 +129,25 @@ rabbitmq-topology:
             read: ".*"
 ```
 
-### 6. Preserve existing Kubernetes resource names (`metadata.name`)
+### 6. Legacy Permission migration (`spec.user`)
+
+```yaml
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    topology:
+      users:
+        app-user:
+          name: app-user
+          existingSecret: rabbitmq-user-app
+          permission:
+            metadataName: app-user
+            referenceType: user
+            user: app-user
+            vhost: "/"
+```
+
+### 7. Preserve existing Kubernetes resource names (`metadata.name`)
 
 ```yaml
 rabbitmq-topology:

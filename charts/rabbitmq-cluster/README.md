@@ -57,6 +57,7 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | rabbitmq-topology.rabbitmq.topology.policyDefaults.vhost | string | `""` | Default value for `policies.<name>.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
 | rabbitmq-topology.rabbitmq.topology.policyDefaults.priority | int | `0` | Default value for `policies.<name>.priority` in the topology subchart. Final template fallback: `0`. |
 | rabbitmq-topology.rabbitmq.topology.policyDefaults.applyTo | string | `""` | Default value for `policies.<name>.applyTo` in the topology subchart. Final template fallback: required on each policy if empty here. |
+| rabbitmq-topology.rabbitmq.topology.permissionDefaults.referenceType | string | `"userReference"` | Default value for `users.<name>.permission.referenceType` in the topology subchart (`userReference` or `user`). Final template fallback: `userReference`. |
 | rabbitmq-topology.rabbitmq.topology.permissionDefaults.enabled | bool | `true` | Default value for `users.<name>.permission.enabled` in the topology subchart. Final template fallback: `true`. |
 | rabbitmq-topology.rabbitmq.topology.permissionDefaults.vhost | string | `""` | Default value for `users.<name>.permission.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
 | rabbitmq-topology.rabbitmq.topology.permissionDefaults.configure | string | `".*"` | Default value for `users.<name>.permission.configure` in the topology subchart. Final template fallback: `.*`. |
@@ -66,7 +67,7 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | rabbitmq-topology.rabbitmq.topology.exchanges | object | `{}` | Map of exchange definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 | rabbitmq-topology.rabbitmq.topology.bindings | object | `{}` | Map of binding definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 | rabbitmq-topology.rabbitmq.topology.policies | object | `{}` | Map of policy definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
-| rabbitmq-topology.rabbitmq.topology.users | object | `{}` | Map of user definitions. Per entry you can set `metadataName` for User and `permission.metadataName` for Permission. |
+| rabbitmq-topology.rabbitmq.topology.users | object | `{}` | Map of user definitions. Per entry you can set `metadataName` for User and `permission.metadataName` for Permission. For migration, `permission.referenceType` supports `userReference` (default) or legacy `user`. |
 | rabbitmq-topology.rabbitmq.vhosts | object | `{}` | Map of vhost definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 
 ## Examples
@@ -162,6 +163,7 @@ rabbitmq-topology:
           metadataName: app-user
           existingSecret: rabbitmq-user-app
           permission:
+            referenceType: userReference
             metadataName: app-user
             enabled: true
             vhost: "/"
@@ -182,6 +184,7 @@ rabbitmq-topology:
           metadataName: smtp-user
           password: "change-me"
           permission:
+            referenceType: userReference
             metadataName: smtp-user
             enabled: true
             vhost: "/"
@@ -190,7 +193,25 @@ rabbitmq-topology:
             read: ".*"
 ```
 
-### 6. Preserve existing Kubernetes resource names (`metadata.name`)
+### 6. Legacy Permission migration (`spec.user`)
+
+```yaml
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    topology:
+      users:
+        app-user:
+          name: app-user
+          existingSecret: rabbitmq-user-app
+          permission:
+            metadataName: app-user
+            referenceType: user
+            user: app-user
+            vhost: "/"
+```
+
+### 7. Preserve existing Kubernetes resource names (`metadata.name`)
 
 ```yaml
 rabbitmq-topology:
