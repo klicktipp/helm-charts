@@ -37,8 +37,7 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | rabbitmq.cluster.override | object | `{}` | Raw override merged into RabbitmqCluster spec. |
 | rabbitmq.cluster.affinity | object | `{}` | Pod affinity/anti-affinity for RabbitMQ pods. |
 | rabbitmq-topology.enabled | bool | `false` | Enable the `rabbitmq-topology` dependency chart. |
-| rabbitmq-topology.rabbitmq.topology.queueDefaults | object | `{"autoDelete":false,"binding":{"destinationType":"queue","enabled":true},"durable":true,"exchange":{"autoDelete":false,"durable":true,"enabled":true,"type":"fanout"},"type":"quorum","vhost":""}` | Pass-through defaults for the rabbitmq-topology subchart. Fallback chain in subchart: object field -> these defaults -> template fallback. |
-| rabbitmq-topology.rabbitmq.topology.queueDefaults.type | string | `"quorum"` | Default value for `queues.<name>.type` in the topology subchart. Final template fallback: `quorum`. |
+| rabbitmq-topology.rabbitmq.topology.queueDefaults | object | `{"autoDelete":false,"binding":{"destinationType":"queue","enabled":true},"durable":true,"exchange":{"autoDelete":false,"durable":true,"enabled":true,"type":"fanout"},"vhost":""}` | Pass-through defaults for the rabbitmq-topology subchart. Fallback chain in subchart: object field -> these defaults -> template fallback. |
 | rabbitmq-topology.rabbitmq.topology.queueDefaults.durable | bool | `true` | Default value for `queues.<name>.durable` in the topology subchart. Final template fallback: `true`. |
 | rabbitmq-topology.rabbitmq.topology.queueDefaults.autoDelete | bool | `false` | Default value for `queues.<name>.autoDelete` in the topology subchart. Final template fallback: `false`. |
 | rabbitmq-topology.rabbitmq.topology.queueDefaults.vhost | string | `""` | Default value for `queues.<name>.vhost` in the topology subchart. Final template fallback: selected default vhost (`/` if none marked default). |
@@ -118,7 +117,8 @@ rabbitmq-topology:
       queues:
         email-request:
           name: email_request
-          type: quorum
+          arguments:
+            x-queue-type: quorum
           durable: true
           autoDelete: false
           vhost: app
