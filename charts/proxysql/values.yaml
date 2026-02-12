@@ -3,32 +3,50 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# -- Container image configuration.
 image:
+  # -- Set image.registry.
   registry: docker.io
+  # -- Container image repository.
   repository: proxysql/proxysql
+  # -- Container image tag.
   tag: null
+  # -- Image pull policy.
   pullPolicy: IfNotPresent
 
+# -- Image pull secrets.
 imagePullSecrets: []
+# -- Partially override generated resource names.
 nameOverride: ""
+# -- Fully override generated resource names.
 fullnameOverride: ""
 
+# -- ServiceAccount configuration.
 serviceAccount:
   # Specifies whether a service account should be created
+  # -- Set serviceAccount.create.
   create: true
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
+  # -- Set serviceAccount.name.
   name:
 
 # Optional: If set, the proxysql pods will use the given priorityClassName.
+# -- Set priorityClassName.
 priorityClassName: ""
 
+# -- Pod security context.
 podSecurityContext:
+  # -- Set podSecurityContext.runAsNonRoot.
   runAsNonRoot: true
+  # -- Set podSecurityContext.fsGroup.
   fsGroup: 999
+  # -- Set podSecurityContext.runAsUser.
   runAsUser: 999
+  # -- Set podSecurityContext.runAsGroup.
   runAsGroup: 999
 
+# -- Container security context.
 securityContext: {}
   # capabilities:
   #   drop:
@@ -38,12 +56,15 @@ securityContext: {}
   # runAsUser: 1000
 
 ## ProxySQL service configuration
+# -- Service configuration.
 service:
   ## ProxySQL service type
+  # -- Type configuration value.
   type: ClusterIP
   # clusterIP: None
 
   ## SQL proxying port
+  # -- Set service.proxyPort.
   proxyPort: 6033
 
   ## Specify the >proxy< NodePort value for the LoadBalancer and NodePort service types.
@@ -52,6 +73,7 @@ service:
   # proxyNodePort:
 
   ## Admin and clustering port
+  # -- Set service.adminPort.
   adminPort: 6032
 
   ## Specify the >admin< NodePort value for the LoadBalancer and NodePort service types.
@@ -60,6 +82,7 @@ service:
   # adminNodePort:
 
   ## Admin Web UI port
+  # -- Set service.webPort.
   webPort: 6080
 
   ## Specify the >web< NodePort value for the LoadBalancer and NodePort service types.
@@ -69,6 +92,7 @@ service:
 
   ## Provide any additional annotations which may be required.
   ## The value is evaluated as a template, so, for example, the value can depend on .Release or .Chart
+  # -- Annotations map.
   annotations: {}
   ## Set the LoadBalancer service type to internal only.
   ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
@@ -83,6 +107,7 @@ service:
 
 # Default pod resource allocation.
 # Will be applied if not specified otherwise.
+# -- Container resource requests and limits.
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -97,94 +122,140 @@ resources: {}
 
 # Default node selectors.
 # Will be applied if not specified otherwise.
+# -- Node selector for pod scheduling.
 nodeSelector: {}
 
 # Default pod tolerations.
 # Will be applied if not specified otherwise.
+# -- Tolerations for pod scheduling.
 tolerations: []
 
 # Default node affinity.
 # Will be applied if not specified otherwise.
+# -- Affinity rules for pod scheduling.
 affinity: {}
 
 # Set a pod-to pod anti-affinity rule, to spread proxysql pods evenly across nodes.
+# -- Set podAntiAffinity.
 podAntiAffinity:
+  # -- Enable this feature.
   enabled: false
 
 # Common annotations to add to all resources (sub-charts are not considered).
 # Evaluated as a template
+# -- Configure commonAnnotations.
 commonAnnotations: {}
 
 # Common labels to add to all resources (sub-charts are not considered).
 # Evaluated as a template
+# -- Configure commonLabels.
 commonLabels: {}
 
 # Default pod annotations.
 # Will be applied if not specified otherwise.
+# -- Pod annotations.
 podAnnotations: {}
 
 # Default pod labels.
 # If labels are same as commonLabels , this will take precedence
+# -- Pod labels.
 podLabels: {}
 
 ## Specify pod disruption budget
 ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
 ##
+# -- Set podDisruptionBudget.
 podDisruptionBudget: {}
 #  minAvailable: 0     # required count of pods to remain available, even without the evicted pod.
 #  maxUnavailable: 0   # Count of pods that may be unavailable after eviction.
 
+# -- Startup probe configuration.
 startupProbe:
+  # -- Enable this feature.
   enabled: false
+  # -- Configure startupProbe.initialDelaySeconds.
   initialDelaySeconds: 5
+  # -- Configure startupProbe.periodSeconds.
   periodSeconds: 3
+  # -- Configure startupProbe.timeoutSeconds.
   timeoutSeconds: 1
+  # -- Set startupProbe.failureThreshold.
   failureThreshold: 10
+  # -- Set startupProbe.successThreshold.
   successThreshold: 1
 
+# -- Readiness probe configuration.
 readinessProbe:
+  # -- Enable this feature.
   enabled: false
+  # -- Configure readinessProbe.initialDelaySeconds.
   initialDelaySeconds: 0
+  # -- Configure readinessProbe.periodSeconds.
   periodSeconds: 10
+  # -- Configure readinessProbe.timeoutSeconds.
   timeoutSeconds: 5
+  # -- Set readinessProbe.failureThreshold.
   failureThreshold: 60
+  # -- Set readinessProbe.successThreshold.
   successThreshold: 1
 
+# -- Liveness probe configuration.
 livenessProbe:
+  # -- Enable this feature.
   enabled: false
+  # -- Configure livenessProbe.initialDelaySeconds.
   initialDelaySeconds: 5
+  # -- Configure livenessProbe.periodSeconds.
   periodSeconds: 10
+  # -- Configure livenessProbe.timeoutSeconds.
   timeoutSeconds: 5
+  # -- Set livenessProbe.failureThreshold.
   failureThreshold: 3
+  # -- Set livenessProbe.successThreshold.
   successThreshold: 1
 
 # Enable SSL communication with the backend MySQL servers
+# -- Set ssl.
 ssl:
   ## When a cert and a key or fromSecret are provided use_ssl is enabled automaticaly (in mysql_servers items)
   #  if use_ssl is not specified.
+  # -- Set ssl.auto.
   auto: true
 
   ## Sets the values for the SSL CA, Cert and private Key in PEM format.
+  # -- Set ssl.ca.
   ca: ""
+  # -- Set ssl.cert.
   cert: ""
+  # -- Set ssl.key.
   key: ""
 
+  # -- Set ssl.sslDir.
   sslDir: "/etc/proxysql"   # ProxySQL SSL directory
+  # -- Set ssl.ca_file.
   ca_file: "ca.pem"         # Name of the CA file
+  # -- Set ssl.cert_file.
   cert_file: "cert.pem"     # Name of the Cert file
+  # -- Set ssl.key_file.
   key_file: "key.pem"       # Name of the private Key file
 
   ## Loads ca.pem, cert.pem, and key.pem from an existingSecret
+  # -- Set ssl.fromSecret.
   fromSecret: ""
 
+# -- Component secret configuration map.
 secret:
   # These are the variables to set `admin_credentials`
   # WARNING: Set the `admin_credentials` variable to a non-default user other than admin`.
   #          ProxySQL reserves the default `admin` user for local connection via localhost only.
+  # -- Set secret.admin_user.
   admin_user: "proxysql-admin"
+  # -- Set secret.admin_password.
   admin_password: "proxysql"
 
+# -- Configure admin_variables.
 admin_variables:
+  # -- Set admin_variables.debug.
   debug: false
 
   # admin/clustering listening interfaces
@@ -195,6 +266,7 @@ admin_variables:
 
   # refresh_interval: 2000
 
+# -- Configure mysql_variables.
 mysql_variables:
   ## ref: https://github.com/sysown/proxysql/wiki/Global-variables
   #
@@ -206,14 +278,19 @@ mysql_variables:
   # interfaces: "0.0.0.0:6033"
 
   ## The number of background threads that ProxySQL uses in order to process MySQL traffic
+  # -- Configure mysql_variables.threads.
   threads: 4
   ## The maximum number of client connections that the proxy can handle.
+  # -- Configure mysql_variables.max_connections.
   max_connections: 2048
+  # -- Set mysql_variables.default_query_delay.
   default_query_delay: 0
   ## Mechanism for specifying the maximal duration of queries to the backend MySQL (in ms)
+  # -- Set mysql_variables.default_query_timeout.
   default_query_timeout: 3600000
   ## Enables or disables MySQL Monitor.
   #  ref: https://github.com/sysown/proxysql/wiki/Monitor-Module
+  # -- Set mysql_variables.monitor_enabled.
   monitor_enabled: false
   # monitor_username: "monitor"
   # monitor_password: "monitor"
@@ -223,6 +300,7 @@ mysql_variables:
 #  For MySQL 8.0 passwords must be mysql_native_password.
 #  ref: https://github.com/sysown/proxysql/wiki/MySQL-8.0
 #
+# -- Configure mysql_users.
 mysql_users:
   # - username: "user"
   #   password: "password"
@@ -233,6 +311,7 @@ mysql_users:
 
 ## Define MySQL backend servers
 #
+# -- Configure mysql_servers.
 mysql_servers:
   # - address: "172.17.0.1"
   #   port: 3306
@@ -241,6 +320,7 @@ mysql_servers:
 
 ## Defines MySQL Query Rules (routing)
 #
+# -- Configure mysql_query_rules.
 mysql_query_rules:
   ##  Note that rule_id is not required! Since it's automaticaly set
   #   based on the array index.
@@ -253,51 +333,70 @@ mysql_query_rules:
 
 ## If enabled, generate automagically a list of proxysql servers based on the
 #  number of statefullset 'proxysql-core' replicas (default 3).
+# -- Configure use_default_proxysql_servers.
 use_default_proxysql_servers: true
 
 ## Defines an additional list of ProxySQL peers (clustering).
 #   For example, externally hosted proxysql core servers.
 #   ref: https://proxysql.com/documentation/proxysql-cluster/
+# -- Configure additional_proxysql_servers.
 additional_proxysql_servers:
   # - hostname : peer’s hostname/IP
   #   port : peer’s port
   #   weight : currently unused, but in the roadmap for future enhancements
   #   comment : free form comment field
 
+# -- Set proxysql_cluster.
 proxysql_cluster:
+  # -- Enable this feature.
   enabled: false
 
+  # -- Component secret configuration map.
   secret:
     # This are the variables to set `admin_credentials` and corresponding `cluster_` variables
+    # -- Set proxysql_cluster.secret.cluster_username.
     cluster_username: "proxysql-cluster"
+    # -- Set proxysql_cluster.secret.cluster_password.
     cluster_password: "proxysql"
 
+  # -- Set proxysql_cluster.core.
   core:
     ## DNS Example:
     #   headless-svc:                 proxysql-core.<namespace>.svc.cluster.local
     #   sts-pod:      proxysql-core-0.proxysql-core.<namespace>.svc.cluster.local
+    # -- Enable this feature.
     enabled: true
 
     # Number of core/main ProxySQL nodes to listen for changes on AdminPort
     #   It is recommended to use one of the following number of replicas: 3, 5, 7, or 9.
+    # -- Configure proxysql_cluster.core.replicas.
     replicas: 3
 
     # Restart ProxySQL if crashes
+    # -- Set proxysql_cluster.core.exit_on_error.
     exit_on_error: false
 
+    # -- Set proxysql_cluster.core.podDisruptionBudget.
     podDisruptionBudget: {}
     #  minAvailable: 0     # required count of pods to remain available, even without the evicted pod.
     #  maxUnavailable: 0   # Count of pods that may be unavailable after eviction.
 
     # Optional: If set, the proxysql pods will use the given priorityClassName.
+    # -- Set proxysql_cluster.core.priorityClassName.
     priorityClassName: ""
 
+    # -- Set proxysql_cluster.core.statefullset.
     statefullset:
+      # -- Node selector for pod scheduling.
       nodeSelector: {}
+      # -- Tolerations for pod scheduling.
       tolerations: []
+      # -- Affinity rules for pod scheduling.
       affinity: {}
+      # -- Pod annotations.
       podAnnotations: {}
 
+      # -- Container resource requests and limits.
       resources: {}
       #  limits:
       #    cpu: 100m
@@ -306,33 +405,46 @@ proxysql_cluster:
       #    cpu: 100m
       #    memory: 128Mi
 
+    # -- Service configuration.
     service:
       # Override default core service name
+      # -- Set proxysql_cluster.core.service.name.
       name: ""
 
+  # -- Set proxysql_cluster.satellite.
   satellite:
     # Select the Kubernetes Resource type for the Satellite nodes,
     #   either "DaemonSet" or "Deployment"
+    # -- Set proxysql_cluster.satellite.kind.
     kind: "DaemonSet"
 
+    # -- Enable this feature.
     enabled: true
 
     # Only applies if kind=Deployment
+    # -- Configure proxysql_cluster.satellite.replicas.
     replicas: 3
 
     # Restart ProxySQL if crashes
+    # -- Set proxysql_cluster.satellite.exit_on_error.
     exit_on_error: false
 
+    # -- Set proxysql_cluster.satellite.podDisruptionBudget.
     podDisruptionBudget: {}
     #  minAvailable: 0     # required count of pods to remain available, even without the evicted pod.
     #  maxUnavailable: 0   # Count of pods that may be unavailable after eviction.
 
     # Optional: If set, the proxysql pods will use the given priorityClassName.
+    # -- Set proxysql_cluster.satellite.priorityClassName.
     priorityClassName: ""
 
+    # -- Set proxysql_cluster.satellite.daemonset.
     daemonset:
+      # -- Node selector for pod scheduling.
       nodeSelector: {}
+      # -- Tolerations for pod scheduling.
       tolerations: []
+      # -- Affinity rules for pod scheduling.
       affinity: {}
       #  See ref: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/#scheduled-by-default-scheduler
       #  nodeAffinity:
@@ -343,8 +455,10 @@ proxysql_cluster:
       #            operator: In
       #            values:
       #              - target-host-name
+      # -- Pod annotations.
       podAnnotations: {}
 
+      # -- Container resource requests and limits.
       resources: {}
       #  limits:
       #    cpu: 100m
@@ -353,8 +467,10 @@ proxysql_cluster:
       #    cpu: 100m
       #    memory: 128Mi
 
+    # -- Service configuration.
     service:
       # Override default satellite service name
+      # -- Set proxysql_cluster.satellite.service.name.
       name: ""
 
   # Cluster Init job
@@ -364,21 +480,30 @@ proxysql_cluster:
   #   This is necessary because on each update the cluster config versioning
   #   starts at version/checksum = 0. As per specification the satellites won't sync the changes
   #   until the version/checksum is not 0.
+  # -- Set proxysql_cluster.job.
   job:
 
+    # -- Enable this feature.
     enabled: true
 
     # Retry 3 times until failed
+    # -- Set proxysql_cluster.job.backoffLimit.
     backoffLimit: 3
 
     # delete the job resource after given seconds
+    # -- Set proxysql_cluster.job.ttlSecondsAfterFinished.
     ttlSecondsAfterFinished: 86400
 
+    # -- Node selector for pod scheduling.
     nodeSelector: {}
+    # -- Tolerations for pod scheduling.
     tolerations: []
+    # -- Affinity rules for pod scheduling.
     affinity: {}
+    # -- Pod annotations.
     podAnnotations: {}
 
+    # -- Container resource requests and limits.
     resources: {}
     #  limits:
     #    cpu: 100m
@@ -387,35 +512,54 @@ proxysql_cluster:
     #    cpu: 100m
     #    memory: 128Mi
 
+  # -- Set proxysql_cluster.healthcheck.
   healthcheck:
     # This is the healthcheck script executed by the k8s probes
+    # -- Set proxysql_cluster.healthcheck.psql_user.
     psql_user: null  # If not set use `.mysql_variables.monitor_username`
+    # -- Configure proxysql_cluster.healthcheck.psql_pass.
     psql_pass: null  # If not set use `.mysql_variables.monitor_password`
+    # -- Set proxysql_cluster.healthcheck.psql_host.
     psql_host: "127.0.0.1"  # The listening core host/pod. NOTE: User 'monitor' can only connect locally
+    # -- Set proxysql_cluster.healthcheck.psql_host_port.
     psql_host_port: null  # The admin port. If not set use `.service.adminPort`
 
+    # -- Set proxysql_cluster.healthcheck.diff_check_limit.
     diff_check_limit: 10  # How many diff_check errors are tolerated before the healthcheck fails
+    # -- Set proxysql_cluster.healthcheck.kill_if_healthcheck_failed.
     kill_if_healthcheck_failed: true  # Kill proxysql daemon if the healthcheck fails the test
+    # -- Set proxysql_cluster.healthcheck.verbose.
     verbose: false
 
+    # -- Override container command.
     command: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh"]
 
 # Enable debugging container along the proxysql instance
 #   It may be useful to access the proxysql admin interface locally to debug issues
+# -- Set debug.
 debug:
+  # -- Set debug.sidecar.
   sidecar:
     # inject a debug sidecar container to all proxysql Pods
+    # -- Enable this feature.
     enabled: false
+    # -- Container image configuration.
     image: mysql:debian
+    # -- Override container command.
     command:
       - /bin/sleep
       - infinity
+    # -- Container security context.
     securityContext:
+      # -- Set debug.sidecar.securityContext.runAsUser.
       runAsUser: 999
+      # -- Set debug.sidecar.securityContext.runAsGroup.
       runAsGroup: 999
 
+# -- Termination grace period in seconds.
 terminationGracePeriodSeconds: 60
 
+# -- Configure topologySpreadConstraints.
 topologySpreadConstraints:
 #  - maxSkew: 1 # allows a node or zone to have up to X pods more or less than any other node or zone.
 #    topologyKey: kubernetes.io/hostname # at least one Pod per Node
@@ -423,4 +567,5 @@ topologySpreadConstraints:
 
 # How long shall the pre-stop-Hook wait k8s to deregister the pod from the service,
 # before checking for open connections?
+# -- Set sleep_before_connection_check.
 sleep_before_connection_check: 15

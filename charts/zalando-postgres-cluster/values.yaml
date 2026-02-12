@@ -1,48 +1,70 @@
 ---
 
 # This is to override the chart name.
+# -- Partially override generated resource names.
 nameOverride: ""
+# -- Fully override generated resource names.
 fullnameOverride: ""
 
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+# -- ServiceAccount configuration.
 serviceAccount:
   # Specifies whether a service account should be created
+  # -- Set serviceAccount.create.
   create: true
   # Automatically mount a ServiceAccount's API credentials?
+  # -- Set serviceAccount.automount.
   automount: true
   # Annotations to add to the service account
+  # -- Annotations map.
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
+  # -- Set serviceAccount.name.
   name: ""
 
+# -- Set postgres_cluster.
 postgres_cluster:
+  # -- Enable this feature.
   enabled: true
 
   # Operator requires metadata.name to start with "<teamId>-". :contentReference[oaicite:7]{index=7}
+  # -- Set postgres_cluster.teamId.
   teamId: app
   # If empty -> defaults to Release.Name, then prefixed with "<teamId>-" if needed.
+  # -- Set postgres_cluster.name.
   name: ""
 
+  # -- Labels map.
   labels: {}
+  # -- Annotations map.
   annotations: {}
 
+  # -- Configure postgres_cluster.instances.
   instances: 1
 
+  # -- Set postgres_cluster.priorityClassName.
   priorityClassName: ""
 
+  # -- Configure postgres_cluster.postgres.
   postgres:
+    # -- Set postgres_cluster.postgres.version.
     version: "17"
+    # -- Configure postgres_cluster.postgres.parameters.
     parameters: {}
 
   # Initial goal: set database.name, optionally users, volume.size, backup.*
+  # -- Set postgres_cluster.database.
   database:
+    # -- Set postgres_cluster.database.name.
     name: app
 
+  # -- Configure postgres_cluster.preparedDatabases.
   preparedDatabases: {}
 
   # Extra users beyond preparedDatabases defaults. Supports list or map form.
   # List form:
+  # -- Configure postgres_cluster.users.
   users: []
   # - name: app_admin
   #   flags: ["createdb"]
@@ -50,70 +72,115 @@ postgres_cluster:
   # users:
   #   app_admin: ["createdb"]
 
+  # -- Set postgres_cluster.volume.
   volume:
+    # -- Enable this feature.
     enabled: false
+    # -- Storage size.
     size: "10Gi"
+    # -- StorageClass name for dynamic provisioning.
     storageClass: ""  # optional; omit to use the default StorageClass
 
+  # -- Set postgres_cluster.expose.
   expose:
+    # -- Set postgres_cluster.expose.masterLoadBalancer.
     masterLoadBalancer: false
+    # -- Set postgres_cluster.expose.replicaLoadBalancer.
     replicaLoadBalancer: false
 
+  # -- Set postgres_cluster.pooler.
   pooler:
+    # -- Enable this feature.
     enabled: false
+    # -- Set postgres_cluster.pooler.enableMasterPoolerLoadBalancer.
     enableMasterPoolerLoadBalancer: false
+    # -- Set postgres_cluster.pooler.enableReplicaPoolerLoadBalancer.
     enableReplicaPoolerLoadBalancer: false
+    # -- Set postgres_cluster.pooler.enableReplicaConnectionPooler.
     enableReplicaConnectionPooler: false
 
 
+  # -- Set postgres_cluster.backup.
   backup:
     # operator-managed logical dumps (pg_dump/pg_dumpall style) on a cron schedule.
     # uploaded to S3. See postgres-operator 'configuration.logical_backup'
+    # -- Enable this feature.
     enabled: false
+    # -- Set postgres_cluster.backup.schedule.
     schedule: "30 00 * * *"
+    # -- Set postgres_cluster.backup.retention.
     retention: "7 days"
 
   # Optional: WAL/S3 env wiring (matches your env var naming). :contentReference[oaicite:8]{index=8}
+  # -- Set postgres_cluster.wal.
   wal:
     # Configures physical backup + continuous WAL archiving to S3 (base backup + WAL segments).
     # Enables PITR (point-in-time recovery) and faster restores for large DBs (physical restore).
     # NOTE: Requires IAM permissions for S3 access.
+    # -- Enable this feature.
     enabled: false
+    # -- Set postgres_cluster.wal.backupSchedule.
     backupSchedule: "0 10 * * *"
+    # -- Set postgres_cluster.wal.s3Bucket.
     s3Bucket: null              # set to override operator-managed default
+    # -- Set postgres_cluster.wal.s3ScopePrefix.
     s3ScopePrefix: null         # set to override operator-managed default
+    # -- Set postgres_cluster.wal.awsRegion.
     awsRegion: null             # set to override operator-managed default
+    # -- Set postgres_cluster.wal.accessKeyId.
     accessKeyId: null           # set to override operator-managed default
+    # -- Set postgres_cluster.wal.secretAccessKey.
     secretAccessKey: null       # set to override operator-managed default
+    # -- Set postgres_cluster.wal.backupNumToRetain.
     backupNumToRetain: "3"
+    # -- Configure postgres_cluster.wal.logS3Tags.
     logS3Tags: true
 
   # Optional: TLS. If createCertificate=false, secret must exist already (e.g. managed elsewhere).
+  # -- TLS configuration.
   tls:
+    # -- Enable this feature.
     enabled: false
+    # -- Set postgres_cluster.tls.secretName.
     secretName: ""            # defaults to "<fullName>-tls" if empty
+    # -- Set postgres_cluster.tls.certificateFile.
     certificateFile: "tls.crt"
+    # -- Set postgres_cluster.tls.privateKeyFile.
     privateKeyFile: "tls.key"
+    # -- Set postgres_cluster.tls.caFile.
     caFile: ""
+    # -- Set postgres_cluster.tls.caSecretName.
     caSecretName: ""
 
+    # -- Set postgres_cluster.tls.createCertificate.
     createCertificate: false
+    # -- Set postgres_cluster.tls.organization.
     organization: "ACME INC."
+    # -- Set postgres_cluster.tls.duration.
     duration: "2160h" # 90d
+    # -- Set postgres_cluster.tls.renewBefore.
     renewBefore: "360h" # 15d
+    # -- Set postgres_cluster.tls.issuerRef.
     issuerRef:
+      # -- Set postgres_cluster.tls.issuerRef.name.
       name: ""
+      # -- Set postgres_cluster.tls.issuerRef.kind.
       kind: "ClusterIssuer"
+      # -- Set postgres_cluster.tls.issuerRef.group.
       group: "cert-manager.io"
 
+  # -- Set postgres_cluster.podServiceAccount.
   podServiceAccount:
+    # -- Set postgres_cluster.podServiceAccount.name.
     name: ""  # Use default service account if empty
 
   # Extra env entries appended to spec.env
+  # -- Environment variable entries.
   env: []
     # - name: foo
     #   value: "42"
 
+  # -- Container resource requests and limits.
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -126,6 +193,7 @@ postgres_cluster:
     #   cpu: 100m
     #   memory: 128Mi
 
+  # -- Set postgres_cluster.nodeAffinity.
   nodeAffinity: {}
     # requiredDuringSchedulingIgnoredDuringExecution:
     #   nodeSelectorTerms:
@@ -135,4 +203,5 @@ postgres_cluster:
     #           values:
     #             - "general-purpose"
 
+  # -- Tolerations for pod scheduling.
   tolerations: []
