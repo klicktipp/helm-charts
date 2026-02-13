@@ -1,206 +1,203 @@
-# Optional Helm name overrides
-# -- Partially override generated resource names.
+# -- Override for the Helm chart name.
 nameOverride: ""
-# -- Fully override generated resource names.
+
+# -- Override for the fully-qualified release name.
 fullnameOverride: ""
 
-# -- Container image configuration.
 image:
-  # -- Container image repository.
+  # -- RabbitMQ container image registry (e.g. `docker.io`, `ghcr.io`, ECR registry host). Empty means no registry prefix.
+  registry: ""
+  # -- RabbitMQ container image repository.
   repository: rabbitmq
-  # -- Container image tag.
+  # -- RabbitMQ container image tag.
   tag: 4.2-management-alpine
 
-# -- Set pdb.
 pdb:
-  # -- Enable this feature.
+  # -- Create a PodDisruptionBudget for RabbitMQ pods.
   enabled: false
-  # Can be an integer (e.g., 1) or a percentage string (e.g., "25%")
-  # -- Set pdb.maxUnavailable.
+  # -- `maxUnavailable` for PodDisruptionBudget (int or percentage string).
   maxUnavailable: 1
 
-# -- Ingress configuration.
 ingress:
-  # -- Enable this feature.
+  # -- Create an Ingress for RabbitMQ management UI.
   enabled: false
-  # -- Set ingress.className.
+  # -- IngressClass name.
   className: ""
-  # -- Annotations map.
+  # -- Additional annotations for Ingress.
   annotations: {}
-    # cert-manager.io/cluster-issuer: foo
-  # -- Host definitions.
+  # -- Ingress host/path rules.
   hosts:
     - host: chart-example.local
-      # -- Ingress path definitions.
       paths:
         - path: /
-          # -- Ingress path type.
-          pathType: ImplementationSpecific
-  # -- TLS configuration.
+          pathType: Prefix
+  # -- TLS configuration entries for Ingress.
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
-# -- Set monitoring.
 monitoring:
-  # -- Enable this feature.
+  # -- Enable monitoring resources created by this chart.
   enabled: false
-  # -- Set monitoring.serviceMonitor.
   serviceMonitor:
-    # -- Enable this feature.
+    # -- Create a ServiceMonitor (requires Prometheus Operator CRDs).
     enabled: false
 
-# -- Termination grace period in seconds.
+# -- Pod termination grace period in seconds for RabbitMQ pods.
 terminationGracePeriodSeconds: 600
 
-# -- Set rabbitmq.
+# -- Additional raw Kubernetes objects rendered as-is via `tpl`.
+extraObjects: []
+
 rabbitmq:
-  # -- Set rabbitmq.cluster.
   cluster:
-    # If false, this chart will NOT create a RabbitmqCluster; you must point topology at an existing cluster.
-    # -- Enable this feature.
+    # -- Create the `RabbitmqCluster` resource.
     enabled: true
-
-    # RabbitmqCluster metadata.name (K8s object name). If empty, defaults to the Helm release fullname.
-    # -- Set rabbitmq.cluster.name.
+    # -- Name of the `RabbitmqCluster` resource. If empty, chart fullname is used.
     name: ""
-
-    # -- Configure rabbitmq.cluster.replicas.
+    # -- Number of RabbitMQ replicas.
     replicas: 1
-
-    # -- Configure rabbitmq.cluster.delayStartSeconds.
+    # -- Delay in seconds before RabbitMQ node starts.
     delayStartSeconds: 10
 
-    # -- Persistence configuration.
     persistence:
-      # -- Enable this feature.
+      # -- Enable persistent volume claim for RabbitMQ data.
       enabled: false
-      # -- Set rabbitmq.cluster.persistence.storage.
+      # -- Persistent volume size.
       storage: 10Gi
-      # -- Set rabbitmq.cluster.persistence.storageClassName.
+      # -- StorageClass name for persistence (empty = cluster default).
       storageClassName: ""
 
-    # -- Container resource requests and limits.
+    # -- Resource requests/limits for RabbitMQ container.
     resources: {}
-      # limits:
-      #   cpu: 250m
-      #   memory: 512Mi
-      # requests:
-      #   cpu: 1000m
-      #   memory: 1Gi
-
-    # Configuration profile preset (PROD, STAGING, DEV or custom).
-    # If set, it applies predefined RabbitMQ configuration snippets.
-    # Supported values: "PROD", "STAGING", "DEV". If empty or null, no preset is applied.
-    # -- Set rabbitmq.cluster.configProfile.
+    # -- Predefined RabbitMQ config profile (`PROD`, `STAGING`, `DEV`) or `null`.
     configProfile: null
-
-    # Additional RabbitMQ configuration as a multiline string.
-    # This will be appended to the environment-specific configuration.
-    # -- Set rabbitmq.cluster.extraConfig.
+    # -- Additional RabbitMQ config appended to generated config.
     extraConfig: ""
 
-    # Default plugins
-    # -- Configure rabbitmq.cluster.additionalPlugins.
+    # -- Default RabbitMQ plugins to enable.
     additionalPlugins:
       - rabbitmq_management
       - rabbitmq_prometheus
       - rabbitmq_peer_discovery_k8s
 
-    # Additional plugins to enable
-    # -- Configure rabbitmq.cluster.extraPlugins.
-    extraPlugins:  []
-
-    # Overrides for the RabbitmqCluster spec (e.g., for StatefulSet annotations)
-    # -- Set rabbitmq.cluster.override.
+    # -- Extra RabbitMQ plugins to enable in addition to defaults.
+    extraPlugins: []
+    # -- Raw override merged into RabbitmqCluster spec.
     override: {}
-    #  statefulSet:
-    #    spec:
-    #      template:
-    #        metadata:
-    #          annotations:
-    #            foo: bar
-
-    # -- Affinity rules for pod scheduling.
+    # -- Pod affinity/anti-affinity for RabbitMQ pods.
     affinity: {}
-    #  nodeAffinity:
-    #    requiredDuringSchedulingIgnoredDuringExecution:
-    #      nodeSelectorTerms:
-    #        - matchExpressions:
-    #          - key: nodepool
-    #            operator: In
-    #            values:
-    #              - workers
-    #  podAntiAffinity:
-    #    preferredDuringSchedulingIgnoredDuringExecution:
-    #      - weight: 100
-    #        podAffinityTerm:
-    #          labelSelector:
-    #            matchExpressions:
-    #              - key: app.kubernetes.io/name
-    #                operator: In
-    #                values:
-    #                  - rabbitmq-cluster
-    #          topologyKey: kubernetes.io/hostname
 
+rabbitmq-topology:
+  # -- Enable the `rabbitmq-topology` dependency chart.
+  enabled: false
 
-  # -- Set rabbitmq.topology.
-  topology:
-    # -- Enable this feature.
-    enabled: false
+  rabbitmq:
+    topology:
+      # -- Pass-through defaults for the rabbitmq-topology subchart.
+      # Fallback chain in subchart: object field -> these defaults -> template fallback.
+      queueDefaults:
+        # -- Default value for `queues.<name>.arguments` in the topology subchart.
+        # Queue-level `arguments` override keys from this map.
+        arguments: {}
+        # -- Default value for `queues.<name>.durable` in the topology subchart.
+        # Final template fallback: `true`.
+        durable: true
+        # -- Default value for `queues.<name>.autoDelete` in the topology subchart.
+        # Final template fallback: `false`.
+        autoDelete: false
+        # -- Default value for `queues.<name>.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
+        exchange:
+          # -- Default value for `queues.<name>.exchange.enabled` in the topology subchart.
+          # Final template fallback: `true`.
+          enabled: true
+          # -- Default value for `queues.<name>.exchange.type` in the topology subchart.
+          # Final template fallback: `fanout`.
+          type: fanout
+          # -- Default value for `queues.<name>.exchange.durable` in the topology subchart.
+          # Final template fallback: `true`.
+          durable: true
+          # -- Default value for `queues.<name>.exchange.autoDelete` in the topology subchart.
+          # Final template fallback: `false`.
+          autoDelete: false
+        binding:
+          # -- Default value for `queues.<name>.binding.enabled` in the topology subchart.
+          # Final template fallback: `true`.
+          enabled: true
+          # -- Default value for `queues.<name>.binding.destinationType` in the topology subchart.
+          # Final template fallback: `queue`.
+          destinationType: queue
 
-    # List of queue definitions. Empty by default (generic chart).
-    # -- Configure rabbitmq.topology.queues.
-    queues: {}
-    # queues item schema:
-    #   my_queue:                     # required (RabbitMQ entity name; underscores allowed)
-    #     enabled: true               # optional (default true)
-    #     durable: true                 # optional (default true)
-    #     autoDelete: false             # optional (default false)
-    #     arguments:                    # optional
-    #       x-message-ttl: 300000
-    #     exchange:
-    #       name: ""                    # optional (default: queue name)
-    #       type: fanout                # optional (default fanout) [fanout, direct, topic, headers]
-    #       durable: true               # optional (default true)
-    #       autoDelete: false           # optional (default false)
-    #     binding:
-    #       routingKey: ""              # optional (only relevant for direct/topic exchanges)
-    #       destination: ""             # optional (an existing queue or exchange)
-    #       type: queue                 # optional (default queue) [queue, exchange]
+      exchangeDefaults:
+        # -- Default value for `exchanges.<name>.type` in the topology subchart.
+        # Final template fallback: `fanout`.
+        type: fanout
+        # -- Default value for `exchanges.<name>.durable` in the topology subchart.
+        # Final template fallback: `true`.
+        durable: true
+        # -- Default value for `exchanges.<name>.autoDelete` in the topology subchart.
+        # Final template fallback: `false`.
+        autoDelete: false
+        # -- Default value for `exchanges.<name>.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
 
-    # -- Configure rabbitmq.topology.policies.
-    policies: {}
-    # policies item schema:
-    #   ha-all:                       # required (Policy name)
-    #     enabled: true               # optional (default true)
-    #     pattern: ".*"               # required (Regular expression)
-    #     applyTo: "all"              # required [all, queues, exchanges]
-    #     priority: 0                 # optional (default 0)
-    #     definition:                 # required
-    #       ha-mode: all
-    #       ha-sync-mode: automatic
+      bindingDefaults:
+        # -- Default value for `bindings.<name>.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
+        # -- Default value for `bindings.<name>.destinationType` in the topology subchart.
+        # Final template fallback: `queue`.
+        destinationType: queue
 
-    # -- Configure rabbitmq.topology.users.
-    users: {}
-    #   alice:                  # required
-    #     enabled: true         # optional (default true)
-    #     password: ""          # required (ignored if existingSecret is provided)
-    #     existingSecret: ""    # optional, if provided this secret will be used instead of creating a new one
-    #     tags:                 # optional
-    #       - "monitoring"
-    #     permission:
-    #       enabled: true
-    #       vhost: "/"        # optional, default: "/"
-    #       configure: ".*"   # optional, default: ".*"
-    #       write: ".*"       # optional, default: ".*"
-    #       read: ".*"        # optional, default: ".*"
+      policyDefaults:
+        # -- Default value for `policies.<name>.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
+        # -- Default value for `policies.<name>.priority` in the topology subchart.
+        # Final template fallback: `0`.
+        priority: 0
+        # -- Default value for `policies.<name>.applyTo` in the topology subchart.
+        # Final template fallback: required on each policy if empty here.
+        applyTo: ""
 
-  # -- Configure rabbitmq.vhosts.
-  vhosts: {}
-    # example:
-    #   my-vhost:
-    #     enabled: true
-    #     default: true  # optional, if true this vhost will be used as default
-    #     name: "my-vhost" # optional, defaults to key
+      permissionDefaults:
+        # -- Default value for `users.<name>.permission.referenceType` in the topology subchart (`userReference` or `user`).
+        # Final template fallback: `userReference`.
+        referenceType: userReference
+        # -- Default value for `users.<name>.permission.enabled` in the topology subchart.
+        # Final template fallback: `true`.
+        enabled: true
+        # -- Default value for `users.<name>.permission.vhost` in the topology subchart.
+        # Final template fallback: selected default vhost (`/` if none marked default).
+        vhost: ""
+        # -- Default value for `users.<name>.permission.configure` in the topology subchart.
+        # Final template fallback: `.*`.
+        configure: ".*"
+        # -- Default value for `users.<name>.permission.write` in the topology subchart.
+        # Final template fallback: `.*`.
+        write: ".*"
+        # -- Default value for `users.<name>.permission.read` in the topology subchart.
+        # Final template fallback: `.*`.
+        read: ".*"
+
+      # -- Map of queue definitions.
+      # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
+      queues: {}
+      # -- Map of exchange definitions.
+      # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
+      exchanges: {}
+      # -- Map of binding definitions.
+      # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
+      bindings: {}
+      # -- Map of policy definitions.
+      # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
+      policies: {}
+      # -- Map of user definitions.
+      # Per entry you can set `metadataName` for User and `permission.metadataName` for Permission.
+      # For migration, `permission.referenceType` supports `userReference` (default) or legacy `user`.
+      users: {}
+
+    # -- Map of vhost definitions.
+    # Per entry you can set `metadataName` to override Kubernetes `metadata.name`.
+    vhosts: {}

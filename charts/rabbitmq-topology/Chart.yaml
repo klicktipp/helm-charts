@@ -1,0 +1,24 @@
+---
+apiVersion: v2
+name: rabbitmq-topology
+description: Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology Operator CRDs.
+type: application
+version: "1.0.0"
+# renovate: datasource=docker depName=rabbitmqoperator/messaging-topology-operator
+appVersion: "1.18.2"
+home: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
+sources:
+  - https://github.com/klicktipp/helm-charts
+  - https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+  - https://github.com/rabbitmq/messaging-topology-operator
+keywords:
+  - rabbitmq
+  - topology
+  - operator
+  - messaging
+  - amqp
+dependencies:
+  - name: klicktipp-common
+    version: 1.0.0
+    repository: "file://../klicktipp-common"

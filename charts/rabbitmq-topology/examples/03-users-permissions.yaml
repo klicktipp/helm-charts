@@ -1,0 +1,17 @@
+# Title: Users and permissions
+rabbitmq:
+  cluster:
+    name: app-rabbitmq
+  topology:
+    users:
+      app-user:
+        password: change-me
+        tags:
+          - management
+        permission:
+          referenceType: userReference
+          enabled: true
+          vhost: app
+          configure: ".*"
+          write: ".*"
+          read: ".*"

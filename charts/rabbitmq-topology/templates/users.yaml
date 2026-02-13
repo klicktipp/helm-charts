@@ -1,0 +1,72 @@
+{{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-topology.fullname" .) }}
+{{- $defaultVhost := include "rabbitmq-topology.default-vhost" . }}
+{{- $permissionDefaults := .Values.rabbitmq.topology.permissionDefaults | default (dict) }}
+
+{{- range $name, $user := .Values.rabbitmq.topology.users }}
+{{- if ($user.enabled | default true) }}
+{{- $userName := $user.name | default $name }}
+{{- $userMetadataName := $user.metadataName | default (printf "%s-%s" $clusterRef $userName | include "com.klicktipp.slugify-string") }}
+{{- $tags := $user.tags | default (list) }}
+{{- $secretName := $user.existingSecret | default (printf "%s-%s" $clusterRef $userName | include "com.klicktipp.slugify-string") }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: {{ $userMetadataName | quote }}
+  annotations:
+    checksum/user: {{ $user.existingSecret | default (printf "%s-%s" $userName $user.password) | sha256sum }}
+spec:
+  tags:
+  {{- range $t := $tags }}
+    - {{ $t | quote }}
+  {{- end }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+  importCredentialsSecret:
+    name: {{ $secretName }}
+
+{{- if not $user.existingSecret }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName | quote }}
+type: "Opaque"
+stringData:
+  username: {{ $userName | quote }}
+  password: {{ $user.password | quote }}
+{{- end }}
+
+{{- $permission := $user.permission | default (dict) }}
+{{- $permissionEnabled := hasKey $permission "enabled" | ternary $permission.enabled (hasKey $permissionDefaults "enabled" | ternary $permissionDefaults.enabled true) }}
+{{- if $permissionEnabled }}
+{{- $vhost := coalesce $user.vhost $permission.vhost $permissionDefaults.vhost $defaultVhost }}
+{{- $permissionName := $permission.name | default (printf "%s-%s" $clusterRef $userName) | include "com.klicktipp.slugify-string" }}
+{{- $permissionMetadataName := $permission.metadataName | default $permissionName }}
+{{- $permissionReferenceType := hasKey $permission "referenceType" | ternary $permission.referenceType ($permissionDefaults.referenceType | default "userReference") }}
+{{- if and (ne $permissionReferenceType "userReference") (ne $permissionReferenceType "user") }}
+{{- fail (printf "rabbitmq.topology.users.%s.permission.referenceType must be 'userReference' or 'user'" $name) }}
+{{- end }}
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: {{ $permissionMetadataName | quote }}
+spec:
+  vhost: {{ $vhost | quote }}
+  {{- if eq $permissionReferenceType "user" }}
+  user: {{ $permission.user | default $userName | quote }}
+  {{- else }}
+  userReference:
+    name: {{ $userMetadataName | quote }}
+  {{- end }}
+  permissions:
+    write: {{ $permission.write | default ($permissionDefaults.write | default ".*") | quote }}
+    configure: {{ $permission.configure | default ($permissionDefaults.configure | default ".*") | quote }}
+    read: {{ $permission.read | default ($permissionDefaults.read | default ".*") | quote }}
+  rabbitmqClusterReference:
+    name: {{ $clusterRef | quote }}
+{{- end }} {{/* END if permission enabled */}}
+
+{{- end }} {{/* END if user enabled */}}
+{{- end }} {{/* END range rabbitmq.topology.users */}}
