@@ -80,6 +80,7 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | rabbitmq-topology.rabbitmq.topology.users | object | `{}` | Map of user definitions. Per entry you can set `metadataName` for User and `permission.metadataName` for Permission. For migration, `permission.referenceType` supports `userReference` (default) or legacy `user`. |
 | rabbitmq-topology.rabbitmq.vhosts | object | `{}` | Map of vhost definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 
+<!-- BEGIN AUTO EXAMPLES -->
 ## Examples
 
 ### 1. Cluster only
@@ -264,3 +265,5 @@ rabbitmq-topology:
           definition:
             alternate-exchange: app-events-fallback
 ```
+
+<!-- END AUTO EXAMPLES -->
