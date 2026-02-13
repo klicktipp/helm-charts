@@ -164,6 +164,7 @@ rabbitmq:
           configure: ".*"
           write: ".*"
           read: ".*"
+```
 
 ### 4b. Legacy Permission migration (`spec.user`)
 
@@ -184,7 +185,6 @@ rabbitmq:
           referenceType: user
           user: app-user
           vhost: "/"
-```
 ```
 
 ### 5. Preserve existing Kubernetes resource names (`metadata.name`)
