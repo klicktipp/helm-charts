@@ -1,5 +1,8 @@
 {{- $clusterRef := .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
 {{- $vhost := include "rabbitmq-cluster.default-vhost" . }}
+{{- $topologyValues := index .Values "rabbitmq-topology" | default (dict) }}
+{{- $topologyRabbitmq := index $topologyValues "rabbitmq" | default (dict) }}
+{{- $queues := (index (index $topologyRabbitmq "topology" | default (dict)) "queues") | default (dict) }}
 
 {{- if and .Values.monitoring.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
 {{- if .Values.monitoring.serviceMonitor.enabled }}
@@ -58,7 +61,7 @@ spec:
         insecureSkipVerify: true
 {{- end }} {{/* END if servicemonitor enabled */}}
 
-{{- range $name, $queue := .Values.rabbitmq.topology.queues }}
+{{- range $name, $queue := $queues }}
 {{- if and ($queue.enabled | default true) ($queue.alert_when_has_messages | default false ) }}
 {{- $queueName := $queue.name | default $name }}
 ---

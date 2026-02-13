@@ -1,5 +1,8 @@
 ---
 {{- if .Values.rabbitmq.cluster.enabled }}
+{{- $registry := .Values.image.registry | default "" }}
+{{- $repository := required "image.repository is required" .Values.image.repository }}
+{{- $tag := .Values.image.tag | default .Chart.AppVersion }}
 apiVersion: rabbitmq.com/v1beta1
 kind: RabbitmqCluster
 metadata:
@@ -7,7 +10,7 @@ metadata:
   labels:
     {{- include "rabbitmq-cluster.labels" . | nindent 4 }}
 spec:
-  image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+  image: {{ if $registry }}{{ printf "%s/%s:%s" $registry $repository $tag | quote }}{{ else }}{{ printf "%s:%s" $repository $tag | quote }}{{ end }}
   replicas: {{ .Values.rabbitmq.cluster.replicas }}
   {{- if .Values.rabbitmq.cluster.persistence.enabled }}
   persistence:

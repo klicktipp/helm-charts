@@ -1,0 +1,10 @@
+# Title: Cluster only
+rabbitmq:
+  cluster:
+    enabled: true
+    name: app-rabbitmq
+    replicas: 3
+    persistence:
+      enabled: true
+      storage: 20Gi
+      storageClassName: kt-gp3
