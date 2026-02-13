@@ -1,0 +1,43 @@
+# Title: Cluster + topology subchart
+rabbitmq:
+  cluster:
+    enabled: true
+    name: app-rabbitmq
+
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    cluster:
+      name: app-rabbitmq
+    vhosts:
+      app:
+        enabled: true
+        default: true
+        name: app
+    topology:
+      queueDefaults:
+        arguments:
+          x-queue-type: quorum
+        exchange:
+          enabled: false
+        binding:
+          enabled: false
+      exchanges:
+        app-events:
+          type: direct
+          durable: true
+          autoDelete: false
+          vhost: app
+      queues:
+        email-request:
+          name: email_request
+          durable: true
+          autoDelete: false
+          vhost: app
+      bindings:
+        email-request:
+          source: app-events
+          destination: email_request
+          destinationType: queue
+          routingKey: email_request
+          vhost: app

@@ -8,3 +8,5 @@ if ! command -v helm-docs >/dev/null 2>&1; then
 fi
 
 helm-docs --chart-search-root charts --sort-values-order=file
+
+scripts/inject-readme-examples.sh charts

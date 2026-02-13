@@ -56,6 +56,7 @@ Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology Operator 
 | rabbitmq.topology.users | object | `{}` | Map of user definitions. Per entry you can set `metadataName` for User and `permission.metadataName` for Permission. For migration, `permission.referenceType` supports `userReference` (default) or legacy `user`. |
 | rabbitmq.vhosts | object | `{}` | Map of vhost definitions. Per entry you can set `metadataName` to override Kubernetes `metadata.name`. |
 
+<!-- BEGIN AUTO EXAMPLES -->
 ## Examples
 
 ### 1. Minimal standalone topology
@@ -176,10 +177,9 @@ rabbitmq:
           read: ".*"
 ```
 
-### 4b. Legacy Permission migration (`spec.user`)
+### 5. Legacy Permission migration (`spec.user`)
 
-Use this if an existing `Permission` object was originally created with `spec.user`
-and you want to avoid immutable-field update errors during migration.
+Use this if an existing Permission object was originally created with `spec.user` and you want to avoid immutable-field update errors during migration.
 
 ```yaml
 rabbitmq:
@@ -197,7 +197,7 @@ rabbitmq:
           vhost: "/"
 ```
 
-### 5. Preserve existing Kubernetes resource names (`metadata.name`)
+### 6. Preserve existing Kubernetes resource names (`metadata.name`)
 
 ```yaml
 rabbitmq:
@@ -240,3 +240,5 @@ rabbitmq:
         definition:
           alternate-exchange: app-events-fallback
 ```
+
+<!-- END AUTO EXAMPLES -->

@@ -1,0 +1,15 @@
+# Title: Legacy Permission migration (`spec.user`)
+# Description: Use this if an existing Permission object was originally created with `spec.user` and you want to avoid immutable-field update errors during migration.
+rabbitmq:
+  cluster:
+    name: app-rabbitmq
+  topology:
+    users:
+      app-user:
+        name: app-user
+        existingSecret: rabbitmq-user-app
+        permission:
+          metadataName: app-user
+          referenceType: user
+          user: app-user
+          vhost: "/"

@@ -1,0 +1,14 @@
+# Title: Topology to external cluster
+rabbitmq:
+  cluster:
+    enabled: false
+
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    cluster:
+      name: existing-rabbitmq
+    topology:
+      exchanges:
+        app-events:
+          type: topic

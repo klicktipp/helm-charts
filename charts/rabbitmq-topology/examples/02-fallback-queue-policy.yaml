@@ -1,0 +1,36 @@
+# Title: Add fallback queue and policy (alternate exchange)
+rabbitmq:
+  cluster:
+    name: app-rabbitmq
+  topology:
+    queueDefaults:
+      exchange:
+        enabled: false
+      binding:
+        enabled: false
+    exchanges:
+      app-events:
+        type: direct
+        vhost: app
+      app-events-fallback:
+        type: fanout
+        vhost: app
+    queues:
+      app-events-fallback:
+        name: app_events_fallback
+        arguments:
+          x-queue-type: quorum
+        vhost: app
+    bindings:
+      app-events-fallback:
+        source: app-events-fallback
+        destination: app_events_fallback
+        destinationType: queue
+        vhost: app
+    policies:
+      app-exchanges-ae:
+        pattern: "^app-events$"
+        applyTo: exchanges
+        vhost: app
+        definition:
+          alternate-exchange: app-events-fallback

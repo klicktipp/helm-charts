@@ -1,0 +1,14 @@
+# Title: Legacy Permission migration (`spec.user`)
+rabbitmq-topology:
+  enabled: true
+  rabbitmq:
+    topology:
+      users:
+        app-user:
+          name: app-user
+          existingSecret: rabbitmq-user-app
+          permission:
+            metadataName: app-user
+            referenceType: user
+            user: app-user
+            vhost: "/"
