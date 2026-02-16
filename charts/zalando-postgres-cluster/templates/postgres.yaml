@@ -76,21 +76,21 @@ spec:
     - name: AWS_REGION
       value: {{ .Values.postgres_cluster.wal.awsRegion | quote }}
     {{- end }}
-    - name: aws_instance_profile
+    - name: AWS_INSTANCE_PROFILE
       value: "false"  # Disable AWS instance profile, as we are using access keys
     {{- if .Values.postgres_cluster.wal.accessKeyId }}
-    - name: aws_access_key_id
+    - name: AWS_ACCESS_KEY_ID
       valueFrom:
         secretKeyRef:
           name: {{ (printf "%s-wal-aws-creds" $clusterName ) | quote }}
-          key: aws_access_key_id
+          key: AWS_ACCESS_KEY_ID
     {{- end }}
     {{- if .Values.postgres_cluster.wal.secretAccessKey}}
-    - name: aws_secret_access_key
+    - name: AWS_SECRET_ACCESS_KEY
       valueFrom:
         secretKeyRef:
           name: {{ (printf "%s-wal-aws-creds" $clusterName ) | quote }}
-          key: aws_secret_access_key
+          key: AWS_SECRET_ACCESS_KEY
     {{- end }}
     {{- if .Values.postgres_cluster.wal.logS3Tags }}
     - name: LOG_S3_TAGS
