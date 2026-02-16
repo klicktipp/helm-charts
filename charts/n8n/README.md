@@ -1,6 +1,6 @@
 # n8n
 
-![Version: 1.1.1](https://img.shields.io/badge/Version-1.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.8.1](https://img.shields.io/badge/AppVersion-2.8.1-informational?style=flat-square)
+![Version: 1.1.2](https://img.shields.io/badge/Version-1.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.8.1](https://img.shields.io/badge/AppVersion-2.8.1-informational?style=flat-square)
 
 Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services.
 
@@ -22,7 +22,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://valkey.io/valkey-helm/ | valkey | 0.8.1 |
+| https://valkey.io/valkey-helm/ | valkey | 0.9.3 |
 
 ## Values
 
