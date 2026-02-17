@@ -59,9 +59,69 @@ join_as_bullets() {
   done
 }
 
-is_non_empty_dir() {
-  local dir="$1"
-  [ -d "$dir" ] && [ "$(find "$dir" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')" -gt 0 ]
+render_array_group() {
+  local title="$1"
+  local arr_name="$2"
+  local max_items="$3"
+  local len=0
+  local i=0
+  local item=""
+  local limit=0
+
+  eval "len=\${#${arr_name}[@]}"
+  if [ "$len" -eq 0 ]; then
+    return
+  fi
+
+  printf '\n### %s\n' "$title"
+
+  limit="$len"
+  if [ "$limit" -gt "$max_items" ]; then
+    limit="$max_items"
+  fi
+
+  for ((i=0; i<limit; i++)); do
+    eval "item=\${${arr_name}[i]}"
+    printf -- '- %s\n' "$item"
+  done
+
+  if [ "$len" -gt "$max_items" ]; then
+    printf -- '- ... and %s more\n' "$((len - max_items))"
+  fi
+}
+
+find_last_version_change_commit_for_version() {
+  local chart_file="$1"
+  local target_version="$2"
+  local prev_version=""
+  local current_version=""
+  local commit_sha=""
+  local intro_commit=""
+
+  while IFS= read -r commit_sha; do
+    [ -z "$commit_sha" ] && continue
+    current_version="$(extract_yaml_field_from_git "$commit_sha" "$chart_file" version)"
+    current_version="$(sanitize_version "$current_version")"
+    [ -z "$current_version" ] && continue
+
+    if [ "$current_version" != "$prev_version" ]; then
+      if [ "$current_version" = "$target_version" ]; then
+        intro_commit="$commit_sha"
+      fi
+      prev_version="$current_version"
+    fi
+  done < <(git log --reverse --format='%H' -- "$chart_file" || true)
+
+  printf '%s' "$intro_commit"
+}
+
+extract_merge_pr_title() {
+  local commit_sha="$1"
+  git show -s --format='%B' "$commit_sha" | awk '
+    BEGIN { seen=0 }
+    /^Merge pull request #[0-9]+/ { seen=1; next }
+    NF && seen == 1 { print; exit }
+  '
 }
 
 changed_chart_files=()
@@ -139,6 +199,8 @@ for chart_file in "${changed_chart_files[@]}"; do
   breaking_items=()
   feature_items=()
   fix_items=()
+  pr_commits=()
+  standalone_commits=()
 
   old_major="$(major_part "$old_version_clean")"
   new_major="$(major_part "$new_version_clean")"
@@ -181,6 +243,39 @@ for chart_file in "${changed_chart_files[@]}"; do
     fix_items+=("Chart metadata and/or docs adjusted")
   fi
 
+  commit_range_start="$(find_last_version_change_commit_for_version "$chart_file" "$old_version_clean")"
+  commit_range="${BEFORE_SHA}..${AFTER_SHA}"
+  if [ -n "$commit_range_start" ]; then
+    commit_range="${commit_range_start}..${AFTER_SHA}"
+  fi
+
+  while IFS=$'\t' read -r commit_sha_full commit_sha_short commit_subject; do
+    [ -z "$commit_sha_full" ] && continue
+    [ -z "$commit_sha_short" ] && continue
+    [ -z "$commit_subject" ] && continue
+
+    if printf '%s\n' "$commit_subject" | grep -Eq '^Merge pull request #[0-9]+'; then
+      pr_number="$(printf '%s\n' "$commit_subject" | sed -E 's/^Merge pull request #([0-9]+).*/\1/')"
+      pr_title="$(extract_merge_pr_title "$commit_sha_full")"
+      if [ -z "$pr_title" ]; then
+        pr_title="$commit_subject"
+      fi
+      pr_commits+=("\`${commit_sha_short}\` PR #${pr_number}: ${pr_title}")
+      continue
+    fi
+
+    if printf '%s\n' "$commit_subject" | grep -Eq ' \(#[0-9]+\)$'; then
+      pr_number="$(printf '%s\n' "$commit_subject" | sed -E 's/.* \(#([0-9]+)\)$/\1/')"
+      pr_title="$(printf '%s\n' "$commit_subject" | sed -E 's/ \(#[0-9]+\)$//')"
+      pr_commits+=("\`${commit_sha_short}\` PR #${pr_number}: ${pr_title}")
+      continue
+    fi
+
+    standalone_commits+=("\`${commit_sha_short}\` ${commit_subject}")
+  done < <(git log --first-parent --reverse --pretty=format:'%H%x09%h%x09%s' "${commit_range}" -- "${chart_dir}" || true)
+
+  total_commit_count=$(( ${#pr_commits[@]} + ${#standalone_commits[@]} ))
+
   {
     printf '# %s %s\n\n' "$chart_name" "$new_version_clean"
     printf '## Highlights\n'
@@ -209,6 +304,20 @@ for chart_file in "${changed_chart_files[@]}"; do
       printf '%s\n' "${changed_files[@]}" | sed "s#^${chart_dir}/#- `#; s#\$#`#"
     else
       printf -- '- No file-level changes detected in `%s`.\n' "$chart_dir"
+    fi
+
+    printf '\n## Commit Summary\n'
+    if [ "$total_commit_count" -gt 0 ]; then
+      if [ -n "$commit_range_start" ]; then
+        printf -- '- Window: commits touching `%s` since last version change (`%s`) to `%s`\n' "$chart_dir" "${old_version_clean:-n/a}" "$new_version_clean"
+      else
+        printf -- '- Window: commits touching `%s` in current release range `%s`\n' "$chart_dir" "${commit_range}"
+      fi
+      printf -- '- Included commits: %s\n' "$total_commit_count"
+      render_array_group "Pull Request Commits (Primary)" pr_commits 12
+      render_array_group "Standalone Commits" standalone_commits 10
+    else
+      printf -- '- No commits detected for `%s` in this release window.\n' "$chart_dir"
     fi
 
     printf '\n## Upgrade Notes\n'

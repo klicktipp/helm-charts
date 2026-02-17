@@ -32,7 +32,7 @@ To uninstall the chart:
 * Bump the `Chart.yaml` version and push
 * Create a merge request and let it approve and be merged to the `main` branch
 * After successful merging, Github Actions (bot) will automagically create a tag on the `main` branch with the name of the chart and the latest chart version. Example: `redisinsight-0.2.0`.
-* The release workflow now also generates intelligent release notes per chart version (from changed values, templates, and app/chart version bumps) and updates the GitHub release description automatically.
+* The release workflow now also generates intelligent release notes per chart version (from changed values, templates, app/chart version bumps, and grouped commit summaries) and updates the GitHub release description automatically.
 * Now the chart index (in the `gh-pages`) has been updated with the latest chart changes: https://github.com/klicktipp/helm-charts/blob/gh-pages/index.yaml
 
 ## Chart Documentation (values -> README)
