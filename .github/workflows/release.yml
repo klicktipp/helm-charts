@@ -83,12 +83,30 @@ jobs:
 
           helm repo update
 
-      - name: Prepare intelligent release notes
+      - name: Collect released chart tags
         if: steps.version_bump.outputs.has_bump == 'true'
-        id: notes
         run: |
           set -euo pipefail
-          scripts/prepare-release-notes.sh "${{ github.event.before }}" "${{ github.sha }}"
+
+          BEFORE_SHA="${{ github.event.before }}"
+          AFTER_SHA="${{ github.sha }}"
+          : > .release-tags.txt
+
+          mapfile -t changed_chart_files < <(
+            git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA}" -- 'charts/*/Chart.yaml' || true
+          )
+
+          for file in "${changed_chart_files[@]}"; do
+            old_version="$(git show "${BEFORE_SHA}:${file}" 2>/dev/null | awk -F': *' '$1 == "version" { print $2; exit }' | tr -d '"' | tr -d "'" | xargs || true)"
+            new_version="$(awk -F': *' '$1 == "version" { print $2; exit }' "${file}" | tr -d '"' | tr -d "'" | xargs || true)"
+
+            if [ -n "${new_version}" ] && [ "${new_version}" != "${old_version}" ]; then
+              chart_name="$(basename "$(dirname "${file}")")"
+              tag="${chart_name}-${new_version}"
+              echo "${tag}" >> .release-tags.txt
+              echo "Queued release tag: ${tag}"
+            fi
+          done
 
       - name: Run chart-releaser
         if: steps.version_bump.outputs.has_bump == 'true'
@@ -97,31 +115,40 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_SKIP_EXISTING: "true"
 
-      - name: Enrich GitHub Releases with intelligent changelog
+      - name: Generate GitHub release notes
         if: steps.version_bump.outputs.has_bump == 'true'
         env:
           GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
           set -euo pipefail
 
-          if [ ! -d ".release-notes" ]; then
-            echo "No release note directory found. Skipping."
+          if [ ! -f ".release-tags.txt" ]; then
+            echo "No release tags file found. Skipping."
             exit 0
           fi
 
-          shopt -s nullglob
-          note_files=(.release-notes/*.md)
-
-          if [ "${#note_files[@]}" -eq 0 ]; then
-            echo "No release note files found. Skipping."
+          mapfile -t tags < .release-tags.txt
+          if [ "${#tags[@]}" -eq 0 ]; then
+            echo "No release tags queued. Skipping."
             exit 0
           fi
 
-          for file in "${note_files[@]}"; do
-            tag="$(basename "${file}" .md)"
+          for tag in "${tags[@]}"; do
+            [ -z "${tag}" ] && continue
+            chart_name="${tag%-*}"
+            previous_tag="$(
+              git tag --list "${chart_name}-*" --sort=-v:refname \
+                | grep -v "^${tag}$" \
+                | head -n 1 || true
+            )"
+
             if gh release view "${tag}" >/dev/null 2>&1; then
-              echo "Updating release notes for ${tag}"
-              gh release edit "${tag}" --notes-file "${file}"
+              echo "Generating auto-notes for ${tag} (start=${previous_tag:-auto})"
+              if [ -n "${previous_tag}" ]; then
+                gh release edit "${tag}" --generate-notes --notes-start-tag "${previous_tag}"
+              else
+                gh release edit "${tag}" --generate-notes
+              fi
             else
               echo "Release ${tag} does not exist yet. Skipping."
             fi
