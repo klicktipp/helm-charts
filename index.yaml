@@ -9,6 +9,31 @@ entries:
           url: https://hub.docker.com/_/busybox
     apiVersion: v2
     appVersion: latest
+    created: "2026-02-17T11:42:33.217855841Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: 2.36.0
+    description: A generic helm cronjob chart for kubernetes
+    digest: 3a350c5b1195fc58b9e1a566a3199a691892537aab17fe0ab6f10ba397c541a2
+    home: https://github.com/klicktipp/helm-charts
+    keywords:
+    - cronjob
+    name: cronjobs
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/cronjobs-1.6.2/cronjobs-1.6.2.tgz
+    version: 1.6.2
+  - annotations:
+      artifacthub.io/links: |
+        - name: Image source
+          url: https://github.com/docker-library/busybox
+        - name: Image DockerHub
+          url: https://hub.docker.com/_/busybox
+    apiVersion: v2
+    appVersion: latest
     created: "2025-04-14T14:32:34.854237393Z"
     dependencies:
     - name: common
@@ -1137,6 +1162,27 @@ entries:
   zalando-postgres-cluster:
   - apiVersion: v2
     appVersion: 1.15.1
+    created: "2026-02-17T11:42:33.357993429Z"
+    description: Creates a postgres cluster using the Zalando Postgres operator and
+      local storage
+    digest: 44634dfce0d757ab22252d8938233987f79b62a25554dcac52150c04868b8165
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/1200px-Postgresql_elephant.svg.png
+    keywords:
+    - postgres
+    - cluster
+    - operator
+    - zalando
+    maintainers:
+    - name: KlickTipp DevOps Team
+    name: zalando-postgres-cluster
+    sources:
+    - https://github.com/zalando/postgres-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.1.2/zalando-postgres-cluster-1.1.2.tgz
+    version: 1.1.2
+  - apiVersion: v2
+    appVersion: 1.15.1
     created: "2026-02-16T11:15:15.640572767Z"
     description: Creates a postgres cluster using the Zalando Postgres operator and
       local storage
@@ -1198,4 +1244,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-02-17T11:41:48.267312655Z"
+generated: "2026-02-17T11:42:33.358185301Z"
