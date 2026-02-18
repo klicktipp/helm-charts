@@ -4,11 +4,13 @@
 
 Helm chart for deploying PowerDNS Recursor on Kubernetes
 
-**Homepage:** <https://www.powerdns.com/>
+**Homepage:** <https://github.com/klicktipp/helm-charts>
 
 ## Source Code
 
 * <https://github.com/PowerDNS/pdns>
+* <https://www.powerdns.com>
+* <https://www.powerdns.com/powerdns-recursor>
 
 ## Values
 
@@ -80,7 +82,7 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | probes.readiness.periodSeconds | int | `5` | Probe period. |
 | probes.readiness.timeoutSeconds | int | `3` | Probe timeout. |
 | probes.readiness.failureThreshold | int | `3` | Failure threshold. |
-| pdns | object | `{"api":{"enabled":false,"port":8082},"config":{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"pdns_distributes_queries":false,"port":5353,"reuseport":true},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recordcache":{"refresh_on_ttl_perc":10},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":"false"}},"lua":{"enabled":false,"script":"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"},"metrics":{"enabled":false},"port":5353}` | PowerDNS recursor runtime configuration. |
+| pdns | object | `{"api":{"enabled":false,"port":8082},"config":{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"port":5353},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recordcache":{"refresh_on_ttl_perc":10},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":"false"}},"lua":{"enabled":false,"script":"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"},"metrics":{"enabled":false},"port":5353}` | PowerDNS recursor runtime configuration. |
 | pdns.port | int | `5353` | Container DNS port. |
 | pdns.api | object | `{"enabled":false,"port":8082}` | API endpoint settings. |
 | pdns.api.enabled | bool | `false` | Expose API port through the Service and container. |
@@ -88,9 +90,7 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | pdns.lua | object | `{"enabled":false,"script":"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"}` | Optional Lua config file support. |
 | pdns.lua.enabled | bool | `false` | Create additional Lua ConfigMap and mount recursor.lua. |
 | pdns.lua.script | string | `"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"` | Lua script content written to /etc/powerdns/recursor.lua. |
-| pdns.config | object | `{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"pdns_distributes_queries":false,"port":5353,"reuseport":true},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recordcache":{"refresh_on_ttl_perc":10},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":"false"}}` | Rendered directly into recursor.yml. |
-| pdns.config.incoming.pdns_distributes_queries | bool | `false` | Keep disabled as modern default; only enable for specific load-distribution cases. |
-| pdns.config.incoming.reuseport | bool | `true` | Enable kernel socket fanout for better multicore scalability. |
+| pdns.config | object | `{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"port":5353},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recordcache":{"refresh_on_ttl_perc":10},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":"false"}}` | Rendered directly into recursor.yml. |
 | pdns.config.recordcache.refresh_on_ttl_perc | int | `10` | Refresh cache entries shortly before TTL expiry to reduce miss spikes. |
 | pdns.metrics | object | `{"enabled":false}` | Legacy compatibility block. |
 
