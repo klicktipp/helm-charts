@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pdns.fullname" . }}
+  labels:
+    {{- include "pdns.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- with .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  ports:
+    - name: dns-udp
+      protocol: UDP
+      port: {{ .Values.service.port }}
+      targetPort: dns-udp
+    - name: dns-tcp
+      protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: dns-tcp
+    {{- if .Values.pdns.api.enabled }}
+    - name: api
+      protocol: TCP
+      port: {{ .Values.pdns.api.port }}
+      targetPort: api
+    {{- end }}
+  selector:
+    {{- include "pdns.selectorLabels" . | nindent 4 }}

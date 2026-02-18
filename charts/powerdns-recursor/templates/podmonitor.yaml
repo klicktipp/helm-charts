@@ -1,0 +1,48 @@
+{{- if and (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") (include "pdns.podMonitorEnabled" . | trim | eq "true") -}}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "pdns.fullname" . }}
+  labels:
+    {{- include "pdns.labels" . | nindent 4 }}
+    {{- if kindIs "map" .Values.podMonitor }}
+    {{- with .Values.podMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- end }}
+spec:
+  {{- if and (kindIs "map" .Values.podMonitor) .Values.podMonitor.jobLabel }}
+  jobLabel: {{ .Values.podMonitor.jobLabel | quote }}
+  {{- else }}
+  jobLabel: {{ include "pdns.name" . | quote }}
+  {{- end }}
+  podTargetLabels:
+    - app.kubernetes.io/instance
+    - app.kubernetes.io/name
+  selector:
+    matchLabels:
+      {{- include "pdns.selectorLabels" . | nindent 6 }}
+  podMetricsEndpoints:
+    - port: api
+      interval: {{ if and (kindIs "map" .Values.podMonitor) .Values.podMonitor.interval }}{{ .Values.podMonitor.interval | quote }}{{ else }}"60s"{{ end }}
+      {{- if and (kindIs "map" .Values.podMonitor) .Values.podMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.podMonitor.scrapeTimeout | quote }}
+      {{- end }}
+      {{- if and (kindIs "map" .Values.podMonitor) .Values.podMonitor.path }}
+      path: {{ .Values.podMonitor.path | quote }}
+      {{- end }}
+      {{- if and (kindIs "map" .Values.podMonitor) .Values.podMonitor.scheme }}
+      scheme: {{ .Values.podMonitor.scheme | quote }}
+      {{- end }}
+      {{- if and (kindIs "map" .Values.podMonitor) .Values.podMonitor.relabelings }}
+      relabelings:
+        {{- toYaml .Values.podMonitor.relabelings | nindent 8 }}
+      {{- else }}
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_name
+          targetLabel: instance
+      {{- end }}
+{{- end }}
