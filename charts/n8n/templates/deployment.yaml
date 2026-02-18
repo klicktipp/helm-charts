@@ -75,7 +75,7 @@ spec:
       {{- $mainRunnerMode := coalesce .Values.main.runner.mode .Values.runners.mode "external" }}
       {{- $mainRunnerPort := coalesce .Values.main.runner.port .Values.runners.port 5679 }}
       {{- $mainRunnerListenAddress := coalesce .Values.main.runner.brokerListenAddress .Values.runners.brokerListenAddress "0.0.0.0" }}
-      {{- $mainRunnerBrokerURI := coalesce .Values.main.runner.brokerUri (printf "ws://127.0.0.1:%v" $mainRunnerPort) }}
+      {{- $mainRunnerBrokerURI := coalesce .Values.main.runner.brokerUri (printf "http://127.0.0.1:%v" $mainRunnerPort) }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.main.command }}

@@ -80,7 +80,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | main.runner.mode | string | `""` | Optional runner mode override for main deployment. |
 | main.runner.port | string | `nil` | Optional broker port override for main deployment. |
 | main.runner.brokerListenAddress | string | `""` | Optional broker listen address override for main deployment. |
-| main.runner.brokerUri | string | `""` | Optional broker URI override for main task runner sidecar. Defaults to `ws://127.0.0.1:<port>`. |
+| main.runner.brokerUri | string | `""` | Optional broker URI override for main task runner sidecar. Defaults to `http://127.0.0.1:<port>`. |
 | main.runner.image | object | `{}` | Optional image override for main task runner sidecar. |
 | main.runner.extraEnv | list | `[]` | Additional env vars for main task runner sidecar. |
 | main.runner.resources | object | `{}` | Resource overrides for main task runner sidecar. |
@@ -134,7 +134,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | worker.runner.mode | string | `""` | Optional runner mode override for worker deployment. |
 | worker.runner.port | string | `nil` | Optional broker port override for worker deployment. |
 | worker.runner.brokerListenAddress | string | `""` | Optional broker listen address override for worker deployment. |
-| worker.runner.brokerUri | string | `""` | Optional broker URI override for worker task runner sidecar. Defaults to `ws://127.0.0.1:<port>`. |
+| worker.runner.brokerUri | string | `""` | Optional broker URI override for worker task runner sidecar. Defaults to `http://127.0.0.1:<port>`. |
 | worker.runner.image | object | `{}` | Optional image override for worker task runner sidecar. |
 | worker.runner.extraEnv | list | `[]` | Additional env vars for worker task runner sidecar. |
 | worker.runner.resources | object | `{}` | Resource overrides for worker task runner sidecar. |

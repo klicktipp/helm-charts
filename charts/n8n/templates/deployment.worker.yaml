@@ -76,7 +76,7 @@ spec:
       {{- $workerRunnerMode := coalesce .Values.worker.runner.mode .Values.runners.mode "external" }}
       {{- $workerRunnerPort := coalesce .Values.worker.runner.port .Values.runners.port 5679 }}
       {{- $workerRunnerListenAddress := coalesce .Values.worker.runner.brokerListenAddress .Values.runners.brokerListenAddress "0.0.0.0" }}
-      {{- $workerRunnerBrokerURI := coalesce .Values.worker.runner.brokerUri (printf "ws://127.0.0.1:%v" $workerRunnerPort) }}
+      {{- $workerRunnerBrokerURI := coalesce .Values.worker.runner.brokerUri (printf "http://127.0.0.1:%v" $workerRunnerPort) }}
       containers:
         - name: {{ .Chart.Name }}-worker
           securityContext:
