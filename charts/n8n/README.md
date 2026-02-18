@@ -52,14 +52,18 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | global.persistence.annotations | object | `{}` | Global PVC defaults. Components can override these values. |
 | global.persistence.accessModes | list | `["ReadWriteOnce"]` | Global PVC access modes. |
 | global.persistence.size | string | `"1Gi"` | Global PVC size. |
-| runners | object | `{"authToken":"","brokerListenAddress":"0.0.0.0","enabled":false,"extraEnv":[],"image":{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""},"mode":"external","port":5679,"resources":{},"securityContext":{}}` | Shared defaults for task runner sidecars. |
+| runners | object | `{"authToken":"","authTokenFrom":{"secretKeyRef":{"key":"","name":""}},"brokerListenAddress":"0.0.0.0","enabled":false,"extraEnv":[],"image":{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""},"mode":"external","nodeFunctionAllowBuiltin":"","nodeFunctionAllowExternal":"","port":5679,"resources":{},"securityContext":{}}` | Shared defaults for task runner sidecars. |
 | runners.enabled | bool | `false` | Enable task runner sidecars globally. |
 | runners.mode | string | `"external"` | Task runner mode for n8n (`external` required for sidecar runners). |
 | runners.authToken | string | `""` | Shared auth token between n8n and task runner sidecars. |
+| runners.authTokenFrom.secretKeyRef.name | string | `""` | Secret name containing the shared task runner auth token. |
+| runners.authTokenFrom.secretKeyRef.key | string | `""` | Secret key containing the shared task runner auth token. |
 | runners.port | int | `5679` | Broker port used by n8n inside the pod. |
 | runners.brokerListenAddress | string | `"0.0.0.0"` | Broker listen address used by n8n inside the pod. |
 | runners.image | object | `{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""}` | Default task runner image settings. |
 | runners.extraEnv | list | `[]` | Additional env vars for task runner sidecars. |
+| runners.nodeFunctionAllowExternal | string | `""` | Allowlist for external npm modules in Code nodes. |
+| runners.nodeFunctionAllowBuiltin | string | `""` | Allowlist for built-in Node.js modules in Code nodes (`*` to allow all). |
 | runners.resources | object | `{}` | Resource defaults for task runner sidecars. |
 | runners.securityContext | object | `{}` | Security context defaults for task runner sidecars. |
 | nameOverride | string | `nil` | Partially override generated resource names. |
@@ -77,6 +81,8 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | main.secret | object | `{}` | n8n secret values converted to env vars in a Secret. |
 | main.userFolder | string | `"/home/node"` | Main user data folder (`N8N_USER_FOLDER`) and mount path for main persistence volume. |
 | main.runner.authToken | string | `""` | Optional auth token override for main runner/n8n pair. |
+| main.runner.authTokenFrom.secretKeyRef.name | string | `""` | Secret name override for main runner auth token. |
+| main.runner.authTokenFrom.secretKeyRef.key | string | `""` | Secret key override for main runner auth token. |
 | main.runner.mode | string | `""` | Optional runner mode override for main deployment. |
 | main.runner.port | string | `nil` | Optional broker port override for main deployment. |
 | main.runner.brokerListenAddress | string | `""` | Optional broker listen address override for main deployment. |
@@ -131,6 +137,8 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | worker.secret | object | `{}` | Additional worker-specific n8n secrets. |
 | worker.userFolder | string | `"/home/node"` | Worker user data folder (`N8N_USER_FOLDER`) and mount path for worker persistence volume. |
 | worker.runner.authToken | string | `""` | Optional auth token override for worker runner/n8n pair. |
+| worker.runner.authTokenFrom.secretKeyRef.name | string | `""` | Secret name override for worker runner auth token. |
+| worker.runner.authTokenFrom.secretKeyRef.key | string | `""` | Secret key override for worker runner auth token. |
 | worker.runner.mode | string | `""` | Optional runner mode override for worker deployment. |
 | worker.runner.port | string | `nil` | Optional broker port override for worker deployment. |
 | worker.runner.brokerListenAddress | string | `""` | Optional broker listen address override for worker deployment. |

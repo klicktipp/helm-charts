@@ -77,6 +77,13 @@ spec:
       {{- $workerRunnerPort := coalesce .Values.worker.runner.port .Values.runners.port 5679 }}
       {{- $workerRunnerListenAddress := coalesce .Values.worker.runner.brokerListenAddress .Values.runners.brokerListenAddress "0.0.0.0" }}
       {{- $workerRunnerBrokerURI := coalesce .Values.worker.runner.brokerUri (printf "http://127.0.0.1:%v" $workerRunnerPort) }}
+      {{- $workerRunnerAuthToken := coalesce .Values.worker.runner.authToken .Values.runners.authToken }}
+      {{- $workerRunnerAuthTokenSecretName := coalesce .Values.worker.runner.authTokenFrom.secretKeyRef.name .Values.runners.authTokenFrom.secretKeyRef.name }}
+      {{- $workerRunnerAuthTokenSecretKey := coalesce .Values.worker.runner.authTokenFrom.secretKeyRef.key .Values.runners.authTokenFrom.secretKeyRef.key }}
+      {{- $workerRunnerHasAuthTokenRef := and $workerRunnerAuthTokenSecretName $workerRunnerAuthTokenSecretKey }}
+      {{- if and $workerRunnerEnabled (not (or $workerRunnerHasAuthTokenRef $workerRunnerAuthToken)) }}
+      {{- fail "worker.runner is enabled but no auth token is set. Configure worker.runner.authTokenFrom/worker.runner.authToken or runners.authTokenFrom/runners.authToken." }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}-worker
           securityContext:
@@ -118,6 +125,14 @@ spec:
           env:
             - name: N8N_USER_FOLDER
               value: {{ $workerUserFolder | quote }}
+            {{- if .Values.runners.nodeFunctionAllowExternal }}
+            - name: NODE_FUNCTION_ALLOW_EXTERNAL
+              value: {{ .Values.runners.nodeFunctionAllowExternal | quote }}
+            {{- end }}
+            {{- if .Values.runners.nodeFunctionAllowBuiltin }}
+            - name: NODE_FUNCTION_ALLOW_BUILTIN
+              value: {{ .Values.runners.nodeFunctionAllowBuiltin | quote }}
+            {{- end }}
             {{- if $workerRunnerEnabled }}
             - name: N8N_RUNNERS_ENABLED
               value: "true"
@@ -128,7 +143,14 @@ spec:
             - name: N8N_RUNNERS_TASK_BROKER_PORT
               value: {{ $workerRunnerPort | toString | quote }}
             - name: N8N_RUNNERS_AUTH_TOKEN
-              value: {{ required "worker.runner is enabled but no auth token is set. Set worker.runner.authToken or runners.authToken." (coalesce .Values.worker.runner.authToken .Values.runners.authToken) | quote }}
+              {{- if $workerRunnerHasAuthTokenRef }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $workerRunnerAuthTokenSecretName | quote }}
+                  key: {{ $workerRunnerAuthTokenSecretKey | quote }}
+              {{- else }}
+              value: {{ $workerRunnerAuthToken | quote }}
+              {{- end }}
             {{- end }}
             {{- $mergedExtraEnv | nindent 12 }}
           {{- end }}
@@ -190,7 +212,22 @@ spec:
             - name: N8N_RUNNERS_TASK_BROKER_URI
               value: {{ $workerRunnerBrokerURI | quote }}
             - name: N8N_RUNNERS_AUTH_TOKEN
-              value: {{ required "worker.runner is enabled but no auth token is set. Set worker.runner.authToken or runners.authToken." (coalesce .Values.worker.runner.authToken .Values.runners.authToken) | quote }}
+              {{- if $workerRunnerHasAuthTokenRef }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $workerRunnerAuthTokenSecretName | quote }}
+                  key: {{ $workerRunnerAuthTokenSecretKey | quote }}
+              {{- else }}
+              value: {{ $workerRunnerAuthToken | quote }}
+              {{- end }}
+            {{- if .Values.runners.nodeFunctionAllowExternal }}
+            - name: NODE_FUNCTION_ALLOW_EXTERNAL
+              value: {{ .Values.runners.nodeFunctionAllowExternal | quote }}
+            {{- end }}
+            {{- if .Values.runners.nodeFunctionAllowBuiltin }}
+            - name: NODE_FUNCTION_ALLOW_BUILTIN
+              value: {{ .Values.runners.nodeFunctionAllowBuiltin | quote }}
+            {{- end }}
             {{- $runnerExtraEnv | nindent 12 }}
           resources:
             {{- toYaml (coalesce .Values.worker.runner.resources .Values.runners.resources (dict)) | nindent 12 }}

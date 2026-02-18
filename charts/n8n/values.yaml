@@ -88,6 +88,12 @@ runners:
   mode: external
   # -- Shared auth token between n8n and task runner sidecars.
   authToken: ""
+  authTokenFrom:
+    secretKeyRef:
+      # -- Secret name containing the shared task runner auth token.
+      name: ""
+      # -- Secret key containing the shared task runner auth token.
+      key: ""
   # -- Broker port used by n8n inside the pod.
   port: 5679
   # -- Broker listen address used by n8n inside the pod.
@@ -99,6 +105,10 @@ runners:
     tag: ""
   # -- Additional env vars for task runner sidecars.
   extraEnv: []
+  # -- Allowlist for external npm modules in Code nodes.
+  nodeFunctionAllowExternal: ""
+  # -- Allowlist for built-in Node.js modules in Code nodes (`*` to allow all).
+  nodeFunctionAllowBuiltin: ""
   # -- Resource defaults for task runner sidecars.
   resources: {}
   # -- Security context defaults for task runner sidecars.
@@ -160,6 +170,12 @@ main:
     # enabled: true
     # -- Optional auth token override for main runner/n8n pair.
     authToken: ""
+    authTokenFrom:
+      secretKeyRef:
+        # -- Secret name override for main runner auth token.
+        name: ""
+        # -- Secret key override for main runner auth token.
+        key: ""
     # -- Optional runner mode override for main deployment.
     mode: ""
     # -- Optional broker port override for main deployment.
@@ -342,6 +358,12 @@ worker:
     # enabled: true
     # -- Optional auth token override for worker runner/n8n pair.
     authToken: ""
+    authTokenFrom:
+      secretKeyRef:
+        # -- Secret name override for worker runner auth token.
+        name: ""
+        # -- Secret key override for worker runner auth token.
+        key: ""
     # -- Optional runner mode override for worker deployment.
     mode: ""
     # -- Optional broker port override for worker deployment.
