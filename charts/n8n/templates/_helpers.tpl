@@ -95,6 +95,24 @@ persistentVolumeClaim:
 {{- coalesce $componentImage.pullPolicy $ctx.Values.global.image.pullPolicy $ctx.Values.image.pullPolicy "IfNotPresent" -}}
 {{- end }}
 
+{{/* Resolve task runner image from component runner and global runner values */}}
+{{- define "n8n.runnerImage" -}}
+{{- $ctx := .context -}}
+{{- $componentRunner := default (dict) .componentRunner -}}
+{{- $componentImage := default (dict) $componentRunner.image -}}
+{{- $repo := coalesce $componentImage.repository $ctx.Values.runners.image.repository -}}
+{{- $tag := coalesce $componentImage.tag $ctx.Values.runners.image.tag $ctx.Chart.AppVersion -}}
+{{- printf "%s:%s" $repo $tag -}}
+{{- end }}
+
+{{/* Resolve task runner imagePullPolicy from component runner and global runner values */}}
+{{- define "n8n.runnerImagePullPolicy" -}}
+{{- $ctx := .context -}}
+{{- $componentRunner := default (dict) .componentRunner -}}
+{{- $componentImage := default (dict) $componentRunner.image -}}
+{{- coalesce $componentImage.pullPolicy $ctx.Values.runners.image.pullPolicy "IfNotPresent" -}}
+{{- end }}
+
 
 {{/* Create environment variables from yaml tree */}}
 {{- define "toEnvVars" -}}

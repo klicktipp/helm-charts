@@ -68,6 +68,14 @@ spec:
       initContainers:
         {{ tpl (toYaml $mergedInitContainers) . | nindent 8 }}
       {{- end }}
+      {{- $mainRunnerEnabled := .Values.runners.enabled }}
+      {{- if hasKey (default (dict) .Values.main.runner) "enabled" }}
+      {{- $mainRunnerEnabled = .Values.main.runner.enabled }}
+      {{- end }}
+      {{- $mainRunnerMode := coalesce .Values.main.runner.mode .Values.runners.mode "external" }}
+      {{- $mainRunnerPort := coalesce .Values.main.runner.port .Values.runners.port 5679 }}
+      {{- $mainRunnerListenAddress := coalesce .Values.main.runner.brokerListenAddress .Values.runners.brokerListenAddress "0.0.0.0" }}
+      {{- $mainRunnerBrokerURI := coalesce .Values.main.runner.brokerUri (printf "ws://127.0.0.1:%v" $mainRunnerPort) }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.main.command }}
@@ -105,6 +113,18 @@ spec:
           env:
             - name: N8N_USER_FOLDER
               value: {{ $mainUserFolder | quote }}
+            {{- if $mainRunnerEnabled }}
+            - name: N8N_RUNNERS_ENABLED
+              value: "true"
+            - name: N8N_RUNNERS_MODE
+              value: {{ $mainRunnerMode | quote }}
+            - name: N8N_RUNNERS_TASK_BROKER_LISTEN_ADDRESS
+              value: {{ $mainRunnerListenAddress | quote }}
+            - name: N8N_RUNNERS_TASK_BROKER_PORT
+              value: {{ $mainRunnerPort | toString | quote }}
+            - name: N8N_RUNNERS_AUTH_TOKEN
+              value: {{ required "main.runner is enabled but no auth token is set. Set main.runner.authToken or runners.authToken." (coalesce .Values.main.runner.authToken .Values.runners.authToken) | quote }}
+            {{- end }}
             {{- $mergedExtraEnv | nindent 12 }}
           {{- end }}
           lifecycle:
@@ -113,6 +133,11 @@ spec:
             - name: http
               containerPort: {{ get (default (dict) .Values.main.config.n8n) "port" | default 5678 }}
               protocol: TCP
+            {{- if $mainRunnerEnabled }}
+            - name: task-broker
+              containerPort: {{ $mainRunnerPort }}
+              protocol: TCP
+            {{- end }}
           {{- with .Values.main.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -129,6 +154,30 @@ spec:
           {{- if .Values.main.extraVolumeMounts }}
             {{- toYaml .Values.main.extraVolumeMounts | nindent 12 }}
           {{- end }}
+        {{- if $mainRunnerEnabled }}
+        - name: {{ .Chart.Name }}-main-runner
+          securityContext:
+            {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.runners.securityContext)) (default (dict) .Values.main.runner.securityContext)) | nindent 12 }}
+          image: "{{ include "n8n.runnerImage" (dict "context" . "componentRunner" .Values.main.runner) }}"
+          imagePullPolicy: {{ include "n8n.runnerImagePullPolicy" (dict "context" . "componentRunner" .Values.main.runner) }}
+          {{- with .Values.main.runner.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.main.runner.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- $runnerExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.runners.extraEnv "component" .Values.main.runner.extraEnv "context" $) }}
+          env:
+            - name: N8N_RUNNERS_TASK_BROKER_URI
+              value: {{ $mainRunnerBrokerURI | quote }}
+            - name: N8N_RUNNERS_AUTH_TOKEN
+              value: {{ required "main.runner is enabled but no auth token is set. Set main.runner.authToken or runners.authToken." (coalesce .Values.main.runner.authToken .Values.runners.authToken) | quote }}
+            {{- $runnerExtraEnv | nindent 12 }}
+          resources:
+            {{- toYaml (coalesce .Values.main.runner.resources .Values.runners.resources (dict)) | nindent 12 }}
+        {{- end }}
       {{- with .Values.hostAliases }}
       hostAliases:
         {{- toYaml . | nindent 8 }}
