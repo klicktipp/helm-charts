@@ -76,7 +76,6 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | main.config | object | `{}` | n8n config values converted to env vars in a ConfigMap. See: https://docs.n8n.io/hosting/configuration/environment-variables/ |
 | main.secret | object | `{}` | n8n secret values converted to env vars in a Secret. |
 | main.userFolder | string | `"/home/node"` | Main user data folder (`N8N_USER_FOLDER`) and mount path for main persistence volume. |
-| main.runner.enabled | bool | `false` | Enable a task runner sidecar for the main deployment. |
 | main.runner.authToken | string | `""` | Optional auth token override for main runner/n8n pair. |
 | main.runner.mode | string | `""` | Optional runner mode override for main deployment. |
 | main.runner.port | string | `nil` | Optional broker port override for main deployment. |
@@ -131,7 +130,6 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | worker.config | object | `{}` | Additional worker-specific n8n config. |
 | worker.secret | object | `{}` | Additional worker-specific n8n secrets. |
 | worker.userFolder | string | `"/home/runner"` | Worker user data folder (`N8N_USER_FOLDER`) and mount path for worker persistence volume. |
-| worker.runner.enabled | bool | `false` | Enable a task runner sidecar for worker deployment. |
 | worker.runner.authToken | string | `""` | Optional auth token override for worker runner/n8n pair. |
 | worker.runner.mode | string | `""` | Optional runner mode override for worker deployment. |
 | worker.runner.port | string | `nil` | Optional broker port override for worker deployment. |
