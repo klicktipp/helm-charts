@@ -76,6 +76,13 @@ spec:
       {{- $mainRunnerPort := coalesce .Values.main.runner.port .Values.runners.port 5679 }}
       {{- $mainRunnerListenAddress := coalesce .Values.main.runner.brokerListenAddress .Values.runners.brokerListenAddress "0.0.0.0" }}
       {{- $mainRunnerBrokerURI := coalesce .Values.main.runner.brokerUri (printf "http://127.0.0.1:%v" $mainRunnerPort) }}
+      {{- $mainRunnerAuthToken := coalesce .Values.main.runner.authToken .Values.runners.authToken }}
+      {{- $mainRunnerAuthTokenSecretName := coalesce .Values.main.runner.authTokenFrom.secretKeyRef.name .Values.runners.authTokenFrom.secretKeyRef.name }}
+      {{- $mainRunnerAuthTokenSecretKey := coalesce .Values.main.runner.authTokenFrom.secretKeyRef.key .Values.runners.authTokenFrom.secretKeyRef.key }}
+      {{- $mainRunnerHasAuthTokenRef := and $mainRunnerAuthTokenSecretName $mainRunnerAuthTokenSecretKey }}
+      {{- if and $mainRunnerEnabled (not (or $mainRunnerHasAuthTokenRef $mainRunnerAuthToken)) }}
+      {{- fail "main.runner is enabled but no auth token is set. Configure main.runner.authTokenFrom/main.runner.authToken or runners.authTokenFrom/runners.authToken." }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.main.command }}
@@ -113,6 +120,14 @@ spec:
           env:
             - name: N8N_USER_FOLDER
               value: {{ $mainUserFolder | quote }}
+            {{- if .Values.runners.nodeFunctionAllowExternal }}
+            - name: NODE_FUNCTION_ALLOW_EXTERNAL
+              value: {{ .Values.runners.nodeFunctionAllowExternal | quote }}
+            {{- end }}
+            {{- if .Values.runners.nodeFunctionAllowBuiltin }}
+            - name: NODE_FUNCTION_ALLOW_BUILTIN
+              value: {{ .Values.runners.nodeFunctionAllowBuiltin | quote }}
+            {{- end }}
             {{- if $mainRunnerEnabled }}
             - name: N8N_RUNNERS_ENABLED
               value: "true"
@@ -123,7 +138,14 @@ spec:
             - name: N8N_RUNNERS_TASK_BROKER_PORT
               value: {{ $mainRunnerPort | toString | quote }}
             - name: N8N_RUNNERS_AUTH_TOKEN
-              value: {{ required "main.runner is enabled but no auth token is set. Set main.runner.authToken or runners.authToken." (coalesce .Values.main.runner.authToken .Values.runners.authToken) | quote }}
+              {{- if $mainRunnerHasAuthTokenRef }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $mainRunnerAuthTokenSecretName | quote }}
+                  key: {{ $mainRunnerAuthTokenSecretKey | quote }}
+              {{- else }}
+              value: {{ $mainRunnerAuthToken | quote }}
+              {{- end }}
             {{- end }}
             {{- $mergedExtraEnv | nindent 12 }}
           {{- end }}
@@ -173,7 +195,22 @@ spec:
             - name: N8N_RUNNERS_TASK_BROKER_URI
               value: {{ $mainRunnerBrokerURI | quote }}
             - name: N8N_RUNNERS_AUTH_TOKEN
-              value: {{ required "main.runner is enabled but no auth token is set. Set main.runner.authToken or runners.authToken." (coalesce .Values.main.runner.authToken .Values.runners.authToken) | quote }}
+              {{- if $mainRunnerHasAuthTokenRef }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $mainRunnerAuthTokenSecretName | quote }}
+                  key: {{ $mainRunnerAuthTokenSecretKey | quote }}
+              {{- else }}
+              value: {{ $mainRunnerAuthToken | quote }}
+              {{- end }}
+            {{- if .Values.runners.nodeFunctionAllowExternal }}
+            - name: NODE_FUNCTION_ALLOW_EXTERNAL
+              value: {{ .Values.runners.nodeFunctionAllowExternal | quote }}
+            {{- end }}
+            {{- if .Values.runners.nodeFunctionAllowBuiltin }}
+            - name: NODE_FUNCTION_ALLOW_BUILTIN
+              value: {{ .Values.runners.nodeFunctionAllowBuiltin | quote }}
+            {{- end }}
             {{- $runnerExtraEnv | nindent 12 }}
           resources:
             {{- toYaml (coalesce .Values.main.runner.resources .Values.runners.resources (dict)) | nindent 12 }}
