@@ -68,6 +68,21 @@ spec:
       initContainers:
         {{ tpl (toYaml $mergedInitContainers) . | nindent 8 }}
       {{- end }}
+      {{- $mainRunnerEnabled := .Values.runners.enabled }}
+      {{- if hasKey (default (dict) .Values.main.runner) "enabled" }}
+      {{- $mainRunnerEnabled = .Values.main.runner.enabled }}
+      {{- end }}
+      {{- $mainRunnerMode := coalesce .Values.main.runner.mode .Values.runners.mode "external" }}
+      {{- $mainRunnerPort := coalesce .Values.main.runner.port .Values.runners.port 5679 }}
+      {{- $mainRunnerListenAddress := coalesce .Values.main.runner.brokerListenAddress .Values.runners.brokerListenAddress "0.0.0.0" }}
+      {{- $mainRunnerBrokerURI := coalesce .Values.main.runner.brokerUri (printf "http://127.0.0.1:%v" $mainRunnerPort) }}
+      {{- $mainRunnerAuthToken := coalesce .Values.main.runner.authToken .Values.runners.authToken }}
+      {{- $mainRunnerAuthTokenSecretName := coalesce .Values.main.runner.authTokenFrom.secretKeyRef.name .Values.runners.authTokenFrom.secretKeyRef.name }}
+      {{- $mainRunnerAuthTokenSecretKey := coalesce .Values.main.runner.authTokenFrom.secretKeyRef.key .Values.runners.authTokenFrom.secretKeyRef.key }}
+      {{- $mainRunnerHasAuthTokenRef := and $mainRunnerAuthTokenSecretName $mainRunnerAuthTokenSecretKey }}
+      {{- if and $mainRunnerEnabled (not (or $mainRunnerHasAuthTokenRef $mainRunnerAuthToken)) }}
+      {{- fail "main.runner is enabled but no auth token is set. Configure main.runner.authTokenFrom/main.runner.authToken or runners.authTokenFrom/runners.authToken." }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.main.command }}
@@ -99,9 +114,29 @@ spec:
                 name: {{ tpl ($name | toString) $ }}
             {{- end }}
           {{- end }}
+          {{- $mainUserFolder := default "/home/node" .Values.main.userFolder }}
           {{- $mergedExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.global.extraEnv "component" .Values.main.extraEnv "context" $) }}
-          {{- if $mergedExtraEnv }}
+          {{- if or $mainUserFolder $mergedExtraEnv }}
           env:
+            - name: N8N_USER_FOLDER
+              value: {{ $mainUserFolder | quote }}
+            {{- if $mainRunnerEnabled }}
+            - name: N8N_RUNNERS_MODE
+              value: {{ $mainRunnerMode | quote }}
+            - name: N8N_RUNNERS_TASK_BROKER_LISTEN_ADDRESS
+              value: {{ $mainRunnerListenAddress | quote }}
+            - name: N8N_RUNNERS_TASK_BROKER_PORT
+              value: {{ $mainRunnerPort | toString | quote }}
+            - name: N8N_RUNNERS_AUTH_TOKEN
+              {{- if $mainRunnerHasAuthTokenRef }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $mainRunnerAuthTokenSecretName | quote }}
+                  key: {{ $mainRunnerAuthTokenSecretKey | quote }}
+              {{- else }}
+              value: {{ $mainRunnerAuthToken | quote }}
+              {{- end }}
+            {{- end }}
             {{- $mergedExtraEnv | nindent 12 }}
           {{- end }}
           lifecycle:
@@ -110,6 +145,11 @@ spec:
             - name: http
               containerPort: {{ get (default (dict) .Values.main.config.n8n) "port" | default 5678 }}
               protocol: TCP
+            {{- if $mainRunnerEnabled }}
+            - name: task-broker
+              containerPort: {{ $mainRunnerPort }}
+              protocol: TCP
+            {{- end }}
           {{- with .Values.main.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -122,10 +162,41 @@ spec:
             {{- toYaml (coalesce .Values.main.resources .Values.global.resources (dict)) | nindent 12 }}
           volumeMounts:
             - name: data
-              mountPath: /home/node/.n8n
+              mountPath: {{ $mainUserFolder | quote }}
           {{- if .Values.main.extraVolumeMounts }}
             {{- toYaml .Values.main.extraVolumeMounts | nindent 12 }}
           {{- end }}
+        {{- if $mainRunnerEnabled }}
+        - name: {{ .Chart.Name }}-main-runner
+          securityContext:
+            {{- toYaml (mergeOverwrite (deepCopy (default (dict) .Values.runners.securityContext)) (default (dict) .Values.main.runner.securityContext)) | nindent 12 }}
+          image: "{{ include "n8n.runnerImage" (dict "context" . "componentRunner" .Values.main.runner) }}"
+          imagePullPolicy: {{ include "n8n.runnerImagePullPolicy" (dict "context" . "componentRunner" .Values.main.runner) }}
+          {{- with .Values.main.runner.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.main.runner.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- $runnerExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.runners.extraEnv "component" .Values.main.runner.extraEnv "context" $) }}
+          env:
+            - name: N8N_RUNNERS_TASK_BROKER_URI
+              value: {{ $mainRunnerBrokerURI | quote }}
+            - name: N8N_RUNNERS_AUTH_TOKEN
+              {{- if $mainRunnerHasAuthTokenRef }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $mainRunnerAuthTokenSecretName | quote }}
+                  key: {{ $mainRunnerAuthTokenSecretKey | quote }}
+              {{- else }}
+              value: {{ $mainRunnerAuthToken | quote }}
+              {{- end }}
+            {{- $runnerExtraEnv | nindent 12 }}
+          resources:
+            {{- toYaml (coalesce .Values.main.runner.resources .Values.runners.resources (dict)) | nindent 12 }}
+        {{- end }}
       {{- with .Values.hostAliases }}
       hostAliases:
         {{- toYaml . | nindent 8 }}
