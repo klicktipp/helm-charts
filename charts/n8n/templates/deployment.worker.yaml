@@ -134,8 +134,6 @@ spec:
               value: {{ .Values.runners.nodeFunctionAllowBuiltin | quote }}
             {{- end }}
             {{- if $workerRunnerEnabled }}
-            - name: N8N_RUNNERS_ENABLED
-              value: "true"
             - name: N8N_RUNNERS_MODE
               value: {{ $workerRunnerMode | quote }}
             - name: N8N_RUNNERS_TASK_BROKER_LISTEN_ADDRESS

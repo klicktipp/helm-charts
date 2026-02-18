@@ -129,8 +129,6 @@ spec:
               value: {{ .Values.runners.nodeFunctionAllowBuiltin | quote }}
             {{- end }}
             {{- if $mainRunnerEnabled }}
-            - name: N8N_RUNNERS_ENABLED
-              value: "true"
             - name: N8N_RUNNERS_MODE
               value: {{ $mainRunnerMode | quote }}
             - name: N8N_RUNNERS_TASK_BROKER_LISTEN_ADDRESS
