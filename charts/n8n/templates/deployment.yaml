@@ -99,9 +99,12 @@ spec:
                 name: {{ tpl ($name | toString) $ }}
             {{- end }}
           {{- end }}
+          {{- $mainUserFolder := default "/home/node" .Values.main.userFolder }}
           {{- $mergedExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.global.extraEnv "component" .Values.main.extraEnv "context" $) }}
-          {{- if $mergedExtraEnv }}
+          {{- if or $mainUserFolder $mergedExtraEnv }}
           env:
+            - name: N8N_USER_FOLDER
+              value: {{ $mainUserFolder | quote }}
             {{- $mergedExtraEnv | nindent 12 }}
           {{- end }}
           lifecycle:
@@ -122,7 +125,7 @@ spec:
             {{- toYaml (coalesce .Values.main.resources .Values.global.resources (dict)) | nindent 12 }}
           volumeMounts:
             - name: data
-              mountPath: /home/node/.n8n
+              mountPath: {{ $mainUserFolder | quote }}
           {{- if .Values.main.extraVolumeMounts }}
             {{- toYaml .Values.main.extraVolumeMounts | nindent 12 }}
           {{- end }}

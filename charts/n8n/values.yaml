@@ -127,6 +127,9 @@ main:
   # -- n8n secret values converted to env vars in a Secret.
   secret: {}
 
+  # -- Main user data folder (`N8N_USER_FOLDER`) and mount path for main persistence volume.
+  userFolder: /home/node
+
   # -- Additional env vars for the container.
   # Preferred format is a list of Kubernetes EnvVar objects.
   # Backward-compatible map format is also supported by templates.
@@ -267,16 +270,20 @@ worker:
   # -- Enable worker deployment.
   enabled: false
 
-  # -- Optional image override for worker workload.
+  # -- Worker image settings.
   # Supports `repository`, `tag`, and `pullPolicy`.
-  # Falls back to `global.image` and then `image`.
-  image: {}
+  # Defaults to `n8nio/runners` and falls back to `global.image`/`image` for unset fields.
+  image:
+    repository: n8nio/runners
 
   # -- Additional worker-specific n8n config.
   config: {}
 
   # -- Additional worker-specific n8n secrets.
   secret: {}
+
+  # -- Worker user data folder (`N8N_USER_FOLDER`) and mount path for worker persistence volume.
+  userFolder: /home/runner
 
   # -- Additional env vars for worker pods.
   # Preferred format is a list of Kubernetes EnvVar objects.
@@ -408,6 +415,9 @@ webhook:
   # -- Additional webhook-specific n8n secrets.
   secret: {}
 
+  # -- Webhook user data folder (`N8N_USER_FOLDER`) and mount path for webhook persistence volume.
+  userFolder: /home/node
+
   # -- Additional env vars for webhook pods.
   # Preferred format is a list of Kubernetes EnvVar objects.
   # Backward-compatible map format is also supported by templates.
@@ -530,6 +540,10 @@ webhook:
     # Supports `repository`, `tag`, and `pullPolicy`.
     # Falls back to `webhook.image`, then `global.image`, then `image`.
     image: {}
+
+    # -- MCP webhook user data folder (`N8N_USER_FOLDER`) and mount path for MCP persistence volume.
+    # Falls back to `webhook.userFolder` when empty.
+    userFolder: ""
 
     # -- Additional env vars for MCP webhook pods.
     # Merged on top of `global.extraEnv` and `webhook.extraEnv`; same `name` overrides.
