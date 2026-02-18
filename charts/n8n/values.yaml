@@ -167,7 +167,7 @@ main:
     # -- Optional broker listen address override for main deployment.
     brokerListenAddress: ""
     # -- Optional broker URI override for main task runner sidecar.
-    # Defaults to `ws://127.0.0.1:<port>`.
+    # Defaults to `http://127.0.0.1:<port>`.
     brokerUri: ""
     # -- Optional image override for main task runner sidecar.
     image: {}
@@ -349,7 +349,7 @@ worker:
     # -- Optional broker listen address override for worker deployment.
     brokerListenAddress: ""
     # -- Optional broker URI override for worker task runner sidecar.
-    # Defaults to `ws://127.0.0.1:<port>`.
+    # Defaults to `http://127.0.0.1:<port>`.
     brokerUri: ""
     # -- Optional image override for worker task runner sidecar.
     image: {}
