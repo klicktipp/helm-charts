@@ -156,7 +156,8 @@ main:
 
   runner:
     # -- Enable a task runner sidecar for the main deployment.
-    enabled: false
+    # When unset, inherits from `runners.enabled`.
+    # enabled: true
     # -- Optional auth token override for main runner/n8n pair.
     authToken: ""
     # -- Optional runner mode override for main deployment.
@@ -337,7 +338,8 @@ worker:
 
   runner:
     # -- Enable a task runner sidecar for worker deployment.
-    enabled: false
+    # When unset, inherits from `runners.enabled`.
+    # enabled: true
     # -- Optional auth token override for worker runner/n8n pair.
     authToken: ""
     # -- Optional runner mode override for worker deployment.
