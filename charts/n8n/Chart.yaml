@@ -3,7 +3,7 @@ apiVersion: v2
 name: n8n
 version: 1.3.0
 # renovate: datasource=docker depName=n8nio/n8n
-appVersion: 2.9.0
+appVersion: 2.9.1
 type: application
 description: "Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services."
 home: https://github.com/klicktipp/helm-charts
