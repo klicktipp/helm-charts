@@ -787,6 +787,27 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/n8n-0.1.0/n8n-0.1.0.tgz
     version: 0.1.0
+  powerdns-recursor:
+  - apiVersion: v2
+    appVersion: 5.3.4
+    created: "2026-02-18T12:55:55.12752789Z"
+    description: Helm chart for deploying PowerDNS Recursor on Kubernetes
+    digest: 8a7eb5cad1b129eb08d623f1f13afc1208dde4cae2e9826e075eb717806c326e
+    home: https://github.com/klicktipp/helm-charts
+    icon: https://avatars.githubusercontent.com/u/1282630?s=200&v=4
+    keywords:
+    - dns
+    - powerdns
+    - recursor
+    name: powerdns-recursor
+    sources:
+    - https://github.com/PowerDNS/pdns
+    - https://www.powerdns.com
+    - https://www.powerdns.com/powerdns-recursor
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/powerdns-recursor-0.1.0/powerdns-recursor-0.1.0.tgz
+    version: 0.1.0
   proxysql:
   - apiVersion: v1
     appVersion: 2.7.1
@@ -1343,4 +1364,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-02-18T10:19:23.930984792Z"
+generated: "2026-02-18T12:55:55.127665267Z"
