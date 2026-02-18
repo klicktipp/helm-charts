@@ -129,9 +129,12 @@ spec:
                 name: {{ tpl ($name | toString) $ }}
             {{- end }}
           {{- end }}
+          {{- $webhookUserFolder := default "/home/node" .Values.webhook.userFolder }}
           {{- $mergedExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.global.extraEnv "component" .Values.webhook.extraEnv "context" $) }}
-          {{- if $mergedExtraEnv }}
+          {{- if or $webhookUserFolder $mergedExtraEnv }}
           env:
+            - name: N8N_USER_FOLDER
+              value: {{ $webhookUserFolder | quote }}
             {{- $mergedExtraEnv | nindent 12 }}
           {{- end }}
           lifecycle:
@@ -142,7 +145,7 @@ spec:
             {{- toYaml (coalesce .Values.webhook.resources .Values.global.resources (dict)) | nindent 12 }}
           volumeMounts:
             - name: data
-              mountPath: /home/node/.n8n
+              mountPath: {{ $webhookUserFolder | quote }}
           {{- if .Values.webhook.extraVolumeMounts }}
             {{- toYaml .Values.webhook.extraVolumeMounts | nindent 12 }}
           {{- end }}

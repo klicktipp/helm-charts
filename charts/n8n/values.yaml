@@ -80,6 +80,36 @@ global:
     # -- Global PVC size.
     size: 1Gi
 
+# -- Shared defaults for task runner sidecars.
+runners:
+  # -- Enable task runner sidecars globally.
+  enabled: false
+  # -- Task runner mode for n8n (`external` required for sidecar runners).
+  mode: external
+  # -- Shared auth token between n8n and task runner sidecars.
+  authToken: ""
+  authTokenFrom:
+    secretKeyRef:
+      # -- Secret name containing the shared task runner auth token.
+      name: ""
+      # -- Secret key containing the shared task runner auth token.
+      key: ""
+  # -- Broker port used by n8n inside the pod.
+  port: 5679
+  # -- Broker listen address used by n8n inside the pod.
+  brokerListenAddress: 0.0.0.0
+  # -- Default task runner image settings.
+  image:
+    repository: n8nio/runners
+    pullPolicy: IfNotPresent
+    tag: ""
+  # -- Additional env vars for task runner sidecars.
+  extraEnv: []
+  # -- Resource defaults for task runner sidecars.
+  resources: {}
+  # -- Security context defaults for task runner sidecars.
+  securityContext: {}
+
 # -- Partially override generated resource names.
 nameOverride:
 
@@ -126,6 +156,43 @@ main:
 
   # -- n8n secret values converted to env vars in a Secret.
   secret: {}
+
+  # -- Main user data folder (`N8N_USER_FOLDER`) and mount path for main persistence volume.
+  userFolder: /home/node
+
+  runner:
+    # -- Enable a task runner sidecar for the main deployment.
+    # When unset, inherits from `runners.enabled`.
+    # enabled: true
+    # -- Optional auth token override for main runner/n8n pair.
+    authToken: ""
+    authTokenFrom:
+      secretKeyRef:
+        # -- Secret name override for main runner auth token.
+        name: ""
+        # -- Secret key override for main runner auth token.
+        key: ""
+    # -- Optional runner mode override for main deployment.
+    mode: ""
+    # -- Optional broker port override for main deployment.
+    port:
+    # -- Optional broker listen address override for main deployment.
+    brokerListenAddress: ""
+    # -- Optional broker URI override for main task runner sidecar.
+    # Defaults to `http://127.0.0.1:<port>`.
+    brokerUri: ""
+    # -- Optional image override for main task runner sidecar.
+    image: {}
+    # -- Additional env vars for main task runner sidecar.
+    extraEnv: []
+    # -- Resource overrides for main task runner sidecar.
+    resources: {}
+    # -- Security context overrides for main task runner sidecar.
+    securityContext: {}
+    # -- Optional command override for main task runner sidecar.
+    command: []
+    # -- Optional args override for main task runner sidecar.
+    args: []
 
   # -- Additional env vars for the container.
   # Preferred format is a list of Kubernetes EnvVar objects.
@@ -278,6 +345,43 @@ worker:
   # -- Additional worker-specific n8n secrets.
   secret: {}
 
+  # -- Worker user data folder (`N8N_USER_FOLDER`) and mount path for worker persistence volume.
+  userFolder: /home/node
+
+  runner:
+    # -- Enable a task runner sidecar for worker deployment.
+    # When unset, inherits from `runners.enabled`.
+    # enabled: true
+    # -- Optional auth token override for worker runner/n8n pair.
+    authToken: ""
+    authTokenFrom:
+      secretKeyRef:
+        # -- Secret name override for worker runner auth token.
+        name: ""
+        # -- Secret key override for worker runner auth token.
+        key: ""
+    # -- Optional runner mode override for worker deployment.
+    mode: ""
+    # -- Optional broker port override for worker deployment.
+    port:
+    # -- Optional broker listen address override for worker deployment.
+    brokerListenAddress: ""
+    # -- Optional broker URI override for worker task runner sidecar.
+    # Defaults to `http://127.0.0.1:<port>`.
+    brokerUri: ""
+    # -- Optional image override for worker task runner sidecar.
+    image: {}
+    # -- Additional env vars for worker task runner sidecar.
+    extraEnv: []
+    # -- Resource overrides for worker task runner sidecar.
+    resources: {}
+    # -- Security context overrides for worker task runner sidecar.
+    securityContext: {}
+    # -- Optional command override for worker task runner sidecar.
+    command: []
+    # -- Optional args override for worker task runner sidecar.
+    args: []
+
   # -- Additional env vars for worker pods.
   # Preferred format is a list of Kubernetes EnvVar objects.
   # Backward-compatible map format is also supported by templates.
@@ -408,6 +512,9 @@ webhook:
   # -- Additional webhook-specific n8n secrets.
   secret: {}
 
+  # -- Webhook user data folder (`N8N_USER_FOLDER`) and mount path for webhook persistence volume.
+  userFolder: /home/node
+
   # -- Additional env vars for webhook pods.
   # Preferred format is a list of Kubernetes EnvVar objects.
   # Backward-compatible map format is also supported by templates.
@@ -530,6 +637,10 @@ webhook:
     # Supports `repository`, `tag`, and `pullPolicy`.
     # Falls back to `webhook.image`, then `global.image`, then `image`.
     image: {}
+
+    # -- MCP webhook user data folder (`N8N_USER_FOLDER`) and mount path for MCP persistence volume.
+    # Falls back to `webhook.userFolder` when empty.
+    userFolder: ""
 
     # -- Additional env vars for MCP webhook pods.
     # Merged on top of `global.extraEnv` and `webhook.extraEnv`; same `name` overrides.

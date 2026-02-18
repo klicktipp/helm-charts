@@ -1,6 +1,6 @@
 # n8n
 
-![Version: 1.2.2](https://img.shields.io/badge/Version-1.2.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.9.0](https://img.shields.io/badge/AppVersion-2.9.0-informational?style=flat-square)
+![Version: 1.3.0](https://img.shields.io/badge/Version-1.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.9.0](https://img.shields.io/badge/AppVersion-2.9.0-informational?style=flat-square)
 
 Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services.
 
@@ -52,6 +52,18 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | global.persistence.annotations | object | `{}` | Global PVC defaults. Components can override these values. |
 | global.persistence.accessModes | list | `["ReadWriteOnce"]` | Global PVC access modes. |
 | global.persistence.size | string | `"1Gi"` | Global PVC size. |
+| runners | object | `{"authToken":"","authTokenFrom":{"secretKeyRef":{"key":"","name":""}},"brokerListenAddress":"0.0.0.0","enabled":false,"extraEnv":[],"image":{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""},"mode":"external","port":5679,"resources":{},"securityContext":{}}` | Shared defaults for task runner sidecars. |
+| runners.enabled | bool | `false` | Enable task runner sidecars globally. |
+| runners.mode | string | `"external"` | Task runner mode for n8n (`external` required for sidecar runners). |
+| runners.authToken | string | `""` | Shared auth token between n8n and task runner sidecars. |
+| runners.authTokenFrom.secretKeyRef.name | string | `""` | Secret name containing the shared task runner auth token. |
+| runners.authTokenFrom.secretKeyRef.key | string | `""` | Secret key containing the shared task runner auth token. |
+| runners.port | int | `5679` | Broker port used by n8n inside the pod. |
+| runners.brokerListenAddress | string | `"0.0.0.0"` | Broker listen address used by n8n inside the pod. |
+| runners.image | object | `{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""}` | Default task runner image settings. |
+| runners.extraEnv | list | `[]` | Additional env vars for task runner sidecars. |
+| runners.resources | object | `{}` | Resource defaults for task runner sidecars. |
+| runners.securityContext | object | `{}` | Security context defaults for task runner sidecars. |
 | nameOverride | string | `nil` | Partially override generated resource names. |
 | fullnameOverride | string | `nil` | Fully override generated resource names. |
 | hostAliases | list | `[]` | Additional `/etc/hosts` entries for pods. |
@@ -65,6 +77,20 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | main.image | object | `{}` | Optional image override for main workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `global.image` and then `image`. |
 | main.config | object | `{}` | n8n config values converted to env vars in a ConfigMap. See: https://docs.n8n.io/hosting/configuration/environment-variables/ |
 | main.secret | object | `{}` | n8n secret values converted to env vars in a Secret. |
+| main.userFolder | string | `"/home/node"` | Main user data folder (`N8N_USER_FOLDER`) and mount path for main persistence volume. |
+| main.runner.authToken | string | `""` | Optional auth token override for main runner/n8n pair. |
+| main.runner.authTokenFrom.secretKeyRef.name | string | `""` | Secret name override for main runner auth token. |
+| main.runner.authTokenFrom.secretKeyRef.key | string | `""` | Secret key override for main runner auth token. |
+| main.runner.mode | string | `""` | Optional runner mode override for main deployment. |
+| main.runner.port | string | `nil` | Optional broker port override for main deployment. |
+| main.runner.brokerListenAddress | string | `""` | Optional broker listen address override for main deployment. |
+| main.runner.brokerUri | string | `""` | Optional broker URI override for main task runner sidecar. Defaults to `http://127.0.0.1:<port>`. |
+| main.runner.image | object | `{}` | Optional image override for main task runner sidecar. |
+| main.runner.extraEnv | list | `[]` | Additional env vars for main task runner sidecar. |
+| main.runner.resources | object | `{}` | Resource overrides for main task runner sidecar. |
+| main.runner.securityContext | object | `{}` | Security context overrides for main task runner sidecar. |
+| main.runner.command | list | `[]` | Optional command override for main task runner sidecar. |
+| main.runner.args | list | `[]` | Optional args override for main task runner sidecar. |
 | main.extraEnv | list | `[]` | Additional env vars for the container. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`; component entries override by `name`. |
 | main.envFromConfigMaps | list | `[]` | Additional ConfigMaps loaded via `envFrom`. Merged with `global.envFromConfigMaps`. |
 | main.envFromSecrets | list | `[]` | Additional Secrets loaded via `envFrom`. Merged with `global.envFromSecrets`. |
@@ -107,6 +133,20 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | worker.image | object | `{}` | Optional image override for worker workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `global.image` and then `image`. |
 | worker.config | object | `{}` | Additional worker-specific n8n config. |
 | worker.secret | object | `{}` | Additional worker-specific n8n secrets. |
+| worker.userFolder | string | `"/home/node"` | Worker user data folder (`N8N_USER_FOLDER`) and mount path for worker persistence volume. |
+| worker.runner.authToken | string | `""` | Optional auth token override for worker runner/n8n pair. |
+| worker.runner.authTokenFrom.secretKeyRef.name | string | `""` | Secret name override for worker runner auth token. |
+| worker.runner.authTokenFrom.secretKeyRef.key | string | `""` | Secret key override for worker runner auth token. |
+| worker.runner.mode | string | `""` | Optional runner mode override for worker deployment. |
+| worker.runner.port | string | `nil` | Optional broker port override for worker deployment. |
+| worker.runner.brokerListenAddress | string | `""` | Optional broker listen address override for worker deployment. |
+| worker.runner.brokerUri | string | `""` | Optional broker URI override for worker task runner sidecar. Defaults to `http://127.0.0.1:<port>`. |
+| worker.runner.image | object | `{}` | Optional image override for worker task runner sidecar. |
+| worker.runner.extraEnv | list | `[]` | Additional env vars for worker task runner sidecar. |
+| worker.runner.resources | object | `{}` | Resource overrides for worker task runner sidecar. |
+| worker.runner.securityContext | object | `{}` | Security context overrides for worker task runner sidecar. |
+| worker.runner.command | list | `[]` | Optional command override for worker task runner sidecar. |
+| worker.runner.args | list | `[]` | Optional args override for worker task runner sidecar. |
 | worker.extraEnv | list | `[]` | Additional env vars for worker pods. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`; component entries override by `name`. |
 | worker.envFromConfigMaps | list | `[]` | Additional ConfigMaps loaded via `envFrom`. Merged with `global.envFromConfigMaps`. |
 | worker.envFromSecrets | list | `[]` | Additional Secrets loaded via `envFrom`. Merged with `global.envFromSecrets`. |
@@ -145,6 +185,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | webhook.image | object | `{}` | Optional image override for webhook workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `global.image` and then `image`. |
 | webhook.config | object | `{}` | Additional webhook-specific n8n config. |
 | webhook.secret | object | `{}` | Additional webhook-specific n8n secrets. |
+| webhook.userFolder | string | `"/home/node"` | Webhook user data folder (`N8N_USER_FOLDER`) and mount path for webhook persistence volume. |
 | webhook.extraEnv | list | `[]` | Additional env vars for webhook pods. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`; component entries override by `name`. |
 | webhook.envFromConfigMaps | list | `[]` | Additional ConfigMaps loaded via `envFrom`. Merged with `global.envFromConfigMaps`. |
 | webhook.envFromSecrets | list | `[]` | Additional Secrets loaded via `envFrom`. Merged with `global.envFromSecrets`. |
@@ -182,6 +223,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | webhook.terminationGracePeriodSeconds | int | `30` | Pod termination grace period in seconds for webhook deployment. |
 | webhook.mcp.enabled | bool | `false` | Enable a dedicated single-replica webhook deployment for MCP traffic (`/mcp-server/`). |
 | webhook.mcp.image | object | `{}` | Optional image override for MCP webhook workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `webhook.image`, then `global.image`, then `image`. |
+| webhook.mcp.userFolder | string | `""` | MCP webhook user data folder (`N8N_USER_FOLDER`) and mount path for MCP persistence volume. Falls back to `webhook.userFolder` when empty. |
 | webhook.mcp.extraEnv | list | `[]` | Additional env vars for MCP webhook pods. Merged on top of `global.extraEnv` and `webhook.extraEnv`; same `name` overrides. |
 | webhook.mcp.envFromConfigMaps | list | `[]` | Additional ConfigMaps loaded via `envFrom` for MCP webhook pods. |
 | webhook.mcp.envFromSecrets | list | `[]` | Additional Secrets loaded via `envFrom` for MCP webhook pods. |

@@ -139,10 +139,13 @@ spec:
                 name: {{ tpl ($name | toString) $ }}
             {{- end }}
           {{- end }}
+          {{- $mcpUserFolder := coalesce .Values.webhook.mcp.userFolder .Values.webhook.userFolder "/home/node" }}
           {{- $baseExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.global.extraEnv "component" .Values.webhook.extraEnv "context" $) | fromYamlArray }}
           {{- $mergedExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" $baseExtraEnv "component" .Values.webhook.mcp.extraEnv "context" $) }}
-          {{- if $mergedExtraEnv }}
+          {{- if or $mcpUserFolder $mergedExtraEnv }}
           env:
+            - name: N8N_USER_FOLDER
+              value: {{ $mcpUserFolder | quote }}
             {{- $mergedExtraEnv | nindent 12 }}
           {{- end }}
           lifecycle:
@@ -153,7 +156,7 @@ spec:
             {{- toYaml (coalesce .Values.webhook.mcp.resources .Values.webhook.resources .Values.global.resources (dict)) | nindent 12 }}
           volumeMounts:
             - name: data
-              mountPath: /home/node/.n8n
+              mountPath: {{ $mcpUserFolder | quote }}
           {{- with .Values.webhook.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
