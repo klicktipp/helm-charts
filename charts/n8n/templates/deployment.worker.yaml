@@ -112,7 +112,7 @@ spec:
                 name: {{ tpl ($name | toString) $ }}
             {{- end }}
           {{- end }}
-          {{- $workerUserFolder := default "/home/runner" .Values.worker.userFolder }}
+          {{- $workerUserFolder := default "/home/node" .Values.worker.userFolder }}
           {{- $mergedExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.global.extraEnv "component" .Values.worker.extraEnv "context" $) }}
           {{- if or $workerUserFolder $mergedExtraEnv }}
           env:

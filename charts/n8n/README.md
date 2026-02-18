@@ -129,7 +129,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | worker.image | object | `{}` | Optional image override for worker workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `global.image` and then `image`. |
 | worker.config | object | `{}` | Additional worker-specific n8n config. |
 | worker.secret | object | `{}` | Additional worker-specific n8n secrets. |
-| worker.userFolder | string | `"/home/runner"` | Worker user data folder (`N8N_USER_FOLDER`) and mount path for worker persistence volume. |
+| worker.userFolder | string | `"/home/node"` | Worker user data folder (`N8N_USER_FOLDER`) and mount path for worker persistence volume. |
 | worker.runner.authToken | string | `""` | Optional auth token override for worker runner/n8n pair. |
 | worker.runner.mode | string | `""` | Optional runner mode override for worker deployment. |
 | worker.runner.port | string | `nil` | Optional broker port override for worker deployment. |

@@ -334,7 +334,7 @@ worker:
   secret: {}
 
   # -- Worker user data folder (`N8N_USER_FOLDER`) and mount path for worker persistence volume.
-  userFolder: /home/runner
+  userFolder: /home/node
 
   runner:
     # -- Enable a task runner sidecar for worker deployment.
