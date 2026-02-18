@@ -123,6 +123,17 @@ podMonitor:
   # -- Optional custom relabelings.
   relabelings: []
 
+# -- Additional arbitrary manifests appended to the release.
+extraObjects: []
+# Example:
+# extraObjects:
+#   - apiVersion: v1
+#     kind: ConfigMap
+#     metadata:
+#       name: "{{ include \"pdns.fullname\" . }}-extra"
+#     data:
+#       hello: world
+
 # -- Container image configuration.
 image:
   # -- Optional image registry prefix.
@@ -190,8 +201,10 @@ pdns:
       port: 5353
       listen:
         - 0.0.0.0
-      pdns_distributes_queries: true
-      reuseport: false
+      # -- Keep disabled as modern default; only enable for specific load-distribution cases.
+      pdns_distributes_queries: false
+      # -- Enable kernel socket fanout for better multicore scalability.
+      reuseport: true
     dnssec:
       validation: process
     outgoing:
@@ -200,8 +213,14 @@ pdns:
     logging:
       loglevel: 6
       quiet: true
+    recordcache:
+      # -- Refresh cache entries shortly before TTL expiry to reduce miss spikes.
+      refresh_on_ttl_perc: 10
     webservice:
       webserver: "false"
+      # Example for secret placeholder usage:
+      # api_key: __PDNS_API_KEY__
+      # password: __PDNS_WEBSERVER_PASSWORD__
   # -- Legacy compatibility block.
   metrics:
     enabled: false
