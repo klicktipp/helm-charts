@@ -1,0 +1,16 @@
+apiVersion: v2
+name: powerdns-recursor
+description: Helm chart for deploying PowerDNS Recursor on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "5.3.4"
+keywords:
+  - dns
+  - powerdns
+  - recursor
+home: https://github.com/klicktipp/helm-charts
+icon: https://avatars.githubusercontent.com/u/1282630?s=200&v=4
+sources:
+  - https://github.com/PowerDNS/pdns
+  - https://www.powerdns.com
+  - https://www.powerdns.com/powerdns-recursor
