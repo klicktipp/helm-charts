@@ -120,14 +120,6 @@ spec:
           env:
             - name: N8N_USER_FOLDER
               value: {{ $mainUserFolder | quote }}
-            {{- if .Values.runners.nodeFunctionAllowExternal }}
-            - name: NODE_FUNCTION_ALLOW_EXTERNAL
-              value: {{ .Values.runners.nodeFunctionAllowExternal | quote }}
-            {{- end }}
-            {{- if .Values.runners.nodeFunctionAllowBuiltin }}
-            - name: NODE_FUNCTION_ALLOW_BUILTIN
-              value: {{ .Values.runners.nodeFunctionAllowBuiltin | quote }}
-            {{- end }}
             {{- if $mainRunnerEnabled }}
             - name: N8N_RUNNERS_MODE
               value: {{ $mainRunnerMode | quote }}
@@ -201,14 +193,6 @@ spec:
               {{- else }}
               value: {{ $mainRunnerAuthToken | quote }}
               {{- end }}
-            {{- if .Values.runners.nodeFunctionAllowExternal }}
-            - name: NODE_FUNCTION_ALLOW_EXTERNAL
-              value: {{ .Values.runners.nodeFunctionAllowExternal | quote }}
-            {{- end }}
-            {{- if .Values.runners.nodeFunctionAllowBuiltin }}
-            - name: NODE_FUNCTION_ALLOW_BUILTIN
-              value: {{ .Values.runners.nodeFunctionAllowBuiltin | quote }}
-            {{- end }}
             {{- $runnerExtraEnv | nindent 12 }}
           resources:
             {{- toYaml (coalesce .Values.main.runner.resources .Values.runners.resources (dict)) | nindent 12 }}

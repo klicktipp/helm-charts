@@ -52,7 +52,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | global.persistence.annotations | object | `{}` | Global PVC defaults. Components can override these values. |
 | global.persistence.accessModes | list | `["ReadWriteOnce"]` | Global PVC access modes. |
 | global.persistence.size | string | `"1Gi"` | Global PVC size. |
-| runners | object | `{"authToken":"","authTokenFrom":{"secretKeyRef":{"key":"","name":""}},"brokerListenAddress":"0.0.0.0","enabled":false,"extraEnv":[],"image":{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""},"mode":"external","nodeFunctionAllowBuiltin":"","nodeFunctionAllowExternal":"","port":5679,"resources":{},"securityContext":{}}` | Shared defaults for task runner sidecars. |
+| runners | object | `{"authToken":"","authTokenFrom":{"secretKeyRef":{"key":"","name":""}},"brokerListenAddress":"0.0.0.0","enabled":false,"extraEnv":[],"image":{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""},"mode":"external","port":5679,"resources":{},"securityContext":{}}` | Shared defaults for task runner sidecars. |
 | runners.enabled | bool | `false` | Enable task runner sidecars globally. |
 | runners.mode | string | `"external"` | Task runner mode for n8n (`external` required for sidecar runners). |
 | runners.authToken | string | `""` | Shared auth token between n8n and task runner sidecars. |
@@ -62,8 +62,6 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | runners.brokerListenAddress | string | `"0.0.0.0"` | Broker listen address used by n8n inside the pod. |
 | runners.image | object | `{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""}` | Default task runner image settings. |
 | runners.extraEnv | list | `[]` | Additional env vars for task runner sidecars. |
-| runners.nodeFunctionAllowExternal | string | `""` | Allowlist for external npm modules in Code nodes. |
-| runners.nodeFunctionAllowBuiltin | string | `""` | Allowlist for built-in Node.js modules in Code nodes (`*` to allow all). |
 | runners.resources | object | `{}` | Resource defaults for task runner sidecars. |
 | runners.securityContext | object | `{}` | Security context defaults for task runner sidecars. |
 | nameOverride | string | `nil` | Partially override generated resource names. |
