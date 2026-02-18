@@ -1,0 +1,15 @@
+{{- $pdb := .Values.podDisruptionBudget -}}
+{{- if and (kindIs "map" $pdb) (or (hasKey $pdb "maxUnavailable") (hasKey $pdb "minAvailable")) }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "pdns.fullname" . }}
+  labels:
+    {{- include "pdns.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "pdns.selectorLabels" . | nindent 6 }}
+  {{- toYaml $pdb | nindent 2 }}
+{{- end }}

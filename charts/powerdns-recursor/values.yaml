@@ -1,0 +1,219 @@
+---
+# Default values for powerdns-recursor.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Number of pod replicas.
+replicaCount: 1
+
+# -- Number of old ReplicaSets to retain.
+revisionHistoryLimit: 10
+
+# -- Image pull secrets.
+imagePullSecrets: []
+
+# -- Partially override generated resource names.
+nameOverride: ""
+
+# -- Fully override generated resource names.
+fullnameOverride: ""
+
+# -- ServiceAccount configuration.
+serviceAccount:
+  # -- Create a dedicated ServiceAccount.
+  create: true
+  # -- ServiceAccount annotations.
+  annotations: {}
+  # -- Explicit ServiceAccount name. If empty, a name is generated.
+  name: ""
+  # -- Mount API token into pods.
+  automountServiceAccountToken: false
+
+# -- Extra annotations added to the pod template.
+podAnnotations: {}
+
+# -- Extra labels added to the pod template.
+podLabels: {}
+
+# -- Pod-level security context.
+podSecurityContext:
+  # -- Unix user id.
+  runAsUser: 953
+  # -- Unix group id.
+  runAsGroup: 953
+
+# -- Container-level security context.
+securityContext:
+  # -- Unix user id.
+  runAsUser: 953
+  # -- Unix group id.
+  runAsGroup: 953
+
+# -- Optional priority class for pods.
+priorityClassName: ""
+
+# -- Pod anti-affinity shortcut (used when affinity is empty).
+podAntiAffinity:
+  # -- "soft", "hard" or "disabled".
+  type: soft
+  # -- Topology key used by anti-affinity.
+  topologyKey: kubernetes.io/hostname
+
+# -- Native affinity rules. If set, this overrides podAntiAffinity.
+affinity: {}
+
+# -- Node selector for scheduling.
+nodeSelector: {}
+
+# -- Tolerations for scheduling.
+tolerations: []
+
+# -- PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 }
+podDisruptionBudget: {}
+
+# -- Service configuration.
+service:
+  # -- Service type.
+  type: ClusterIP
+  # -- DNS service port (TCP/UDP).
+  port: 53
+  # -- Service annotations.
+  annotations: {}
+  # -- Optional fixed LoadBalancer IP.
+  loadBalancerIP: ""
+  # -- Optional source ranges for LoadBalancer services.
+  loadBalancerSourceRanges: []
+
+# -- Ingress for the PowerDNS API endpoint (requires pdns.api.enabled=true).
+ingress:
+  # -- Enable ingress.
+  enabled: false
+  # -- ingressClassName value.
+  className: ""
+  # -- Ingress annotations.
+  annotations: {}
+  # -- Host/path rules.
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+  # -- TLS sections.
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# -- PodMonitor configuration. Backward compatible: can also be boolean.
+podMonitor:
+  # -- Enable PodMonitor creation.
+  enabled: false
+  # -- Extra labels for PodMonitor metadata.
+  additionalLabels: {}
+  # -- Scrape interval.
+  interval: 60s
+  # -- Optional scrape timeout.
+  scrapeTimeout: ""
+  # -- Optional metrics path.
+  path: ""
+  # -- Optional scheme.
+  scheme: ""
+  # -- Optional job label override.
+  jobLabel: ""
+  # -- Optional custom relabelings.
+  relabelings: []
+
+# -- Additional arbitrary manifests appended to the release.
+extraObjects: []
+# Example:
+# extraObjects:
+#   - apiVersion: v1
+#     kind: ConfigMap
+#     metadata:
+#       name: "{{ include \"pdns.fullname\" . }}-extra"
+#     data:
+#       hello: world
+
+# -- Container image configuration.
+image:
+  # -- Optional image registry prefix.
+  registry: ""
+  # -- Image repository.
+  repository: powerdns/pdns-recursor-53
+  # -- Image tag. If empty, chart appVersion is used.
+  tag: ""
+  # -- Image pull policy (preferred key).
+  pullPolicy: IfNotPresent
+  # -- Deprecated compatibility key. Leave empty to use image.pullPolicy.
+  imagePullPolicy: ""
+
+# -- Resource requests and limits.
+resources: {}
+
+# -- Probe configuration.
+probes:
+  # -- Liveness probe settings.
+  liveness:
+    # -- Initial delay before probing.
+    initialDelaySeconds: 5
+    # -- Probe period.
+    periodSeconds: 5
+    # -- Probe timeout.
+    timeoutSeconds: 3
+    # -- Failure threshold.
+    failureThreshold: 3
+  # -- Readiness probe settings.
+  readiness:
+    # -- Initial delay before probing.
+    initialDelaySeconds: 5
+    # -- Probe period.
+    periodSeconds: 5
+    # -- Probe timeout.
+    timeoutSeconds: 3
+    # -- Failure threshold.
+    failureThreshold: 3
+
+# -- PowerDNS recursor runtime configuration.
+pdns:
+  # -- Container DNS port.
+  port: 5353
+  # -- API endpoint settings.
+  api:
+    # -- Expose API port through the Service and container.
+    enabled: false
+    # -- API TCP port.
+    port: 8082
+  # -- Optional Lua config file support.
+  lua:
+    # -- Create additional Lua ConfigMap and mount recursor.lua.
+    enabled: false
+    # -- Lua script content written to /etc/powerdns/recursor.lua.
+    script: |
+      zoneToCache(".", "url", "https://www.internic.net/domain/root.zone", { refreshPeriod = 86400 })
+  # -- Rendered directly into recursor.yml.
+  config:
+    recursor:
+      config_dir: /etc/powerdns
+      setgid: pdns
+      setuid: pdns
+      socket_mode: "660"
+    incoming:
+      port: 5353
+      listen:
+        - 0.0.0.0
+    dnssec:
+      validation: process
+    outgoing:
+      source_address:
+        - 0.0.0.0
+    logging:
+      loglevel: 6
+      quiet: true
+    recordcache:
+      # -- Refresh cache entries shortly before TTL expiry to reduce miss spikes.
+      refresh_on_ttl_perc: 10
+    webservice:
+      webserver: "false"
+  # -- Legacy compatibility block.
+  metrics:
+    enabled: false
