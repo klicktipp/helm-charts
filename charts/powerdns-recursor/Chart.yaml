@@ -3,7 +3,7 @@ name: powerdns-recursor
 description: Helm chart for deploying PowerDNS Recursor on Kubernetes
 type: application
 version: 0.1.0
-appVersion: "5.3.4"
+appVersion: 5.3.4
 keywords:
   - dns
   - powerdns

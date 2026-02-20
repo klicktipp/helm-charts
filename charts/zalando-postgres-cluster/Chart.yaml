@@ -3,8 +3,8 @@ apiVersion: v2
 name: zalando-postgres-cluster
 description: Creates a postgres cluster using the Zalando Postgres operator and local storage
 type: application
-version: "1.1.2"
-appVersion: "1.15.1"
+version: 1.1.2
+appVersion: 1.15.1
 keywords:
   - postgres
   - cluster
