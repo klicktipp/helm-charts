@@ -4,7 +4,7 @@ name: rspamd
 description: A Helm chart for deploying Rspamd on Kubernetes
 type: application
 version: 1.2.1
-# renovate: datasource=docker depName=rspamd/rspamd
+# renovate: datasource=github-releases depName=rspamd/rspamd
 appVersion: 3.13.2
 keywords:
   - rspamd
