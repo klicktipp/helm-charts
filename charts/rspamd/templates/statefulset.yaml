@@ -1,0 +1,296 @@
+{{- if .Values.multiTenancy }}
+{{- $root := . }}
+{{- range $tenant, $config := .Values.config }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "rspamd.fullname" $root }}-{{ $tenant }}
+  labels:
+    rspamd.org/tenant: {{ $tenant }}
+    {{- include "rspamd.labels" $root | nindent 4 }}
+spec:
+  serviceName: {{ include "rspamd.fullname" $root }}-{{ $tenant }}-headless
+  {{- if not $root.Values.autoscaling.enabled }}
+  replicas: {{ $root.Values.replicaCount }}
+  {{- end }}
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      rspamd.org/tenant: {{ $tenant }}
+      {{- include "rspamd.selectorLabels" $root | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $root | sha256sum }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") $root | sha256sum }}
+      {{- with $root.Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        rspamd.org/tenant: {{ $tenant }}
+        {{- include "rspamd.labels" $root | nindent 8 }}
+        {{- with $root.Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $root.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rspamd.serviceAccountName" $root }}
+      securityContext:
+        {{- toYaml $root.Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ $root.Chart.Name }}
+          securityContext:
+            {{- toYaml $root.Values.securityContext | nindent 12 }}
+          image: "{{ $root.Values.image.registry }}/{{ $root.Values.image.repository }}:{{ $root.Values.image.tag | default $root.Chart.AppVersion }}"
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          ports:
+          {{- range $name, $port := $root.Values.services }}
+            - name: {{ $name }}
+              containerPort: {{ $port }}
+              protocol: TCP
+          {{- end }}
+          {{- $extraEnvs := ($root.Values.extraEnvs | default $root.Values.extraEnv) }}
+          {{- if or (not (empty $extraEnvs)) (not (empty $root.Values.extraSecrets)) }}
+          envFrom:
+            {{- if $extraEnvs }}
+            - configMapRef:
+                name: '{{ include "rspamd.fullname" $root }}-envvars'
+            {{- end }}
+            {{- if $root.Values.extraSecrets }}
+            - secretRef:
+                name: '{{ include "rspamd.fullname" $root }}-secretvars'
+            {{- end }}
+          {{- end }}
+          {{- if $root.Values.livenessProbe}}
+          livenessProbe:
+            {{- toYaml $root.Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if $root.Values.readinessProbe}}
+          readinessProbe:
+            {{- toYaml $root.Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml $root.Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /etc/rspamd/override.d/
+              name: {{ include "rspamd.fullname" $root }}-neighbours
+            {{- if $config }}
+            - mountPath: /etc/rspamd/local.d/
+              name: {{ include "rspamd.fullname" $root }}-config
+            {{- end }}
+            {{- if $root.Values.persistence.enabled }}
+            - name: {{ include "rspamd.fullname" $root }}-data
+              mountPath: /data
+            {{- end }}
+          {{- with $root.Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: {{ include "rspamd.fullname" $root }}-neighbours
+          configMap:
+            name: {{ include "rspamd.fullname" $root }}-neighbours
+        {{- if $root.Values.config }}
+        - name: {{ include "rspamd.fullname" $root }}-config
+          configMap:
+            name: {{ include "rspamd.fullname" $root }}-{{ $tenant }}-config-files
+        {{- end }}
+      {{- with $root.Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if $root.Values.affinity }}
+      affinity:
+        {{- toYaml $root.Values.affinity | nindent 8 }}
+      {{- else if $root.Values.customAffinity }}
+      affinity:
+        {{- toYaml $root.Values.customAffinity | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/instance
+                operator: In
+                values:
+                - {{ $root.Release.Name }}
+              - key: rspamd.org/tenant
+                operator: In
+                values:
+                - {{ $tenant }}
+            topologyKey: kubernetes.io/hostname
+      {{- end }}
+      {{- with $root.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if $root.Values.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ include "rspamd.fullname" $root }}-data
+      {{- with $root.Values.persistence.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      accessModes:
+        {{- toYaml $root.Values.persistence.accessModes | nindent 8 }}
+      {{- if $root.Values.persistence.storageClass }}
+      storageClassName: {{ $root.Values.persistence.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ $root.Values.persistence.size }}
+  {{ end }}
+
+{{- end }}
+{{- else }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "rspamd.fullname" . }}
+  labels:
+    {{- include "rspamd.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "rspamd.fullname" . }}-headless
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      {{- include "rspamd.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "rspamd.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rspamd.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+          {{- range $name, $port := .Values.services }}
+            - name: {{ $name }}
+              containerPort: {{ $port }}
+              protocol: TCP
+          {{- end }}
+          {{- $extraEnvs := (.Values.extraEnvs | default .Values.extraEnv) }}
+          {{- if or (not (empty $extraEnvs)) (not (empty .Values.extraSecrets)) }}
+          envFrom:
+            {{- if $extraEnvs }}
+            - configMapRef:
+                name: '{{ include "rspamd.fullname" . }}-envvars'
+            {{- end }}
+            {{- if .Values.extraSecrets }}
+            - secretRef:
+                name: '{{ include "rspamd.fullname" . }}-secretvars'
+            {{- end }}
+          {{- end }}
+          {{- if .Values.livenessProbe}}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe}}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /etc/rspamd/override.d/
+              name: {{ include "rspamd.fullname" . }}-neighbours
+            {{- if .Values.config }}
+            - mountPath: /etc/rspamd/local.d/
+              name: {{ include "rspamd.fullname" . }}-config
+            {{- end }}
+            {{- if .Values.persistence.enabled }}
+            - name: {{ include "rspamd.fullname" . }}-data
+              mountPath: /data
+            {{- end }}
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: {{ include "rspamd.fullname" . }}-neighbours
+          configMap:
+            name: {{ include "rspamd.fullname" . }}-neighbours
+        {{- if .Values.config }}
+        - name: {{ include "rspamd.fullname" . }}-config
+          configMap:
+            name: {{ include "rspamd.fullname" . }}-config-files
+        {{- end }}
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{- else if .Values.customAffinity }}
+      affinity:
+        {{- toYaml .Values.customAffinity | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/instance
+                operator: In
+                values:
+                - {{ .Release.Name }}
+            topologyKey: kubernetes.io/hostname
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ include "rspamd.fullname" . }}-data
+      {{- with .Values.persistence.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      accessModes:
+        {{- toYaml .Values.persistence.accessModes | nindent 8 }}
+      {{- if .Values.persistence.storageClass }}
+      storageClassName: {{ .Values.persistence.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size }}
+  {{- end }}
+{{- end }}

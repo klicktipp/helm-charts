@@ -1,0 +1,98 @@
+# Title: Multi-tenant generic setup
+# Description: Example for inbound/outbound tenant split with ingress, persistence and generic placeholders.
+---
+# Generic multi-tenant example values for rspamd.
+# This file intentionally uses placeholder domains/hosts and no secrets.
+
+global:
+  baseURL: "rspamd.<env>.example.com"
+
+replicaCount: 2
+
+image:
+  # Example: private mirror/registry
+  registry: "registry.example.com/dockerhub-mirror"
+
+extraSecrets:
+  # Provide values via --set-string or an external values file in CI/CD.
+  ADMINPASSWORD: "<replace-me>"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "100K"
+  hosts:
+    - host: "rspamd.<env>.example.com"
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: ""
+            servicePort: 11334
+        - path: /checkv2
+          pathType: Prefix
+          backend:
+            serviceName: ""
+            servicePort: 11333
+  tls:
+    - secretName: "rspamd-<env>-tls"
+      hosts:
+        - "rspamd.<env>.example.com"
+
+nodeSelector:
+  kubernetes.io/os: linux
+
+podDisruptionBudget:
+  minAvailable: 1
+
+persistence:
+  enabled: true
+  storageClass: "standard"
+
+multiTenancy: true
+
+config:
+  inbound:
+    logging.inc: |
+      level = notice;
+      log_json = true;
+    options.inc: |
+      dns {
+        nameserver = "1.1.1.1";
+      }
+      dynamic_conf = "/data/rspamd_dynamic";
+    worker-controller.inc: |
+      password = "{= env.adminpassword|pbkdf =}";
+    actions.conf: |
+      greylist = "";
+    redis.conf: |
+      servers = "redis-master.redis.svc.cluster.local";
+      db = 3;
+  outbound:
+    logging.inc: |
+      level = notice;
+      log_json = true;
+    options.inc: |
+      dns {
+        nameserver = "1.1.1.1";
+      }
+      dynamic_conf = "/data/rspamd_dynamic";
+    worker-controller.inc: |
+      password = "{= env.adminpassword|pbkdf =}";
+    actions.conf: |
+      greylist = "";
+      add_header = "";
+      reject = "";
+    redis.conf: |
+      servers = "redis-master.redis.svc.cluster.local";
+      db = 3;
+
+resources:
+  requests:
+    memory: 256Mi
+  limits:
+    memory: 1Gi
