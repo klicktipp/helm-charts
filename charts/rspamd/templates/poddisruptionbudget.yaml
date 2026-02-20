@@ -1,0 +1,34 @@
+{{- if .Values.podDisruptionBudget }}
+{{- if .Values.multiTenancy }}
+{{- $root := . }}
+{{- range $tenant, $config := .Values.config }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "rspamd.fullname" $root }}-{{ $tenant }}
+  labels:
+    rspamd.org/tenant: {{ $tenant }}
+    {{- include "rspamd.labels" $root | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      rspamd.org/tenant: {{ $tenant }}
+      {{- include "rspamd.selectorLabels" $root | nindent 6 }}
+  {{- toYaml $.Values.podDisruptionBudget | nindent 2 }}
+{{- end }}
+{{- else }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "rspamd.fullname" . }}
+  labels:
+    {{- include "rspamd.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "rspamd.selectorLabels" . | nindent 6 }}
+  {{- toYaml .Values.podDisruptionBudget | nindent 2 }}
+{{- end }}
+{{- end }}

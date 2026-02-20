@@ -1,0 +1,27 @@
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" }}
+{{- if .Values.metrics.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "rspamd.fullname" . }}
+  labels:
+    {{- include "rspamd.labels" . | nindent 4 }}
+spec:
+  jobLabel: {{ include "rspamd.name" . }}
+  podTargetLabels:
+    - app.kubernetes.io/instance
+    - app.kubernetes.io/name
+  selector:
+    matchLabels:
+      {{- include "rspamd.selectorLabels" . | nindent 6 }}
+  podMetricsEndpoints:
+    - interval: "60s"
+      port: "worker"
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_name
+          targetLabel: instance
+{{- end }}
+{{- end }}

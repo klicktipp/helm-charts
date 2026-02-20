@@ -1,0 +1,85 @@
+{{- $extraEnvs := (.Values.extraEnvs | default .Values.extraEnv) }}
+{{- if $extraEnvs }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rspamd.fullname" . }}-envvars
+  labels:
+    {{- include "rspamd.labels" . | nindent 4 }}
+data:
+  {{- range $key, $val := $extraEnvs }}
+  RSPAMD_{{ $key }}: {{ $val | quote }}
+  {{- end }}
+{{- end }}
+
+{{- if .Values.config }}
+{{- if .Values.multiTenancy }}
+{{- $root := . }}
+{{- range $tenant, $config := .Values.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rspamd.fullname" $root }}-{{ $tenant }}-config-files
+  labels:
+    rspamd.org/tenant: {{ $tenant }}
+    {{- include "rspamd.labels" $root | nindent 4 }}
+data:
+{{- range $file, $content := $config }}
+  {{ $file }}: |
+{{- if kindIs "string" $content }}
+    {{ $content | nindent 4 }}
+{{- else }}
+    {{ toYaml $content | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- else }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rspamd.fullname" . }}-config-files
+  labels:
+    {{- include "rspamd.labels" . | nindent 4 }}
+data:
+{{- range $file, $content := .Values.config }}
+  {{ $file }}: |
+{{- if kindIs "string" $content }}
+    {{ $content | nindent 4 }}
+{{- else }}
+    {{ toYaml $content | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rspamd.fullname" . }}-neighbours
+  labels:
+    {{- include "rspamd.labels" . | nindent 4 }}
+data:
+  options.inc: |
+    neighbours {
+    {{- if .Values.multiTenancy }}
+      {{- $root := . }}
+      {{- range $tenant, $_ := .Values.config }}
+        {{- range $index := until (int $root.Values.replicaCount) }}
+          rspamd-{{ $tenant }}-{{ $index }} {
+            host = "https://{{ $root.Values.global.baseURL }}:443";
+            path = "/rspamd-{{ $tenant }}-{{ $index }}/";
+          }
+        {{- end }}
+      {{- end }}
+    {{- else }}
+      {{- range $index := until (int .Values.replicaCount) }}
+        rspamd-{{ $index }} {
+          host = "https://{{ $.Values.global.baseURL }}:443";
+          path = "/rspamd-{{ $index }}/";
+        }
+      {{- end }}
+    {{- end }}
+    }

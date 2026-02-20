@@ -1,0 +1,187 @@
+---
+# Default values for rspamd.
+# This is a YAML-formatted file.
+
+# -- Number of Rspamd replicas per tenant (or total when multiTenancy=false).
+replicaCount: 1
+
+# -- Global settings used across templates.
+global:
+  # -- Public DNS host used in generated neighbour URLs and ingress host defaults.
+  baseURL: "rspamd.example.com"
+
+# -- Container image configuration.
+image:
+  # -- Optional image registry prefix.
+  registry: "docker.io"
+  # -- Image repository.
+  repository: "rspamd/rspamd"
+  # -- Image pull policy.
+  pullPolicy: "IfNotPresent"
+  # -- Image tag. If empty, chart appVersion is used.
+  tag: ""
+
+# -- Image pull secrets.
+imagePullSecrets: []
+
+# -- Partially override generated resource names.
+nameOverride: ""
+
+# -- Fully override generated resource names.
+fullnameOverride: ""
+
+# -- ServiceAccount configuration.
+serviceAccount:
+  # -- Create a dedicated ServiceAccount.
+  create: true
+  # -- Mount ServiceAccount token into pods.
+  automountServiceAccountToken: true
+  # -- Deprecated compatibility key (use automountServiceAccountToken).
+  automount: true
+  # -- ServiceAccount annotations.
+  annotations: {}
+  # -- Explicit ServiceAccount name. If empty, a name is generated.
+  name: ""
+
+# -- Extra annotations added to the pod template.
+podAnnotations: {}
+
+# -- Extra labels added to the pod template.
+podLabels: {}
+
+# -- Pod-level security context.
+podSecurityContext:
+  # -- Unix group id for mounted volumes.
+  fsGroup: 11333
+  # -- Unix user id.
+  runAsUser: 11333
+  # -- Unix group id.
+  runAsGroup: 11333
+
+# -- Container-level security context.
+securityContext: {}
+
+# -- Named service ports used by Service, probes and ingress defaults.
+services:
+  # -- Proxy port.
+  proxy: 11332
+  # -- Worker/UI/API port.
+  worker: 11333
+  # -- Controller port.
+  controller: 11334
+
+# -- Metrics and PodMonitor settings.
+metrics:
+  # -- Enable PodMonitor creation when CRD exists.
+  enabled: true
+
+# -- Ingress configuration.
+ingress:
+  # -- Enable ingress resources.
+  enabled: false
+  # -- ingressClassName value.
+  className: ""
+  # -- Ingress annotations.
+  annotations: {}
+  # -- Ingress host/path rules.
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            # -- Service name for this ingress path. If empty, defaults to chart Service.
+            serviceName: ""
+            # -- Service port for this ingress path. If empty, defaults to services.worker.
+            servicePort: 11333
+  # -- TLS sections.
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+  # -- Extra ingress exposing per-pod endpoints for neighbour calls.
+  singlePodPaths:
+    # -- Enable dedicated per-pod ingress rules.
+    enabled: true
+
+# -- Container resource requests and limits.
+resources: {}
+
+# -- Liveness probe settings.
+livenessProbe:
+  tcpSocket:
+    port: worker
+  initialDelaySeconds: 30
+
+# -- Readiness probe settings.
+readinessProbe:
+  httpGet:
+    path: /ping
+    port: worker
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+# -- Horizontal Pod Autoscaler settings.
+autoscaling:
+  # -- Enable HPA.
+  enabled: false
+  # -- Minimum number of replicas.
+  minReplicas: 1
+  # -- Maximum number of replicas.
+  maxReplicas: 100
+  # -- Target average CPU utilization percentage.
+  targetCPUUtilizationPercentage: 80
+  # -- Target average memory utilization percentage.
+  targetMemoryUtilizationPercentage:
+
+# -- Additional volumes mounted into the pod.
+volumes: []
+
+# -- Additional volume mounts for the Rspamd container.
+volumeMounts: []
+
+# -- Node selector for pod scheduling.
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling.
+tolerations: []
+
+# -- Native affinity rules. If set, this is used as-is.
+affinity: {}
+
+# -- Deprecated compatibility key for affinity (prefer affinity).
+customAffinity: {}
+
+# -- Additional environment variables as plain text (ConfigMap-backed).
+extraEnvs: {}
+
+# -- Deprecated compatibility key for extraEnvs.
+extraEnv: {}
+
+# -- Additional environment variables as secrets (Secret-backed, values are plain text).
+extraSecrets: {}
+
+# -- Enable multi-tenant mode (one StatefulSet and Services per config key).
+multiTenancy: false
+
+# -- Rspamd config files written to /etc/rspamd/local.d/.
+# In multiTenancy mode this must be a map: tenant -> (filename -> content).
+# In single-tenant mode this must be a map: filename -> content.
+config: {}
+
+# -- PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 }
+podDisruptionBudget: {}
+
+# -- Persistent volume configuration for /data.
+persistence:
+  # -- Enable persistent storage.
+  enabled: false
+  # -- StorageClass name. Leave empty to use cluster default StorageClass.
+  storageClass: ""
+  # -- Access modes for the PVC.
+  accessModes:
+    - ReadWriteOnce
+  # -- Requested storage size.
+  size: 8Gi
+  # -- PVC annotations.
+  annotations: {}
