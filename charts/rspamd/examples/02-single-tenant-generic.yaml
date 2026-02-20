@@ -1,0 +1,38 @@
+# Title: Single-tenant generic setup
+# Description: Minimal single-tenant example with ingress, PDB and base rspamd config snippets.
+---
+# Generic single-tenant example values for rspamd.
+
+global:
+  baseURL: "rspamd.example.com"
+
+replicaCount: 2
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: "rspamd.example.com"
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: ""
+            servicePort: 11333
+  tls:
+    - secretName: "rspamd-example-com-tls"
+      hosts:
+        - "rspamd.example.com"
+
+podDisruptionBudget:
+  maxUnavailable: 1
+
+config:
+  logging.inc: |
+    level = notice;
+    log_json = true;
+  worker-controller.inc: |
+    password = "{= env.adminpassword|pbkdf =}";
+  redis.conf: |
+    servers = "redis-master.redis.svc.cluster.local";
+    db = 3;
