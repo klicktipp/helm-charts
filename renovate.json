@@ -1,12 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:best-practices"
-  ],
-  "ignorePresets": [
-    "docker:pinDigests",
-    ":pinDevDependencies",
-    "helpers:pinGitHubActionDigests"
+    "github>klicktipp/renovate-config"
   ],
   "packageRules": [
     {
