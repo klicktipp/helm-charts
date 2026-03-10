@@ -1,6 +1,6 @@
 # powerdns-recursor
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.3.4](https://img.shields.io/badge/AppVersion-5.3.4-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
 
 Helm chart for deploying PowerDNS Recursor on Kubernetes
 
@@ -64,9 +64,9 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | podMonitor.jobLabel | string | `""` | Optional job label override. |
 | podMonitor.relabelings | list | `[]` | Optional custom relabelings. |
 | extraObjects | list | `[]` | Additional arbitrary manifests appended to the release. |
-| image | object | `{"imagePullPolicy":"","pullPolicy":"IfNotPresent","registry":"","repository":"powerdns/pdns-recursor-53","tag":""}` | Container image configuration. |
+| image | object | `{"imagePullPolicy":"","pullPolicy":"IfNotPresent","registry":"","repository":"powerdns/pdns-recursor-54","tag":""}` | Container image configuration. |
 | image.registry | string | `""` | Optional image registry prefix. |
-| image.repository | string | `"powerdns/pdns-recursor-53"` | Image repository. |
+| image.repository | string | `"powerdns/pdns-recursor-54"` | Image repository. |
 | image.tag | string | `""` | Image tag. If empty, chart appVersion is used. |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy (preferred key). |
 | image.imagePullPolicy | string | `""` | Deprecated compatibility key. Leave empty to use image.pullPolicy. |

@@ -139,7 +139,7 @@ image:
   # -- Optional image registry prefix.
   registry: ""
   # -- Image repository.
-  repository: powerdns/pdns-recursor-53
+  repository: powerdns/pdns-recursor-54
   # -- Image tag. If empty, chart appVersion is used.
   tag: ""
   # -- Image pull policy (preferred key).
