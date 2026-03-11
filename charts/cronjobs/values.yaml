@@ -179,8 +179,9 @@ commonLabels: {}
 
 # Given name given to the job container inside the Pod.
 #   Can be oveeriden with .jobs.KEY.containerName
+#   If empty, defaults to the slugified job name.
 # -- Set commonContainerName.
-commonContainerName: cronjob
+commonContainerName: ""
 
 # -- Pod security context.
 podSecurityContext: {}

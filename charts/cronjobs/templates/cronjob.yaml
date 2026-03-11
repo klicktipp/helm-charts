@@ -80,7 +80,7 @@ spec:
           securityContext:
             {{- toYaml ($job.podSecurityContext | default $.Values.podSecurityContext) | nindent 12 }}
           containers:
-            - name: {{ .containerName | default $.Values.commonContainerName }}
+            - name: {{ .containerName | default ($.Values.commonContainerName | default $JOB_NAME_SLUG) }}
               securityContext:
                 {{- toYaml ($job.securityContext | default $.Values.securityContext) | nindent 16 }}
               image: "{{ $job.image.repository }}:{{ $job.image.tag | default $.Chart.AppVersion }}"
