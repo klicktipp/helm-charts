@@ -29,7 +29,7 @@ spec:
   volumeMode: Filesystem
   accessModes:
     - ReadWriteMany
-  persistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: {{ $job.storage.efs.persistentVolumeReclaimPolicy | Retain }}
   storageClassName: {{ $job.storage.efs.storageClass }}
   csi:
     driver: efs.csi.aws.com
