@@ -213,6 +213,11 @@ spec:
             {{- $runnerExtraEnv | nindent 12 }}
           resources:
             {{- toYaml (coalesce .Values.worker.runner.resources .Values.runners.resources (dict)) | nindent 12 }}
+          {{- $workerRunnerVolumeMounts := concat (default (list) .Values.runners.extraVolumeMounts) (default (list) .Values.worker.runner.extraVolumeMounts) }}
+          {{- if gt (len $workerRunnerVolumeMounts) 0 }}
+          volumeMounts:
+            {{- toYaml $workerRunnerVolumeMounts | nindent 12 }}
+          {{- end }}
         {{- end }}
       {{- with .Values.hostAliases }}
       hostAliases:
@@ -238,5 +243,8 @@ spec:
           {{- include "n8n.persistenceVolume" (dict "persistence" .Values.worker.persistence "claimName" (printf "%s-worker" (include "n8n.fullname" .))) | nindent 10 }}
         {{- if .Values.worker.extraVolumes }}
           {{- toYaml .Values.worker.extraVolumes | nindent 8 }}
+        {{- end }}
+        {{- if .Values.runners.extraVolumes }}
+          {{- toYaml .Values.runners.extraVolumes | nindent 8 }}
         {{- end }}
 {{- end }}

@@ -109,6 +109,10 @@ runners:
   resources: {}
   # -- Security context defaults for task runner sidecars.
   securityContext: {}
+  # -- Extra volumes for runner sidecar pods.
+  extraVolumes: []
+  # -- Extra volume mounts for runner sidecar containers.
+  extraVolumeMounts: []
 
 # -- Partially override generated resource names.
 nameOverride:
@@ -189,6 +193,8 @@ main:
     resources: {}
     # -- Security context overrides for main task runner sidecar.
     securityContext: {}
+    # -- Extra volume mounts override for main task runner sidecar.
+    extraVolumeMounts: []
     # -- Optional command override for main task runner sidecar.
     command: []
     # -- Optional args override for main task runner sidecar.
@@ -377,6 +383,8 @@ worker:
     resources: {}
     # -- Security context overrides for worker task runner sidecar.
     securityContext: {}
+    # -- Extra volume mounts override for worker task runner sidecar.
+    extraVolumeMounts: []
     # -- Optional command override for worker task runner sidecar.
     command: []
     # -- Optional args override for worker task runner sidecar.
