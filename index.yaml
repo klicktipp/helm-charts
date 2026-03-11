@@ -9,6 +9,31 @@ entries:
           url: https://hub.docker.com/_/busybox
     apiVersion: v2
     appVersion: latest
+    created: "2026-03-11T15:37:40.323995962Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: 2.36.0
+    description: A generic helm cronjob chart for kubernetes
+    digest: f50b871c3224526e60aa329e26a1205d5dc0823f45728be0c21cc79714f7b383
+    home: https://github.com/klicktipp/helm-charts
+    keywords:
+    - cronjob
+    name: cronjobs
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/cronjobs-1.6.4/cronjobs-1.6.4.tgz
+    version: 1.6.4
+  - annotations:
+      artifacthub.io/links: |
+        - name: Image source
+          url: https://github.com/docker-library/busybox
+        - name: Image DockerHub
+          url: https://hub.docker.com/_/busybox
+    apiVersion: v2
+    appVersion: latest
     created: "2026-03-11T09:10:39.742210051Z"
     dependencies:
     - name: common
@@ -1513,4 +1538,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-03-11T09:10:39.742409434Z"
+generated: "2026-03-11T15:37:40.324241199Z"
