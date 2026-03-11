@@ -227,6 +227,6 @@ spec:
         {{- if .Values.main.extraVolumes }}
           {{- toYaml .Values.main.extraVolumes | nindent 8 }}
         {{- end }}
-        {{- if .Values.runners.extraVolumes }}
+        {{- if and $mainRunnerEnabled .Values.runners.extraVolumes }}
           {{- toYaml .Values.runners.extraVolumes | nindent 8 }}
         {{- end }}
