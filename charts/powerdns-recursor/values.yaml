@@ -75,6 +75,8 @@ podDisruptionBudget: {}
 service:
   # -- Service type.
   type: ClusterIP
+  # -- Optional fixed ClusterIP for the primary Service.
+  clusterIP: ""
   # -- DNS service port (TCP/UDP).
   port: 53
   # -- Service annotations.
