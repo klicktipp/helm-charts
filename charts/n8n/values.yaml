@@ -193,7 +193,7 @@ main:
     resources: {}
     # -- Security context overrides for main task runner sidecar.
     securityContext: {}
-    # -- Extra volume mounts override for main task runner sidecar.
+    # -- Additional volume mounts for main task runner sidecar.
     extraVolumeMounts: []
     # -- Optional command override for main task runner sidecar.
     command: []
