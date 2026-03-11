@@ -1,6 +1,6 @@
 # n8n
 
-![Version: 1.4.0](https://img.shields.io/badge/Version-1.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.10.1](https://img.shields.io/badge/AppVersion-2.10.1-informational?style=flat-square)
+![Version: 1.4.1](https://img.shields.io/badge/Version-1.4.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.10.1](https://img.shields.io/badge/AppVersion-2.10.1-informational?style=flat-square)
 
 Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services.
 
@@ -52,7 +52,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | global.persistence.annotations | object | `{}` | Global PVC defaults. Components can override these values. |
 | global.persistence.accessModes | list | `["ReadWriteOnce"]` | Global PVC access modes. |
 | global.persistence.size | string | `"1Gi"` | Global PVC size. |
-| runners | object | `{"authToken":"","authTokenFrom":{"secretKeyRef":{"key":"","name":""}},"brokerListenAddress":"0.0.0.0","enabled":false,"extraEnv":[],"image":{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""},"mode":"external","port":5679,"resources":{},"securityContext":{}}` | Shared defaults for task runner sidecars. |
+| runners | object | `{"authToken":"","authTokenFrom":{"secretKeyRef":{"key":"","name":""}},"brokerListenAddress":"0.0.0.0","enabled":false,"extraEnv":[],"extraVolumeMounts":[],"extraVolumes":[],"image":{"pullPolicy":"IfNotPresent","repository":"n8nio/runners","tag":""},"mode":"external","port":5679,"resources":{},"securityContext":{}}` | Shared defaults for task runner sidecars. |
 | runners.enabled | bool | `false` | Enable task runner sidecars globally. |
 | runners.mode | string | `"external"` | Task runner mode for n8n (`external` required for sidecar runners). |
 | runners.authToken | string | `""` | Shared auth token between n8n and task runner sidecars. |
@@ -64,6 +64,8 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | runners.extraEnv | list | `[]` | Additional env vars for task runner sidecars. |
 | runners.resources | object | `{}` | Resource defaults for task runner sidecars. |
 | runners.securityContext | object | `{}` | Security context defaults for task runner sidecars. |
+| runners.extraVolumes | list | `[]` | Extra volumes for runner sidecar pods. |
+| runners.extraVolumeMounts | list | `[]` | Extra volume mounts for runner sidecar containers. |
 | nameOverride | string | `nil` | Partially override generated resource names. |
 | fullnameOverride | string | `nil` | Fully override generated resource names. |
 | hostAliases | list | `[]` | Additional `/etc/hosts` entries for pods. |
@@ -89,6 +91,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | main.runner.extraEnv | list | `[]` | Additional env vars for main task runner sidecar. |
 | main.runner.resources | object | `{}` | Resource overrides for main task runner sidecar. |
 | main.runner.securityContext | object | `{}` | Security context overrides for main task runner sidecar. |
+| main.runner.extraVolumeMounts | list | `[]` | Extra volume mounts override for main task runner sidecar. |
 | main.runner.command | list | `[]` | Optional command override for main task runner sidecar. |
 | main.runner.args | list | `[]` | Optional args override for main task runner sidecar. |
 | main.extraEnv | list | `[]` | Additional env vars for the container. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`; component entries override by `name`. |
@@ -145,6 +148,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | worker.runner.extraEnv | list | `[]` | Additional env vars for worker task runner sidecar. |
 | worker.runner.resources | object | `{}` | Resource overrides for worker task runner sidecar. |
 | worker.runner.securityContext | object | `{}` | Security context overrides for worker task runner sidecar. |
+| worker.runner.extraVolumeMounts | list | `[]` | Extra volume mounts override for worker task runner sidecar. |
 | worker.runner.command | list | `[]` | Optional command override for worker task runner sidecar. |
 | worker.runner.args | list | `[]` | Optional args override for worker task runner sidecar. |
 | worker.extraEnv | list | `[]` | Additional env vars for worker pods. Preferred format is a list of Kubernetes EnvVar objects. Backward-compatible map format is also supported by templates. Merged with `global.extraEnv`; component entries override by `name`. |
@@ -249,5 +253,3 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | extraTemplateManifests | list | `[]` | Additional templated manifests rendered with Helm context. |
 | valkey | object | `{"enabled":false}` | Valkey dependency values. |
 
-----------------------------------------------
-Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)
