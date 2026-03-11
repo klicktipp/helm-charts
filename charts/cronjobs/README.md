@@ -1,6 +1,6 @@
 # cronjobs
 
-![Version: 1.6.3](https://img.shields.io/badge/Version-1.6.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 1.6.4](https://img.shields.io/badge/Version-1.6.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 A generic helm cronjob chart for kubernetes
 
@@ -46,7 +46,7 @@ A generic helm cronjob chart for kubernetes
 | rbac.clusterRole.rules | list | `[]` | Configure rbac.clusterRole.rules. |
 | commonAnnotations | object | `{}` | Configure commonAnnotations. |
 | commonLabels | object | `{}` | Configure commonLabels. |
-| commonContainerName | string | `"cronjob"` | Set commonContainerName. |
+| commonContainerName | string | `""` | Set commonContainerName. |
 | podSecurityContext | object | `{}` | Pod security context. |
 | securityContext | object | `{}` | Container security context. |
 | resources | object | `{}` | Container resource requests and limits. |
