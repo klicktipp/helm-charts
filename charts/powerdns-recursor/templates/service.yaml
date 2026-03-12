@@ -38,3 +38,38 @@ spec:
     {{- end }}
   selector:
     {{- include "pdns.selectorLabels" . | nindent 4 }}
+{{- if .Values.service.headless.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pdns.fullname" . }}-headless
+  labels:
+    {{- include "pdns.labels" . | nindent 4 }}
+  {{- with .Values.service.headless.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  clusterIP: None
+  {{- if .Values.service.headless.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+  {{- end }}
+  ports:
+    - name: dns-udp
+      protocol: UDP
+      port: {{ .Values.service.port }}
+      targetPort: dns-udp
+    - name: dns-tcp
+      protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: dns-tcp
+    {{- if .Values.pdns.api.enabled }}
+    - name: api
+      protocol: TCP
+      port: {{ .Values.pdns.api.port }}
+      targetPort: api
+    {{- end }}
+  selector:
+    {{- include "pdns.selectorLabels" . | nindent 4 }}
+{{- end }}
