@@ -85,6 +85,14 @@ service:
   loadBalancerIP: ""
   # -- Optional source ranges for LoadBalancer services.
   loadBalancerSourceRanges: []
+  # -- Optional headless Service for direct pod DNS records.
+  headless:
+    # -- Enable creation of an additional headless Service (<fullname>-headless).
+    enabled: false
+    # -- Headless Service annotations.
+    annotations: {}
+    # -- Publish endpoints even for not-ready pods.
+    publishNotReadyAddresses: false
 
 # -- Ingress for the PowerDNS API endpoint (requires pdns.api.enabled=true).
 ingress:

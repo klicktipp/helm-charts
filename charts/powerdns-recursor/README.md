@@ -1,6 +1,6 @@
 # powerdns-recursor
 
-![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
+![Version: 0.2.2](https://img.shields.io/badge/Version-0.2.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
 
 Helm chart for deploying PowerDNS Recursor on Kubernetes
 
@@ -42,13 +42,17 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | nodeSelector | object | `{}` | Node selector for scheduling. |
 | tolerations | list | `[]` | Tolerations for scheduling. |
 | podDisruptionBudget | object | `{}` | PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 } |
-| service | object | `{"annotations":{},"clusterIP":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"}` | Service configuration. |
+| service | object | `{"annotations":{},"clusterIP":"","headless":{"annotations":{},"enabled":false,"publishNotReadyAddresses":false},"loadBalancerIP":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"}` | Service configuration. |
 | service.type | string | `"ClusterIP"` | Service type. |
 | service.clusterIP | string | `""` | Optional fixed ClusterIP for the primary Service. |
 | service.port | int | `53` | DNS service port (TCP/UDP). |
 | service.annotations | object | `{}` | Service annotations. |
 | service.loadBalancerIP | string | `""` | Optional fixed LoadBalancer IP. |
 | service.loadBalancerSourceRanges | list | `[]` | Optional source ranges for LoadBalancer services. |
+| service.headless | object | `{"annotations":{},"enabled":false,"publishNotReadyAddresses":false}` | Optional headless Service for direct pod DNS records. |
+| service.headless.enabled | bool | `false` | Enable creation of an additional headless Service (<fullname>-headless). |
+| service.headless.annotations | object | `{}` | Headless Service annotations. |
+| service.headless.publishNotReadyAddresses | bool | `false` | Publish endpoints even for not-ready pods. |
 | ingress | object | `{"annotations":{},"className":"","enabled":false,"hosts":[{"host":"chart-example.local","paths":[{"path":"/","pathType":"Prefix"}]}],"tls":[]}` | Ingress for the PowerDNS API endpoint (requires pdns.api.enabled=true). |
 | ingress.enabled | bool | `false` | Enable ingress. |
 | ingress.className | string | `""` | ingressClassName value. |
