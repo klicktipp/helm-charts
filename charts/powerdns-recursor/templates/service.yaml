@@ -39,6 +39,9 @@ spec:
   selector:
     {{- include "pdns.selectorLabels" . | nindent 4 }}
 {{- if .Values.service.headless.enabled }}
+{{- if and (not .Values.service.headless.includeDnsPorts) (not .Values.pdns.api.enabled) }}
+{{- fail "service.headless.enabled=true requires either service.headless.includeDnsPorts=true or pdns.api.enabled=true" }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -56,6 +59,7 @@ spec:
   publishNotReadyAddresses: true
   {{- end }}
   ports:
+    {{- if .Values.service.headless.includeDnsPorts }}
     - name: dns-udp
       protocol: UDP
       port: {{ .Values.service.port }}
@@ -64,6 +68,7 @@ spec:
       protocol: TCP
       port: {{ .Values.service.port }}
       targetPort: dns-tcp
+    {{- end }}
     {{- if .Values.pdns.api.enabled }}
     - name: api
       protocol: TCP

@@ -91,6 +91,8 @@ service:
     enabled: false
     # -- Headless Service annotations.
     annotations: {}
+    # -- Include DNS TCP/UDP ports on the headless Service.
+    includeDnsPorts: true
     # -- Publish endpoints even for not-ready pods.
     publishNotReadyAddresses: false
 
