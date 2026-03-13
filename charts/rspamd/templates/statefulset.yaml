@@ -1,3 +1,4 @@
+{{- include "rspamd.validateValues" . }}
 {{- if .Values.multiTenancy }}
 {{- $root := . }}
 {{- range $tenant, $config := .Values.config }}
@@ -11,6 +12,10 @@ metadata:
     {{- include "rspamd.labels" $root | nindent 4 }}
 spec:
   serviceName: {{ include "rspamd.fullname" $root }}-{{ $tenant }}-headless
+  revisionHistoryLimit: {{ $root.Values.revisionHistoryLimit }}
+  podManagementPolicy: {{ $root.Values.podManagementPolicy }}
+  updateStrategy:
+    {{- toYaml $root.Values.updateStrategy | nindent 4 }}
   {{- if not $root.Values.autoscaling.enabled }}
   replicas: {{ $root.Values.replicaCount }}
   {{- end }}
@@ -39,13 +44,18 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "rspamd.serviceAccountName" $root }}
+      enableServiceLinks: {{ $root.Values.enableServiceLinks }}
+      terminationGracePeriodSeconds: {{ $root.Values.terminationGracePeriodSeconds }}
       securityContext:
         {{- toYaml $root.Values.podSecurityContext | nindent 8 }}
+      {{- with $root.Values.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
       containers:
         - name: {{ $root.Chart.Name }}
           securityContext:
             {{- toYaml $root.Values.securityContext | nindent 12 }}
-          image: "{{ $root.Values.image.registry }}/{{ $root.Values.image.repository }}:{{ $root.Values.image.tag | default $root.Chart.AppVersion }}"
+          image: {{ include "rspamd.image" $root | quote }}
           imagePullPolicy: {{ $root.Values.image.pullPolicy }}
           ports:
           {{- range $name, $port := $root.Values.services }}
@@ -72,6 +82,10 @@ spec:
           {{- if $root.Values.readinessProbe}}
           readinessProbe:
             {{- toYaml $root.Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if $root.Values.startupProbe }}
+          startupProbe:
+            {{- toYaml $root.Values.startupProbe | nindent 12 }}
           {{- end }}
           resources:
             {{- toYaml $root.Values.resources | nindent 12 }}
@@ -113,19 +127,11 @@ spec:
         {{- toYaml $root.Values.customAffinity | nindent 8 }}
       {{- else }}
       affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app.kubernetes.io/instance
-                operator: In
-                values:
-                - {{ $root.Release.Name }}
-              - key: rspamd.org/tenant
-                operator: In
-                values:
-                - {{ $tenant }}
-            topologyKey: kubernetes.io/hostname
+        {{- include "rspamd.defaultTenantAffinity" (dict "root" $root "tenant" $tenant) | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with $root.Values.tolerations }}
       tolerations:
@@ -161,6 +167,10 @@ metadata:
     {{- include "rspamd.labels" . | nindent 4 }}
 spec:
   serviceName: {{ include "rspamd.fullname" . }}-headless
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
@@ -187,13 +197,18 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "rspamd.serviceAccountName" . }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: {{ include "rspamd.image" . | quote }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
           {{- range $name, $port := .Values.services }}
@@ -220,6 +235,10 @@ spec:
           {{- if .Values.readinessProbe}}
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -261,15 +280,11 @@ spec:
         {{- toYaml .Values.customAffinity | nindent 8 }}
       {{- else }}
       affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app.kubernetes.io/instance
-                operator: In
-                values:
-                - {{ .Release.Name }}
-            topologyKey: kubernetes.io/hostname
+        {{- include "rspamd.defaultAffinity" . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:

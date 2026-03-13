@@ -7,8 +7,11 @@ metadata:
   name: {{ include "rspamd.fullname" . }}
   labels:
     {{- include "rspamd.labels" . | nindent 4 }}
+    {{- with .Values.metrics.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
-  jobLabel: {{ include "rspamd.name" . }}
+  jobLabel: {{ include "rspamd.name" . | quote }}
   podTargetLabels:
     - app.kubernetes.io/instance
     - app.kubernetes.io/name
@@ -16,8 +19,12 @@ spec:
     matchLabels:
       {{- include "rspamd.selectorLabels" . | nindent 6 }}
   podMetricsEndpoints:
-    - interval: "60s"
+    - interval: {{ .Values.metrics.interval | quote }}
       port: "worker"
+      path: {{ .Values.metrics.path | quote }}
+      {{- with .Values.metrics.scrapeTimeout }}
+      scrapeTimeout: {{ . | quote }}
+      {{- end }}
       relabelings:
         - action: replace
           sourceLabels:

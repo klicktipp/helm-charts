@@ -35,9 +35,9 @@ serviceAccount:
   # -- Create a dedicated ServiceAccount.
   create: true
   # -- Mount ServiceAccount token into pods.
-  automountServiceAccountToken: true
+  automountServiceAccountToken: false
   # -- Deprecated compatibility key (use automountServiceAccountToken).
-  automount: true
+  automount: false
   # -- ServiceAccount annotations.
   annotations: {}
   # -- Explicit ServiceAccount name. If empty, a name is generated.
@@ -51,15 +51,48 @@ podLabels: {}
 
 # -- Pod-level security context.
 podSecurityContext:
+  # -- Ensure the container does not run as root.
+  runAsNonRoot: true
   # -- Unix group id for mounted volumes.
   fsGroup: 11333
+  # -- Avoid unnecessary recursive ownership changes on mounted volumes.
+  fsGroupChangePolicy: OnRootMismatch
   # -- Unix user id.
   runAsUser: 11333
   # -- Unix group id.
   runAsGroup: 11333
+  # -- Use the container runtime's default seccomp profile.
+  seccompProfile:
+    type: RuntimeDefault
 
 # -- Container-level security context.
-securityContext: {}
+securityContext:
+  # -- Prevent privilege escalation inside the container.
+  allowPrivilegeEscalation: false
+  # -- Drop all Linux capabilities by default.
+  capabilities:
+    drop:
+      - ALL
+
+# -- Pod termination grace period in seconds.
+terminationGracePeriodSeconds: 30
+
+# -- Disable automatic injection of Service environment variables.
+enableServiceLinks: false
+
+# -- Optional priority class for pods.
+priorityClassName: ""
+
+# -- Number of old StatefulSet revisions to retain.
+revisionHistoryLimit: 10
+
+# -- StatefulSet pod management policy.
+podManagementPolicy: OrderedReady
+
+# -- StatefulSet update strategy.
+updateStrategy:
+  # -- Strategy type, usually RollingUpdate or OnDelete.
+  type: RollingUpdate
 
 # -- Named service ports used by Service, probes and ingress defaults.
 services:
@@ -74,6 +107,14 @@ services:
 metrics:
   # -- Enable PodMonitor creation when CRD exists.
   enabled: true
+  # -- Extra labels added to the PodMonitor.
+  additionalLabels: {}
+  # -- Scrape interval.
+  interval: 60s
+  # -- Optional scrape timeout.
+  scrapeTimeout: ""
+  # -- Metrics path on the worker port.
+  path: /metrics
 
 # -- Ingress configuration.
 ingress:
@@ -121,6 +162,14 @@ readinessProbe:
   initialDelaySeconds: 10
   periodSeconds: 5
 
+# -- Startup probe settings.
+startupProbe:
+  httpGet:
+    path: /ping
+    port: worker
+  periodSeconds: 5
+  failureThreshold: 30
+
 # -- Horizontal Pod Autoscaler settings.
 autoscaling:
   # -- Enable HPA.
@@ -145,6 +194,16 @@ nodeSelector: {}
 
 # -- Tolerations for pod scheduling.
 tolerations: []
+
+# -- Pod anti-affinity shortcut used when affinity is empty.
+podAntiAffinity:
+  # -- "soft", "hard" or "disabled".
+  type: soft
+  # -- Topology key used by anti-affinity.
+  topologyKey: kubernetes.io/hostname
+
+# -- Topology spread constraints for pod scheduling.
+topologySpreadConstraints: []
 
 # -- Native affinity rules. If set, this is used as-is.
 affinity: {}
