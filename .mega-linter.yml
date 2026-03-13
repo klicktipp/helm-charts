@@ -1,0 +1,14 @@
+---
+# Configuration file for MegaLinter
+
+IGNORE_GITIGNORED_FILES: true
+YAML_YAMLLINT_CONFIG_FILE: .yamllint
+
+# Helm templates are Go templates, not plain YAML.
+YAML_PRETTIER_FILTER_REGEX_EXCLUDE: (^|.*/)charts/[^/]+/templates/.*\.ya?ml$
+YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: (^|.*/)charts/[^/]+/templates/.*\.ya?ml$
+
+SHOW_ELAPSED_TIME: true
+CLEAR_REPORT_FOLDER: true
+REPORTERS_MARKDOWN_TYPE: simple
+PRINT_ALPACA: false
