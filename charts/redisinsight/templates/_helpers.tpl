@@ -7,8 +7,6 @@ Expand the name of the chart.
 
 {{/*
 Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
 */}}
 {{- define "redisinsight-chart.fullname" -}}
 {{- if .Values.fullnameOverride }}
@@ -37,7 +35,7 @@ Common labels
 helm.sh/chart: {{ include "redisinsight-chart.chart" . }}
 {{ include "redisinsight-chart.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
@@ -51,7 +49,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
+Create the name of the service account to use.
 */}}
 {{- define "redisinsight-chart.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
@@ -59,4 +57,28 @@ Create the name of the service account to use
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
+{{- end }}
+
+{{/*
+Render RedisInsight pre-setup databases JSON.
+*/}}
+{{- define "redisinsight-chart.preSetupDatabases" -}}
+{{- $databases := list -}}
+{{- range $server := .Values.redisinsight.redis_servers }}
+  {{- $database := omit $server "seedNodes" -}}
+  {{- if hasKey $server "seedNodes" }}
+    {{- $_ := set $database "nodes" $server.seedNodes }}
+    {{- if gt (len $server.seedNodes) 0 }}
+      {{- $seedNode := first $server.seedNodes }}
+      {{- if not (hasKey $database "host") }}
+        {{- $_ := set $database "host" $seedNode.host }}
+      {{- end }}
+      {{- if not (hasKey $database "port") }}
+        {{- $_ := set $database "port" $seedNode.port }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- $databases = append $databases $database -}}
+{{- end }}
+{{- $databases | toPrettyJson -}}
 {{- end }}

@@ -1,0 +1,11 @@
+{{- if .Values.redisinsight.redis_servers }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "redisinsight-chart.fullname" . }}-config
+  labels:
+    {{- include "redisinsight-chart.labels" . | nindent 4 }}
+data:
+  databases.json: |
+{{ include "redisinsight-chart.preSetupDatabases" . | indent 4 }}
+{{- end }}
