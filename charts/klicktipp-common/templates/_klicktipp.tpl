@@ -22,3 +22,11 @@ slugify the string to be (k8s) DNS name compatible
 {{- /* Final: output the slug */ -}}
 {{- $text -}}
 {{- end -}}
+
+{{- define "common.capabilities.cronjob.apiVersion" -}}
+{{- if .Capabilities.APIVersions.Has "batch/v1/CronJob" -}}
+{{- print "batch/v1" -}}
+{{- else -}}
+{{- print "batch/v1beta1" -}}
+{{- end -}}
+{{- end -}}
