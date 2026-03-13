@@ -5,6 +5,7 @@
 {{- if $job }}
 {{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-volume-name" $job_name }}
 {{- $env := mergeOverwrite dict $.Values.env ($job.env | default dict) }}
+{{- $image := mergeOverwrite dict ($.Values.image | default dict) ($job.image | default dict) }}
 ---
 apiVersion: {{ $api_version }}
 kind: CronJob
@@ -83,8 +84,8 @@ spec:
             - name: {{ .containerName | default ($.Values.commonContainerName | default $JOB_NAME_SLUG) }}
               securityContext:
                 {{- toYaml ($job.securityContext | default $.Values.securityContext) | nindent 16 }}
-              image: "{{ $job.image.repository }}:{{ $job.image.tag | default $.Chart.AppVersion }}"
-              imagePullPolicy: {{ $job.image.pullPolicy  | default "IfNotPresent" }}
+              image: "{{ required (printf "ERROR: jobs.%s.image.repository or image.repository is required" $job_name) $image.repository }}:{{ $image.tag | default $.Chart.AppVersion }}"
+              imagePullPolicy: {{ $image.pullPolicy | default "IfNotPresent" }}
               {{- if .command }}
               command:
                 {{- toYaml .command | nindent 16 }}
