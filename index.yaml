@@ -1569,6 +1569,20 @@ entries:
     version: 1.0.0
   redisinsight:
   - apiVersion: v2
+    appVersion: 3.2.0
+    created: "2026-03-13T15:45:19.618319229Z"
+    description: RedisInsight - The GUI for Redis
+    digest: 8d37ee6671ad12f4cd53e44ea1374b750832d0af1b612c40f5784cb3c298b675
+    home: https://redis.io/insight/
+    keywords:
+    - redis
+    - gui
+    name: redisinsight
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/redisinsight-0.5.0/redisinsight-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
     appVersion: 1.14.0
     created: "2023-06-06T07:18:26.923851686Z"
     description: RedisInsight - The GUI for Redis
@@ -1798,4 +1812,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-03-13T12:33:01.768742072Z"
+generated: "2026-03-13T15:45:19.618499792Z"
