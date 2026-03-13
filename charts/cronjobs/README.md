@@ -23,6 +23,7 @@ A generic helm cronjob chart for kubernetes
 | nameOverride | string | `""` | Partially override generated resource names. |
 | fullnameOverride | string | `""` | Fully override generated resource names. |
 | imagePullSecrets | list | `[]` | Image pull secrets. |
+| image | object | `{}` | Default container image settings for all jobs. Individual jobs can override these values. |
 | secrets | object | `{}` | Configure secrets. |
 | customConfigMap | string | `nil` | Set customConfigMap. |
 | configMaps | object | `{}` | Configure configMaps. |
