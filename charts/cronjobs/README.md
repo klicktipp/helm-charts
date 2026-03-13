@@ -14,7 +14,7 @@ A generic helm cronjob chart for kubernetes
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://charts.bitnami.com/bitnami | common | 2.36.0 |
+| https://klicktipp.github.io/helm-charts | klicktipp-common | 1.0.1 |
 
 ## Values
 
