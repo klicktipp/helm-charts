@@ -9,10 +9,8 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  actions: read
   contents: read
   pull-requests: read
-  security-events: write
 
 jobs:
   megalinter:
@@ -37,7 +35,6 @@ jobs:
           REPORT_OUTPUT_FOLDER: megalinter-reports
           VALIDATE_ALL_CODEBASE: "false"
           DISABLE: REPOSITORY
-          SARIF_REPORTER: "true"
         run: |
           set -o pipefail
 
@@ -56,7 +53,6 @@ jobs:
             -e REPORT_OUTPUT_FOLDER \
             -e VALIDATE_ALL_CODEBASE \
             -e DISABLE \
-            -e SARIF_REPORTER \
             "oxsecurity/${ML_IMAGE}:${ML_VERSION}" \
             /entrypoint.sh true
 
@@ -68,21 +64,6 @@ jobs:
           path: ${{ github.workspace }}/megalinter-reports
           if-no-files-found: ignore
           retention-days: 7
-
-      - name: Upload SARIF results
-        if: >
-          always() &&
-          hashFiles('megalinter-reports/megalinter-report.sarif') != '' &&
-          (
-            github.event_name != 'pull_request' ||
-            github.event.pull_request.head.repo.full_name == github.repository
-          )
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: ${{ github.workspace }}/megalinter-reports/megalinter-report.sarif
-          category: megalinter
-          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
-          sha: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Fail workflow on lint findings
         if: steps.megalinter.outcome != 'success'
