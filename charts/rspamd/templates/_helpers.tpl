@@ -60,3 +60,84 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Return the fully qualified container image reference.
+*/}}
+{{- define "rspamd.image" }}
+{{- $repository := .Values.image.repository -}}
+{{- $tag := .Values.image.tag | default .Chart.AppVersion -}}
+{{- if .Values.image.registry -}}
+{{- printf "%s/%s:%s" .Values.image.registry $repository $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repository $tag -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Render default pod anti-affinity when no explicit affinity is configured.
+*/}}
+{{- define "rspamd.defaultAffinity" }}
+{{- $type := default "soft" .Values.podAntiAffinity.type -}}
+{{- if ne $type "disabled" }}
+podAntiAffinity:
+  {{- $topologyKey := default "kubernetes.io/hostname" .Values.podAntiAffinity.topologyKey }}
+  {{- if eq $type "hard" }}
+  requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+          - key: app.kubernetes.io/instance
+            operator: In
+            values:
+              - {{ .Release.Name }}
+      topologyKey: {{ $topologyKey | quote }}
+  {{- else }}
+  preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/instance
+              operator: In
+              values:
+                - {{ .Release.Name }}
+        topologyKey: {{ $topologyKey | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Render the default tenant-scoped anti-affinity for multi-tenant mode.
+*/}}
+{{- define "rspamd.defaultTenantAffinity" }}
+podAntiAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+          - key: app.kubernetes.io/instance
+            operator: In
+            values:
+              - {{ .root.Release.Name }}
+          - key: rspamd.org/tenant
+            operator: In
+            values:
+              - {{ .tenant }}
+      topologyKey: {{ default "kubernetes.io/hostname" .root.Values.podAntiAffinity.topologyKey | quote }}
+{{- end }}
+
+{{/*
+Validate value combinations that would otherwise render broken manifests.
+*/}}
+{{- define "rspamd.validateValues" }}
+{{- if and .Values.multiTenancy (empty .Values.config) }}
+{{- fail "rspamd: multiTenancy=true requires at least one tenant entry in values.config" }}
+{{- end }}
+{{- if .Values.autoscaling.enabled }}
+  {{- $replicas := int .Values.replicaCount }}
+  {{- $minReplicas := int .Values.autoscaling.minReplicas }}
+  {{- $maxReplicas := int .Values.autoscaling.maxReplicas }}
+  {{- if or (ne $minReplicas $replicas) (ne $maxReplicas $replicas) }}
+{{- fail "rspamd: autoscaling minReplicas/maxReplicas must both equal replicaCount because per-pod Services and neighbour config are generated statically from replicaCount" }}
+  {{- end }}
+{{- end }}
+{{- end }}
