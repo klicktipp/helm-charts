@@ -8,12 +8,12 @@ replicaCount: 1
 # -- Container image configuration.
 image:
   # -- Container image repository.
-  repository: redislabs/redisinsight
+  repository: redis/redisinsight
   # -- Image pull policy.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   # -- Container image tag.
-  tag: latest
+  tag: ""
 
 # -- Image pull secrets.
 imagePullSecrets: []
@@ -105,6 +105,7 @@ autoscaling:
   maxReplicas: 100
   # -- Target average CPU utilization percentage.
   targetCPUUtilizationPercentage: 80
+  # -- Target average memory utilization percentage.
   # targetMemoryUtilizationPercentage: 80
 
 # -- Node selector for pod scheduling.
@@ -121,17 +122,14 @@ redisinsight:
   # -- Hostname value.
   host: "0.0.0.0"
   # -- Network port.
-  port: 8001
-  # -- Configure redisinsight.trusted_origins.
-  trusted_origins: []
-  # -- Set redisinsight.home_dir.
-  home_dir: "/db"
-  # -- Set redisinsight.log_dir.
-  log_dir: "/db"
+  port: 5540
+  # -- Mount path for Redis Insight app data inside the container.
+  data_dir: "/data"
+  # -- Path to the JSON file consumed by RI_PRE_SETUP_DATABASES_PATH.
+  pre_setup_path: "/data/import/databases.json"
   # -- Configure redisinsight.redis_servers.
   redis_servers: []
-#    # Adding Redis Databases Programmatically
-#    #  ref: https://docs.redis.com/latest/ri/using-redisinsight/api/
+#    # Preload databases from a config file
 #    - name: redis-server-alias
 #      connectionType: STANDALONE
 #      host: redis
