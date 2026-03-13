@@ -126,3 +126,122 @@ jobs:
       - name: Skip when no chart changed
         if: steps.changed.outputs.changed != 'true'
         run: echo "No chart changes detected."
+
+  install-charts:
+    name: Install selected changed charts
+    needs: lint-charts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2
+
+      - name: Add chart dependency repositories
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t repos < <(
+            grep -hE '^[[:space:]]*repository:[[:space:]]*https?://[^[:space:]]+' charts/*/Chart.yaml \
+              | sed -E 's/^[[:space:]]*repository:[[:space:]]*//' \
+              | sort -u
+          )
+
+          if [ "${#repos[@]}" -eq 0 ]; then
+            echo "No remote chart repositories to add."
+            exit 0
+          fi
+
+          i=0
+          for repo in "${repos[@]}"; do
+            i=$((i + 1))
+            name="dep-repo-${i}"
+            echo "Adding Helm repo ${name}: ${repo}"
+            helm repo add "${name}" "${repo}"
+          done
+
+          helm repo update
+
+      - name: List installable changed charts
+        id: installable
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_branch="${{ github.event.repository.default_branch }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target_branch="${{ github.base_ref }}"
+          fi
+
+          mapfile -t changed_charts < <(ct list-changed --config .github/ct.yaml --target-branch "${target_branch}")
+          allowlist_regex='^charts/(cronjobs|n8n|powerdns-recursor|proxysql|redisinsight|rspamd)$'
+
+          installable=()
+          for chart in "${changed_charts[@]}"; do
+            if [[ "${chart}" =~ ${allowlist_regex} ]]; then
+              installable+=("${chart}")
+            fi
+          done
+
+          if [ "${#installable[@]}" -gt 0 ]; then
+            {
+              echo "changed=true"
+              echo "charts<<EOF"
+              printf '%s\n' "${installable[@]}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summarize installable charts
+        if: steps.installable.outputs.changed == 'true'
+        shell: bash
+        run: |
+          {
+            echo "## Install test charts"
+            echo
+            echo '```'
+            echo "${{ steps.installable.outputs.charts }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create kind cluster
+        if: steps.installable.outputs.changed == 'true'
+        uses: helm/kind-action@v1
+
+      - name: Run chart-testing install
+        if: steps.installable.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_branch="${{ github.event.repository.default_branch }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target_branch="${{ github.base_ref }}"
+          fi
+
+          while IFS= read -r chart; do
+            [ -z "${chart}" ] && continue
+            echo "Installing ${chart}"
+            ct install --config .github/ct.yaml --target-branch "${target_branch}" --charts "${chart}"
+          done <<'EOF'
+          ${{ steps.installable.outputs.charts }}
+          EOF
+
+      - name: Skip when no installable chart changed
+        if: steps.installable.outputs.changed != 'true'
+        run: echo "No installable chart changes detected."
