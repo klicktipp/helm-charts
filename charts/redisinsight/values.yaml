@@ -123,7 +123,7 @@ redisinsight:
   host: "0.0.0.0"
   # -- Network port.
   port: 5540
-  # -- Mount path for Redis Insight persistent app data.
+  # -- Mount path for Redis Insight app data inside the container.
   data_dir: "/data"
   # -- Path to the JSON file consumed by RI_PRE_SETUP_DATABASES_PATH.
   pre_setup_path: "/data/import/databases.json"
