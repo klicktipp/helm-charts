@@ -135,6 +135,22 @@ podMonitor:
   # -- Optional custom relabelings.
   relabelings: []
 
+# -- PrometheusRule configuration.
+prometheusRule:
+  # -- Enable PrometheusRule creation.
+  enabled: false
+  # -- Extra labels for PrometheusRule metadata.
+  additionalLabels: {}
+  # -- Extra annotations for PrometheusRule metadata.
+  annotations: {}
+  securityStatus:
+    # -- Enable alerting for pdns_recursor_security_status.
+    enabled: true
+    # -- Time the condition must hold before firing.
+    for: 15m
+  # -- Additional PrometheusRule groups appended to the generated spec.
+  additionalGroups: []
+
 # -- Additional arbitrary manifests appended to the release.
 extraObjects: []
 # Example:
