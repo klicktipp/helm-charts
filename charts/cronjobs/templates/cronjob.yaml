@@ -1,4 +1,8 @@
-{{- $api_version := include "common.capabilities.cronjob.apiVersion" . }}
+{{- $kubeVersion := .Capabilities.KubeVersion.Version | default .Capabilities.KubeVersion.GitVersion }}
+{{- $api_version := "batch/v1beta1" }}
+{{- if or (.Capabilities.APIVersions.Has "batch/v1/CronJob") (and $kubeVersion (semverCompare ">=1.21-0" $kubeVersion)) }}
+{{- $api_version = "batch/v1" }}
+{{- end }}
 {{- $chart_name := include "cronjobs.fullname" . }}
 {{- $service_account_name := include "cronjobs.serviceAccountName" . }}
 {{- range $job_name, $job := .Values.jobs }}
