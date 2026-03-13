@@ -1135,6 +1135,37 @@ entries:
   rabbitmq-cluster:
   - apiVersion: v2
     appVersion: 2.19.0
+    created: "2026-03-13T12:33:01.768528192Z"
+    dependencies:
+    - name: klicktipp-common
+      repository: https://klicktipp.github.io/helm-charts
+      version: 1.0.1
+    - condition: rabbitmq-topology.enabled
+      name: rabbitmq-topology
+      repository: https://klicktipp.github.io/helm-charts
+      version: 1.0.2
+    description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com
+      CRDs (RabbitmqCluster).
+    digest: c6458c6e3bb3afdad13a6a545605bdb4d14a22869136313c48cf8257da9adfed
+    home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
+    icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
+    keywords:
+    - rabbitmq
+    - operator
+    - crd
+    - messaging
+    - amqp
+    name: rabbitmq-cluster
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    - https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
+    - https://github.com/rabbitmq/cluster-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-cluster-3.0.3/rabbitmq-cluster-3.0.3.tgz
+    version: 3.0.3
+  - apiVersion: v2
+    appVersion: 2.19.0
     created: "2026-02-13T07:46:15.78758345Z"
     dependencies:
     - name: klicktipp-common
@@ -1767,4 +1798,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-03-13T12:30:19.288190101Z"
+generated: "2026-03-13T12:33:01.768742072Z"
