@@ -1457,6 +1457,33 @@ entries:
   rabbitmq-topology:
   - apiVersion: v2
     appVersion: 1.18.2
+    created: "2026-03-13T12:30:19.287994826Z"
+    dependencies:
+    - name: klicktipp-common
+      repository: https://klicktipp.github.io/helm-charts
+      version: 1.0.1
+    description: Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology
+      Operator CRDs.
+    digest: 9ed3ba951a7c6cfbcc45fd8a4c843dad85b51cd368baf8c58392adb6dc672f86
+    home: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+    icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
+    keywords:
+    - rabbitmq
+    - topology
+    - operator
+    - messaging
+    - amqp
+    name: rabbitmq-topology
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    - https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+    - https://github.com/rabbitmq/messaging-topology-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-topology-1.0.2/rabbitmq-topology-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
+    appVersion: 1.18.2
     created: "2026-02-13T07:36:37.69230619Z"
     dependencies:
     - name: klicktipp-common
@@ -1740,4 +1767,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-03-13T12:26:39.102112383Z"
+generated: "2026-03-13T12:30:19.288190101Z"
