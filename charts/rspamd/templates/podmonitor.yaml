@@ -1,5 +1,4 @@
-{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" }}
-{{- if .Values.metrics.enabled }}
+{{- if and .Values.metrics.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/PodMonitor") }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
@@ -30,5 +29,4 @@ spec:
           sourceLabels:
             - __meta_kubernetes_pod_name
           targetLabel: instance
-{{- end }}
 {{- end }}

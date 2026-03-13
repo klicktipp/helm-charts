@@ -1,0 +1,6 @@
+chart-dirs:
+  - charts
+check-version-increment: true
+validate-chart-schema: true
+validate-maintainers: false
+remote: origin
