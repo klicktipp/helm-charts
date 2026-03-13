@@ -3,7 +3,7 @@ apiVersion: v2
 name: rabbitmq-cluster
 description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (RabbitmqCluster).
 type: application
-version: 3.0.2
+version: 3.0.3
 # renovate: datasource=docker depName=rabbitmqoperator/cluster-operator
 appVersion: 2.19.0
 home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
@@ -20,9 +20,9 @@ keywords:
   - amqp
 dependencies:
   - name: klicktipp-common
-    version: 1.0.0
-    repository: "file://../klicktipp-common"
+    version: 1.0.1
+    repository: "https://klicktipp.github.io/helm-charts"
   - name: rabbitmq-topology
-    version: "1.0.1"
-    repository: "file://../rabbitmq-topology"
+    version: 1.0.2
+    repository: "https://klicktipp.github.io/helm-charts"
     condition: rabbitmq-topology.enabled
