@@ -1,0 +1,48 @@
+{{- if and (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") .Values.prometheusRule.enabled -}}
+{{- if and (not .Values.prometheusRule.securityStatus.enabled) (empty .Values.prometheusRule.additionalGroups) }}
+{{- fail "prometheusRule.enabled=true requires at least one enabled built-in rule or prometheusRule.additionalGroups entries" }}
+{{- end }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "pdns.fullname" . }}
+  labels:
+    {{- include "pdns.labels" . | nindent 4 }}
+    {{- with .Values.prometheusRule.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.prometheusRule.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    {{- if .Values.prometheusRule.securityStatus.enabled }}
+    - name: powerdns-recursor.security
+      rules:
+        - alert: PowerDNSRecursorSecurityStatusWarning
+          expr: |
+            pdns_recursor_security_status >= 2
+            and
+            pdns_recursor_security_status < 3
+          for: {{ .Values.prometheusRule.securityStatus.for | quote }}
+          labels:
+            severity: "warning"
+          annotations:
+            summary: "PowerDNS Recursor security status requires attention"
+            description: "PowerDNS Recursor reports pdns_recursor_security_status={{`{{`}} $value {{`}}`}}. Expected is 1; value 2 indicates degraded security status and an update should be planned."
+        - alert: PowerDNSRecursorSecurityStatusCritical
+          expr: |
+            pdns_recursor_security_status >= 3
+          for: {{ .Values.prometheusRule.securityStatus.for | quote }}
+          labels:
+            severity: "critical"
+          annotations:
+            summary: "PowerDNS Recursor security status is critical"
+            description: "PowerDNS Recursor reports pdns_recursor_security_status={{`{{`}} $value {{`}}`}}. Expected is 1; values >= 3 indicate critical outdated security status and require an update."
+    {{- end }}
+    {{- with .Values.prometheusRule.additionalGroups }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

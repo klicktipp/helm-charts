@@ -1,6 +1,6 @@
 # powerdns-recursor
 
-![Version: 0.2.3](https://img.shields.io/badge/Version-0.2.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
+![Version: 0.2.4](https://img.shields.io/badge/Version-0.2.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
 
 Helm chart for deploying PowerDNS Recursor on Kubernetes
 
@@ -69,6 +69,13 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | podMonitor.scheme | string | `""` | Optional scheme. |
 | podMonitor.jobLabel | string | `""` | Optional job label override. |
 | podMonitor.relabelings | list | `[]` | Optional custom relabelings. |
+| prometheusRule | object | `{"additionalGroups":[],"additionalLabels":{},"annotations":{},"enabled":false,"securityStatus":{"enabled":true,"for":"15m"}}` | PrometheusRule configuration. |
+| prometheusRule.enabled | bool | `false` | Enable PrometheusRule creation. |
+| prometheusRule.additionalLabels | object | `{}` | Extra labels for PrometheusRule metadata. |
+| prometheusRule.annotations | object | `{}` | Extra annotations for PrometheusRule metadata. |
+| prometheusRule.securityStatus.enabled | bool | `true` | Enable alerting for pdns_recursor_security_status. |
+| prometheusRule.securityStatus.for | string | `"15m"` | Time the condition must hold before firing. |
+| prometheusRule.additionalGroups | list | `[]` | Additional PrometheusRule groups appended to the generated spec. |
 | extraObjects | list | `[]` | Additional arbitrary manifests appended to the release. |
 | image | object | `{"imagePullPolicy":"","pullPolicy":"IfNotPresent","registry":"","repository":"powerdns/pdns-recursor-54","tag":""}` | Container image configuration. |
 | image.registry | string | `""` | Optional image registry prefix. |
