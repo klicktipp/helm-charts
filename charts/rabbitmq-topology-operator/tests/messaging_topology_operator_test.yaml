@@ -23,7 +23,7 @@ tests:
         template: templates/deployment.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/deployment.yaml
       - equal:
           path: spec.replicas
@@ -35,7 +35,7 @@ tests:
         template: templates/deployment.yaml
       - equal:
           path: spec.template.spec.serviceAccountName
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/deployment.yaml
 
   - it: When setting global image pull secrets, deployment should include them
@@ -93,7 +93,7 @@ tests:
         template: templates/sa.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/sa.yaml
 
   - it: should create clusterrole with default values
@@ -103,7 +103,7 @@ tests:
         template: templates/clusterrole.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator-NAMESPACE
+          value: RELEASE-NAME-rabbitmq-topology-operator-NAMESPACE
         template: templates/clusterrole.yaml
 
   - it: should create clusterrolebinding with default values
@@ -113,11 +113,11 @@ tests:
         template: templates/clusterrolebinding.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator-NAMESPACE
+          value: RELEASE-NAME-rabbitmq-topology-operator-NAMESPACE
         template: templates/clusterrolebinding.yaml
       - equal:
           path: roleRef.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator-NAMESPACE
+          value: RELEASE-NAME-rabbitmq-topology-operator-NAMESPACE
         template: templates/clusterrolebinding.yaml
       - equal:
           path: subjects[0].kind
@@ -125,7 +125,7 @@ tests:
         template: templates/clusterrolebinding.yaml
       - equal:
           path: subjects[0].name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/clusterrolebinding.yaml
 
   - it: should create role with default values
@@ -135,7 +135,7 @@ tests:
         template: templates/role.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/role.yaml
 
   - it: should create rolebinding with default values
@@ -145,11 +145,11 @@ tests:
         template: templates/rolebinding.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/rolebinding.yaml
       - equal:
           path: roleRef.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/rolebinding.yaml
       - equal:
           path: subjects[0].kind
@@ -157,7 +157,7 @@ tests:
         template: templates/rolebinding.yaml
       - equal:
           path: subjects[0].name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/rolebinding.yaml
 
   - it: should create network policy with default values
@@ -167,7 +167,7 @@ tests:
         template: templates/networkpolicy.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/networkpolicy.yaml
 
   - it: should create pdb with default values
@@ -177,7 +177,7 @@ tests:
         template: templates/pdb.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/pdb.yaml
 
   - it: should create webhook service with default values
@@ -187,7 +187,7 @@ tests:
         template: templates/webhook-service.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator-webhook
+          value: RELEASE-NAME-rabbitmq-topology-operator-webhook
         template: templates/webhook-service.yaml
 
   - it: should create validating webhook configuration with default values
@@ -199,7 +199,7 @@ tests:
 
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator-webhook-NAMES
+          value: RELEASE-NAME-rabbitmq-topology-operator-webhook-NAMESPACE
         template: templates/validating-webhook-configuration.yaml
         documentIndex: 1
 
@@ -218,7 +218,7 @@ tests:
         template: templates/metrics-service.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator-metrics
+          value: RELEASE-NAME-rabbitmq-topology-operator-metrics
         template: templates/metrics-service.yaml
 
   - it: should not create podmonitor by default
@@ -236,7 +236,7 @@ tests:
         template: templates/podmonitor.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/podmonitor.yaml
 
   - it: should not create servicemonitor by default
@@ -255,7 +255,7 @@ tests:
         template: templates/servicemonitor.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator
+          value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/servicemonitor.yaml
 
   - it: should not create certificate by default
@@ -273,7 +273,7 @@ tests:
         template: templates/certificate.yaml
       - equal:
           path: metadata.name
-          value: RELEASE-NAME-rabbitmq-messaging-topology-operator-webhook
+          value: RELEASE-NAME-rabbitmq-topology-operator-webhook
         template: templates/certificate.yaml
 
   - it: should render messaging topology operator deployment with nodeSelector
