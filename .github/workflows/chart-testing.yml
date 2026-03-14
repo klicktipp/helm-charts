@@ -442,6 +442,7 @@ jobs:
 
           helm dependency build charts/rabbitmq-cluster-operator
           helm dependency build charts/rabbitmq-cluster
+          helm dependency build charts/rabbitmq-topology
 
           rabbitmq_crds=(
             rabbitmqclusters.rabbitmq.com

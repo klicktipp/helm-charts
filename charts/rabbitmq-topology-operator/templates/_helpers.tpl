@@ -12,11 +12,11 @@ Create a default fully qualified app name.
 {{- if .Values.fullnameOverride -}}
 {{- .Values.fullnameOverride | lower | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- $name := default .Chart.Name .Values.nameOverride | lower -}}
 {{- if contains $name .Release.Name -}}
-{{- .Release.Name | lower | trunc 63 | trimSuffix "-" -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- printf "%s-%s" .Release.Name $name | lower | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -167,9 +167,9 @@ Return the webhook fullname.
 */}}
 {{- define "rmqto.webhook.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-    {{- printf "%s-%s" .Values.fullnameOverride "webhook" | lower | trunc 63 | trimSuffix "-" -}}
+    {{- printf "%s-%s" (.Values.fullnameOverride | lower) "webhook" | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-    {{- printf "%s-%s" (include "rmqto.fullname" .) "webhook" | lower | trunc 63 | trimSuffix "-" -}}
+    {{- printf "%s-%s" (include "rmqto.fullname" .) "webhook" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 
