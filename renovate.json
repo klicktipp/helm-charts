@@ -15,6 +15,16 @@
         "n8nio/n8n",
         "n8n"
       ]
+    },
+    {
+      "matchFileNames": ["charts/**"],
+      "bumpVersions": [
+        {
+          "filePatterns": ["{{packageFileDir}}/Chart.{yaml,yml}"],
+          "matchStrings": ["version:\\s(?<version>[^\\s]+)"],
+          "bumpType": "{{#if isPatch}}patch{{else}}minor{{/if}}"
+        }
+      ]
     }
   ],
   "customManagers": [
