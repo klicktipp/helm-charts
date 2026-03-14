@@ -156,8 +156,6 @@ containerSecurityContext:
   seccompProfile:
     ## @param containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
     type: "RuntimeDefault"
-## @param fullnameOverride String to fully override the generated Messaging Topology Operator fullname
-fullnameOverride: ""
 ## @param command Override the default container command
 command: []
 ## @param args Override the default container arguments

@@ -18,10 +18,5 @@ keywords:
   - operator
   - messaging
   - amqp
-home: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
-icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
-sources:
-  - https://github.com/klicktipp/helm-charts
-  - https://github.com/rabbitmq/messaging-topology-operator
 annotations:
   license: Apache-2.0
