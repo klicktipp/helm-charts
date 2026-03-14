@@ -1,0 +1,11 @@
+{{- if .Values.useCertManager }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    {{- include "rmqto.labels" . | nindent 4 }}
+  name: {{ template "rabbitmq-topology-operator.fullname" . }}
+  namespace: {{ include "rabbitmq-topology-operator.namespace" . | quote }}
+spec:
+  selfSigned: {}
+{{- end }}

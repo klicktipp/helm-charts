@@ -1,0 +1,20 @@
+{{- if and .Values.enabled .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    {{- include "rmqto.labels" . | nindent 4 }}
+  name: {{ template "rmqto.fullname" . }}
+  namespace: {{ include "rabbitmq-topology-operator.namespace" . }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "rabbitmq-topology-operator.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "rmqto.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "rmqto.serviceAccountName" . }}
+    namespace: {{ include "rabbitmq-topology-operator.namespace" . }}
+{{- end }}

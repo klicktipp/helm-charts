@@ -1,0 +1,23 @@
+{{- if and .Values.enabled .Values.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ template "rmqto.fullname" . }}
+  namespace: {{ include "rabbitmq-topology-operator.namespace" . }}
+  labels:
+    {{- include "rmqto.labels" . | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "rabbitmq-topology-operator.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.pdb.minAvailable }}
+  minAvailable: {{ .Values.pdb.minAvailable }}
+  {{- end  }}
+  {{- if or .Values.pdb.maxUnavailable (not .Values.pdb.minAvailable) }}
+  maxUnavailable: {{ .Values.pdb.maxUnavailable | default 1 }}
+  {{- end  }}
+  selector:
+    matchLabels:
+      {{- include "rmqto.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: messaging-topology-operator
+{{- end }}

@@ -1,0 +1,14 @@
+{{- if .Values.clusterOperator.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    {{- include "rmqco.labels" . | nindent 4 }}
+  name: {{ template "rmqco.clusterOperator.serviceAccountName" . }}
+  namespace: {{ include "rabbitmq-cluster-operator.namespace" . }}
+  {{- if or .Values.commonAnnotations .Values.clusterOperator.serviceAccount.annotations }}
+  {{- $annotations := include "rabbitmq-cluster-operator.tplvalues.merge" ( dict "values" ( list .Values.clusterOperator.serviceAccount.annotations .Values.commonAnnotations ) "context" . ) }}
+  annotations: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" $annotations "context" $) | nindent 4 }}
+  {{- end }}
+automountServiceAccountToken: {{ .Values.clusterOperator.serviceAccount.automountServiceAccountToken }}
+{{- end }}
