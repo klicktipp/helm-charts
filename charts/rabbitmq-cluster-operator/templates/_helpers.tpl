@@ -238,14 +238,12 @@ Create the name of the service account to use (Cluster Operator).
 Render podSecurityContext using the local helper with proper parameter mapping.
 */}}
 {{- define "rmqco.renderPodSecurityContext" -}}
-{{- $ctx := merge (dict "Values" (dict "podSecurityContext" (omit .securityContext "enabled"))) .context }}
-{{- include "rabbitmq-cluster-operator.renderPodSecurityContext" $ctx }}
+{{- toYaml (omit .securityContext "enabled") -}}
 {{- end }}
 
 {{/*
 Render containerSecurityContext using the local helper with proper parameter mapping.
 */}}
 {{- define "rmqco.renderContainerSecurityContext" -}}
-{{- $ctx := merge (dict "Values" (dict "containerSecurityContext" (omit .securityContext "enabled"))) .context }}
-{{- include "rabbitmq-cluster-operator.renderContainerSecurityContext" $ctx }}
+{{- toYaml (omit .securityContext "enabled") -}}
 {{- end -}}

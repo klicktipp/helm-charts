@@ -234,14 +234,12 @@ Create the name of the service account to use.
 Render podSecurityContext using the local helper with proper parameter mapping.
 */}}
 {{- define "rmqto.renderPodSecurityContext" -}}
-{{- $ctx := merge (dict "Values" (dict "podSecurityContext" (omit .securityContext "enabled"))) .context }}
-{{- include "rabbitmq-topology-operator.renderPodSecurityContext" $ctx }}
+{{- toYaml (omit .securityContext "enabled") -}}
 {{- end }}
 
 {{/*
 Render containerSecurityContext using the local helper with proper parameter mapping.
 */}}
 {{- define "rmqto.renderContainerSecurityContext" -}}
-{{- $ctx := merge (dict "Values" (dict "containerSecurityContext" (omit .securityContext "enabled"))) .context }}
-{{- include "rabbitmq-topology-operator.renderContainerSecurityContext" $ctx }}
+{{- toYaml (omit .securityContext "enabled") -}}
 {{- end -}}
