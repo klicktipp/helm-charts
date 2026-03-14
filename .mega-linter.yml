@@ -4,9 +4,11 @@
 IGNORE_GITIGNORED_FILES: true
 YAML_YAMLLINT_CONFIG_FILE: .yamllint
 
-# Helm templates are Go templates, not plain YAML.
-YAML_PRETTIER_FILTER_REGEX_EXCLUDE: (^|.*/)charts/[^/]+/templates/.*\.ya?ml$
-YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: (^|.*/)charts/[^/]+/templates/.*\.ya?ml$
+# Helm templates are Go templates, vendored CRDs should stay byte-close to upstream,
+# and Helm unittest/values files do not map cleanly to a JSON schema for v8r.
+YAML_PRETTIER_FILTER_REGEX_EXCLUDE: (^|.*/)charts/[^/]+/(templates|crds)/.*\.ya?ml$
+YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: (^|.*/)charts/[^/]+/(templates|crds)/.*\.ya?ml$
+YAML_V8R_FILTER_REGEX_EXCLUDE: (^|.*/)charts/[^/]+/(templates|crds|tests)/.*\.ya?ml$|(^|.*/)charts/[^/]+/values\.ya?ml$
 
 DISABLE:
   - COPYPASTE

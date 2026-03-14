@@ -1,0 +1,469 @@
+## @param enabled Deploy RabbitMQ Messaging Topology Operator as part of the installation
+enabled: true
+## Messaging Topology Operator image
+## ref: https://hub.docker.com/r/rabbitmqoperator/messaging-topology-operator/tags
+image:
+  ## @param image.registry [default: REGISTRY_NAME] RabbitMQ Messaging Topology Operator image registry
+  registry: docker.io
+  ## @param image.repository [default: REPOSITORY_NAME/rmq-messaging-topology-operator] RabbitMQ Messaging Topology Operator image repository
+  repository: rabbitmqoperator/messaging-topology-operator
+  ## @skip image.tag RabbitMQ Messaging Topology Operator image tag. When empty, `.Chart.AppVersion` is used
+  tag: ""
+  ## @param image.digest Messaging Topology Operator image digest in the form `sha256:...`; overrides `image.tag` when set
+  digest: ""
+  ## Kubernetes image pull policy
+  ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
+  ## @param image.pullPolicy RabbitMQ Messaging Topology Operator image pull policy
+  pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ## e.g:
+  ## pullSecrets:
+  ##   - myRegistryKeySecretName
+  ## @param image.pullSecrets RabbitMQ Messaging Topology Operator image pull secrets
+  pullSecrets: []
+## @param revisionHistoryLimit Number of old ReplicaSets to retain
+revisionHistoryLimit: 10
+## @param watchAllNamespaces Watch resources across all namespaces
+watchAllNamespaces: true
+## @param watchNamespaces [array] List of namespaces to watch when `watchAllNamespaces=false`
+watchNamespaces: []
+## @param replicaCount Number of RabbitMQ Messaging Topology Operator replicas to deploy
+replicaCount: 1
+## @param topologySpreadConstraints Topology spread constraints for Messaging Topology Operator pods
+## https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+## The value is evaluated as a template
+topologySpreadConstraints: []
+## @param schedulerName Alternative scheduler
+schedulerName: ""
+## @param terminationGracePeriodSeconds Time in seconds to allow the Messaging Topology Operator pod to terminate gracefully
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods
+terminationGracePeriodSeconds: ""
+## @param hostNetwork Run the pod in the host network namespace
+hostNetwork: false
+## @param dnsPolicy Alternative DNS policy
+dnsPolicy: "ClusterFirst"
+## Health probes for the Messaging Topology Operator container
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+livenessProbe:
+  ## @param livenessProbe.enabled Enable livenessProbe on RabbitMQ Messaging Topology Operator nodes
+  enabled: true
+  ## @param livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+  initialDelaySeconds: 5
+  ## @param livenessProbe.periodSeconds Period seconds for livenessProbe
+  periodSeconds: 30
+  ## @param livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+  timeoutSeconds: 5
+  ## @param livenessProbe.successThreshold Success threshold for livenessProbe
+  successThreshold: 1
+  ## @param livenessProbe.failureThreshold Failure threshold for livenessProbe
+  failureThreshold: 5
+readinessProbe:
+  ## @param readinessProbe.enabled Enable readinessProbe on RabbitMQ Messaging Topology Operator nodes
+  enabled: true
+  ## @param readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+  initialDelaySeconds: 5
+  ## @param readinessProbe.periodSeconds Period seconds for readinessProbe
+  periodSeconds: 30
+  ## @param readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+  timeoutSeconds: 5
+  ## @param readinessProbe.successThreshold Success threshold for readinessProbe
+  successThreshold: 1
+  ## @param readinessProbe.failureThreshold Failure threshold for readinessProbe
+  failureThreshold: 5
+startupProbe:
+  ## @param startupProbe.enabled Enable startupProbe on RabbitMQ Messaging Topology Operator nodes
+  enabled: false
+  ## @param startupProbe.initialDelaySeconds Initial delay seconds for startupProbe
+  initialDelaySeconds: 5
+  ## @param startupProbe.periodSeconds Period seconds for startupProbe
+  periodSeconds: 30
+  ## @param startupProbe.timeoutSeconds Timeout seconds for startupProbe
+  timeoutSeconds: 5
+  ## @param startupProbe.successThreshold Success threshold for startupProbe
+  successThreshold: 1
+  ## @param startupProbe.failureThreshold Failure threshold for startupProbe
+  failureThreshold: 5
+## @param customLivenessProbe Custom livenessProbe that overrides the default one
+customLivenessProbe: {}
+## @param customReadinessProbe Custom readinessProbe that overrides the default one
+customReadinessProbe: {}
+## @param customStartupProbe Custom startupProbe that overrides the default one
+customStartupProbe: {}
+## @param skipCreateAdmissionWebhookConfig Skip creation of the ValidatingWebhookConfiguration
+skipCreateAdmissionWebhookConfig: false
+## @param existingWebhookCertSecret Name of an existing secret containing the webhook certificates
+existingWebhookCertSecret: ""
+## @param existingWebhookCertCABundle PEM-encoded CA Bundle of the existing secret provided in existingWebhookCertSecret (only if useCertManager=false)
+existingWebhookCertCABundle: ""
+## @param useCertManager Deploy cert-manager objects (Issuer and Certificate) for webhooks
+useCertManager: false
+## @param resources Resource requests and limits for the Messaging Topology Operator container
+## Example:
+## resources:
+##   requests:
+##     cpu: 2
+##     memory: 512Mi
+##   limits:
+##     cpu: 3
+##     memory: 1024Mi
+resources: {}
+## PodDisruptionBudget settings for the Messaging Topology Operator
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+pdb:
+  ## @param pdb.create Enable a Pod Disruption Budget creation
+  create: true
+  ## @param pdb.minAvailable Minimum number/percentage of pods that should remain scheduled
+  minAvailable: ""
+  ## @param pdb.maxUnavailable Maximum number/percentage of pods that may be made unavailable
+  maxUnavailable: ""
+## Pod security context for the Messaging Topology Operator pod
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+podSecurityContext:
+  ## @param podSecurityContext.enabled Enable the pod security context for the Messaging Topology Operator
+  enabled: true
+  ## @param podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
+  fsGroupChangePolicy: Always
+  ## @param podSecurityContext.sysctls Set kernel settings using the sysctl interface
+  sysctls: []
+  ## @param podSecurityContext.supplementalGroups Set filesystem extra groups
+  supplementalGroups: []
+  ## @param podSecurityContext.fsGroup Set RabbitMQ Messaging Topology Operator pod's Security Context fsGroup
+  fsGroup: 1001
+## Container security context for the Messaging Topology Operator container
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+containerSecurityContext:
+  ## @param containerSecurityContext.enabled Enable the container security context for the Messaging Topology Operator
+  enabled: true
+  ## @param containerSecurityContext.seLinuxOptions [object,nullable] Set SELinux options in container
+  seLinuxOptions: {}
+  ## @param containerSecurityContext.runAsUser Set containers' Security Context runAsUser
+  runAsUser: 1001
+  ## @param containerSecurityContext.runAsGroup Set containers' Security Context runAsGroup
+  runAsGroup: 1001
+  ## @param containerSecurityContext.runAsNonRoot Set container's Security Context runAsNonRoot
+  runAsNonRoot: true
+  ## @param containerSecurityContext.privileged Set container's Security Context privileged
+  privileged: false
+  ## @param containerSecurityContext.readOnlyRootFilesystem Set container's Security Context readOnlyRootFilesystem
+  readOnlyRootFilesystem: true
+  ## @param containerSecurityContext.allowPrivilegeEscalation Set container's Security Context allowPrivilegeEscalation
+  allowPrivilegeEscalation: false
+  capabilities:
+    ## @param containerSecurityContext.capabilities.drop List of capabilities to be dropped
+    drop: ["ALL"]
+  seccompProfile:
+    ## @param containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+    type: "RuntimeDefault"
+## @param command Override the default container command
+command: []
+## @param args Override the default container arguments
+args: []
+## @param automountServiceAccountToken Mount the service account token into the pod
+automountServiceAccountToken: true
+## @param hostAliases Additional host aliases for Messaging Topology Operator pods
+## https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+hostAliases: []
+## @param podLabels Additional labels for Messaging Topology Operator pods
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+## @param podAnnotations Additional annotations for Messaging Topology Operator pods
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+## @param affinity Affinity rules for Messaging Topology Operator pods
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+affinity: {}
+## @param nodeSelector Node selector for Messaging Topology Operator pods
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+nodeSelector: {}
+## @param tolerations Tolerations for Messaging Topology Operator pods
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+## @param updateStrategy.type Deployment update strategy for the Messaging Topology Operator
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+updateStrategy:
+  ## StrategyType
+  ## Can be set to RollingUpdate or OnDelete
+  type: RollingUpdate
+## @param priorityClassName PriorityClass name for Messaging Topology Operator pods
+priorityClassName: ""
+## @param lifecycleHooks Lifecycle hooks for the Messaging Topology Operator container
+lifecycleHooks: {}
+## @param containerPorts.metrics Metrics port exposed by the Messaging Topology Operator container
+containerPorts:
+  metrics: 8080
+## @param extraEnvVars Additional environment variables for the Messaging Topology Operator container
+## e.g:
+## extraEnvVars:
+##   - name: FOO
+##     value: "bar"
+extraEnvVars: []
+## @param extraEnvVarsCM Name of an existing ConfigMap with extra environment variables for the Messaging Topology Operator
+extraEnvVarsCM: ""
+## @param extraEnvVarsSecret Name of an existing Secret with extra environment variables for the Messaging Topology Operator
+extraEnvVarsSecret: ""
+## @param extraVolumes Additional volumes for Messaging Topology Operator pods
+extraVolumes: []
+## @param extraVolumeMounts Additional volume mounts for the Messaging Topology Operator container
+extraVolumeMounts: []
+## @param sidecars Additional sidecar containers for Messaging Topology Operator pods
+## e.g:
+## sidecars:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+sidecars: []
+## @param initContainers Additional init containers for Messaging Topology Operator pods
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+## e.g:
+## initContainers:
+##  - name: your-image-name
+##    image: your-image
+##    imagePullPolicy: Always
+##    command: ['sh', '-c', 'echo "hello world"']
+initContainers: []
+## Webhook Service settings
+service:
+  ## @param service.type Kubernetes Service type for the webhook service
+  type: ClusterIP
+  ## @param service.ports.webhook Service port for the webhook endpoint
+  ports:
+    webhook: 443
+  ## Node ports to expose
+  ## @param service.nodePorts.http Node port for HTTP
+  ## NOTE: choose port between <30000-32767>
+  nodePorts:
+    http: ""
+  ## @param service.clusterIP ClusterIP for the webhook Service
+  ## e.g.:
+  ## clusterIP: None
+  clusterIP: ""
+  ## @param service.loadBalancerIP LoadBalancer IP for the webhook Service
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer
+  loadBalancerIP: ""
+  ## @param service.extraPorts Additional ports to expose on the webhook Service
+  extraPorts: []
+  ## @param service.loadBalancerSourceRanges Source ranges for the webhook Service LoadBalancer
+  ## ref: https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+  ## e.g:
+  ## loadBalancerSourceRanges:
+  ##   - 10.10.10.0/24
+  loadBalancerSourceRanges: []
+  ## @param service.externalTrafficPolicy External traffic policy for the webhook Service
+  ## ref https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  externalTrafficPolicy: Cluster
+  ## @param service.annotations Additional annotations for the webhook Service
+  annotations: {}
+  ## @param service.sessionAffinity Session Affinity for Kubernetes service, can be "None" or "ClientIP"
+  ## If "ClientIP", consecutive client requests will be directed to the same Pod
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
+  sessionAffinity: None
+  ## @param service.sessionAffinityConfig Additional session affinity settings
+  ## sessionAffinityConfig:
+  ##   clientIP:
+  ##     timeoutSeconds: 300
+  sessionAffinityConfig: {}
+## NetworkPolicy settings for the Messaging Topology Operator
+networkPolicy:
+  ## @param networkPolicy.enabled Create a NetworkPolicy for the Messaging Topology Operator
+  enabled: true
+  ## @param networkPolicy.kubeAPIServerPorts [array] List of Kubernetes API server ports to allow
+  kubeAPIServerPorts: [443, 6443, 8443]
+  ## @param networkPolicy.allowExternal Allow ingress from arbitrary sources
+  ## When set to false, ingress is limited to explicitly allowed sources.
+  allowExternal: true
+  ## @param networkPolicy.allowExternalEgress Allow unrestricted egress traffic
+  allowExternalEgress: true
+  ## @param networkPolicy.extraIngress [array] Add extra ingress rules to the NetworkPolicy
+  ## e.g:
+  ## extraIngress:
+  ##   - ports:
+  ##       - port: 1234
+  ##     from:
+  ##       - podSelector:
+  ##           - matchLabels:
+  ##               - role: frontend
+  ##       - podSelector:
+  ##           - matchExpressions:
+  ##               - key: role
+  ##                 operator: In
+  ##                 values:
+  ##                   - frontend
+  extraIngress: []
+  ## @param networkPolicy.extraEgress [array] Add extra egress rules to the NetworkPolicy
+  ## e.g:
+  ## extraEgress:
+  ##   - ports:
+  ##       - port: 1234
+  ##     to:
+  ##       - podSelector:
+  ##           - matchLabels:
+  ##               - role: frontend
+  ##       - podSelector:
+  ##           - matchExpressions:
+  ##               - key: role
+  ##                 operator: In
+  ##                 values:
+  ##                   - frontend
+  extraEgress: []
+  ## @param networkPolicy.ingressNSMatchLabels [object] Labels to match to allow traffic from other namespaces
+  ## @param networkPolicy.ingressNSPodMatchLabels [object] Pod labels to match to allow traffic from other namespaces
+  ingressNSMatchLabels: {}
+  ingressNSPodMatchLabels: {}
+## RBAC configuration
+rbac:
+  ## @param rbac.create Specifies whether RBAC resources should be created
+  create: true
+  ## ClusterRole parameters
+  clusterRole:
+    ## @param rbac.clusterRole.customRules Define custom access rules for the ClusterRole
+    ## ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole
+    ## e.g:
+    ## customRules:
+    ##   - apiGroups: A list of API groups (e.g., [""], ["apps"]).
+    ##   - resources: A list of resource names (e.g., ["configmaps", "pods"]).
+    ##   - verbs: A list of allowed access verbs (e.g., ["create", "get", "list"]).
+    customRules: []
+    ## @param rbac.clusterRole.extraRules Define extra access rules for the ClusterRole. This has no effect if customRules is a non-empty array.
+    ## ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole
+    ## e.g:
+    ## extraRules:
+    ##   - apiGroups: A list of API groups (e.g., [""], ["apps"]).
+    ##   - resources: A list of resource names (e.g., ["configmaps", "pods"]).
+    ##   - verbs: A list of allowed access verbs (e.g., ["create", "get", "list"]).
+    extraRules: []
+## ServiceAccount configuration
+serviceAccount:
+  ## @param serviceAccount.create Specifies whether a ServiceAccount should be created
+  create: true
+  ## @param serviceAccount.name The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the rabbitmq-topology-operator.fullname template
+  name: ""
+  ## @param serviceAccount.annotations Add annotations
+  annotations: {}
+  ## @param serviceAccount.automountServiceAccountToken Automount API credentials for a service account.
+  automountServiceAccountToken: false
+## @section RabbitMQ Messaging Topology Operator metrics
+metrics:
+  ## Metrics Service settings
+  service:
+    ## @param metrics.service.enabled Create a Service for the Messaging Topology Operator metrics endpoint
+    enabled: false
+    ## @param metrics.service.type Kubernetes Service type for the Messaging Topology Operator metrics endpoint
+    type: ClusterIP
+    ## @param metrics.service.ports.http Service port for the Messaging Topology Operator metrics endpoint
+    ports:
+      http: 80
+    ## Node ports to expose
+    ## @param metrics.service.nodePorts.http Node port for HTTP
+    ## NOTE: choose port between <30000-32767>
+    nodePorts:
+      http: ""
+    ## @param metrics.service.clusterIP ClusterIP for the Messaging Topology Operator metrics service
+    ## e.g.:
+    ## clusterIP: None
+    clusterIP: ""
+    ## @param metrics.service.extraPorts Additional ports to expose on the metrics Service
+    extraPorts: []
+    ## @param metrics.service.loadBalancerIP LoadBalancer IP for the Messaging Topology Operator metrics service
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer
+    loadBalancerIP: ""
+    ## @param metrics.service.loadBalancerSourceRanges Source ranges for the Messaging Topology Operator metrics service LoadBalancer
+    ## ref: https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+    ## e.g:
+    ## loadBalancerSourceRanges:
+    ##   - 10.10.10.0/24
+    loadBalancerSourceRanges: []
+    ## @param metrics.service.externalTrafficPolicy External traffic policy for the Messaging Topology Operator metrics service
+    ## ref https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+    externalTrafficPolicy: Cluster
+    ## @param metrics.service.annotations [object] Additional annotations for the Messaging Topology Operator metrics service
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "{{ .Values.metrics.service.ports.http }}"
+    ## @param metrics.service.sessionAffinity Session Affinity for Kubernetes service, can be "None" or "ClientIP"
+    ## If "ClientIP", consecutive client requests will be directed to the same Pod
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
+    sessionAffinity: None
+    ## @param metrics.service.sessionAffinityConfig Additional settings for the sessionAffinity
+    ## sessionAffinityConfig:
+    ##   clientIP:
+    ##     timeoutSeconds: 300
+    sessionAffinityConfig: {}
+  serviceMonitor:
+    ## @param metrics.serviceMonitor.enabled Create a ServiceMonitor for the Messaging Topology Operator metrics Service
+    enabled: false
+    ## @param metrics.serviceMonitor.namespace Namespace in which to create the ServiceMonitor
+    ## e.g:
+    ## namespace: monitoring
+    namespace: ""
+    ## @param metrics.serviceMonitor.jobLabel Label to use as the Prometheus job name
+    jobLabel: app.kubernetes.io/name
+    ## DEPRECATED: Use metrics.serviceMonitor.labels instead.
+    ## This value will be removed in a future release
+    ## additionalLabels: {}
+    selector: {}
+    ## @param metrics.serviceMonitor.honorLabels Honor metrics labels
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    honorLabels: false
+    ## @param metrics.serviceMonitor.scrapeTimeout Timeout for a single scrape request
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ## e.g:
+    ## scrapeTimeout: 10s
+    scrapeTimeout: ""
+    ## @param metrics.serviceMonitor.interval Scrape interval; uses the Prometheus default when empty
+    interval: ""
+    ## @param metrics.serviceMonitor.metricRelabelings Metric relabeling rules
+    metricRelabelings: []
+    ## @param metrics.serviceMonitor.relabelings Target relabeling rules
+    relabelings: []
+    ## @param metrics.serviceMonitor.labels Additional labels for the ServiceMonitor
+    labels: {}
+  podMonitor:
+    ## @param metrics.podMonitor.enabled Create a PodMonitor resource for scraping Messaging Topology Operator metrics
+    enabled: false
+    ## @param metrics.podMonitor.jobLabel Label to use as the Prometheus job name
+    jobLabel: app.kubernetes.io/name
+    ## @param metrics.podMonitor.namespace Namespace in which to create the PodMonitor
+    namespace: ""
+    ## @param metrics.podMonitor.honorLabels Honor metrics labels
+    honorLabels: false
+    ## @param metrics.podMonitor.selector Additional selector labels for the PodMonitor
+    selector: {}
+    ## @param metrics.podMonitor.interval Specify the interval at which metrics should be scraped
+    interval: 30s
+    ## @param metrics.podMonitor.scrapeTimeout Specify the timeout after which the scrape is ended
+    scrapeTimeout: 30s
+    ## @param metrics.podMonitor.additionalLabels [object] Additional labels for the PodMonitor
+    additionalLabels: {}
+    ## @param metrics.podMonitor.relabelings Target relabeling rules
+    relabelings: []
+    ## @param metrics.podMonitor.metricRelabelings Metric relabeling rules
+    metricRelabelings: []
+
+## @section Global parameters
+## Global image settings shared with this chart
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## @param global.imagePullSecrets Global Docker registry secret names as an array
+  imagePullSecrets: []
+
+## @param nameOverride Override the chart name used in resource names
+nameOverride: ""
+## @param fullnameOverride Fully override the generated resource names
+fullnameOverride: ""
+## @param commonLabels Additional labels to add to all rendered resources
+commonLabels: {}
+## @param commonAnnotations Additional annotations to add to all rendered resources
+commonAnnotations: {}
+## @param clusterDomain Kubernetes cluster domain name
+clusterDomain: cluster.local
+## Enable diagnostic mode in the operator deployment
+diagnosticMode:
+  ## @param diagnosticMode.enabled Enable diagnostic mode (all probes will be disabled)
+  enabled: false

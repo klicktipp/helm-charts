@@ -127,6 +127,110 @@ jobs:
         if: steps.changed.outputs.changed != 'true'
         run: echo "No chart changes detected."
 
+  helm-unittest:
+    name: Run helm-unittest for changed charts
+    needs: lint-charts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2
+
+      - name: Install helm-unittest
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version v1.0.3 --verify=false
+
+      - name: Add chart dependency repositories
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t repos < <(
+            grep -hE '^[[:space:]]*repository:[[:space:]]*https?://[^[:space:]]+' charts/*/Chart.yaml \
+              | sed -E 's/^[[:space:]]*repository:[[:space:]]*//' \
+              | sort -u
+          )
+
+          if [ "${#repos[@]}" -eq 0 ]; then
+            echo "No remote chart repositories to add."
+            exit 0
+          fi
+
+          i=0
+          for repo in "${repos[@]}"; do
+            i=$((i + 1))
+            name="dep-repo-${i}"
+            echo "Adding Helm repo ${name}: ${repo}"
+            helm repo add "${name}" "${repo}"
+          done
+
+          helm repo update
+
+      - name: List changed charts with unit tests
+        id: unit_testable
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_branch="${{ github.event.repository.default_branch }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target_branch="${{ github.base_ref }}"
+          fi
+
+          mapfile -t changed_charts < <(ct list-changed --config .github/ct.yaml --target-branch "${target_branch}")
+
+          unit_testable=()
+          for chart in "${changed_charts[@]}"; do
+            if [ -d "${chart}/tests" ] && find "${chart}/tests" -maxdepth 1 -type f | grep -q .; then
+              unit_testable+=("${chart}")
+            fi
+          done
+
+          if [ "${#unit_testable[@]}" -gt 0 ]; then
+            {
+              echo "changed=true"
+              echo "charts<<EOF"
+              printf '%s\n' "${unit_testable[@]}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run helm-unittest
+        if: steps.unit_testable.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          while IFS= read -r chart; do
+            [ -z "${chart}" ] && continue
+            echo "Running helm-unittest for ${chart}"
+            helm dependency build "${chart}"
+            helm unittest "${chart}"
+          done <<'EOF'
+          ${{ steps.unit_testable.outputs.charts }}
+          EOF
+
+      - name: Skip when no chart with unit tests changed
+        if: steps.unit_testable.outputs.changed != 'true'
+        run: echo "No changed charts with helm-unittest tests."
+
   install-charts:
     name: Install selected changed charts
     needs: lint-charts
@@ -245,3 +349,156 @@ jobs:
       - name: Skip when no installable chart changed
         if: steps.installable.outputs.changed != 'true'
         run: echo "No installable chart changes detected."
+
+  rabbitmq-install-tests:
+    name: Install RabbitMQ charts with CRDs
+    needs: lint-charts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2
+
+      - name: Add chart dependency repositories
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t repos < <(
+            grep -hE '^[[:space:]]*repository:[[:space:]]*https?://[^[:space:]]+' charts/*/Chart.yaml \
+              | sed -E 's/^[[:space:]]*repository:[[:space:]]*//' \
+              | sort -u
+          )
+
+          if [ "${#repos[@]}" -eq 0 ]; then
+            echo "No remote chart repositories to add."
+            exit 0
+          fi
+
+          i=0
+          for repo in "${repos[@]}"; do
+            i=$((i + 1))
+            name="dep-repo-${i}"
+            echo "Adding Helm repo ${name}: ${repo}"
+            helm repo add "${name}" "${repo}"
+          done
+
+          helm repo update
+
+      - name: List changed RabbitMQ charts
+        id: rabbitmq
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          target_branch="${{ github.event.repository.default_branch }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            target_branch="${{ github.base_ref }}"
+          fi
+
+          mapfile -t changed_charts < <(ct list-changed --config .github/ct.yaml --target-branch "${target_branch}")
+          rabbitmq_regex='^charts/(rabbitmq-cluster-operator|rabbitmq-topology-operator|rabbitmq-cluster|rabbitmq-topology)$'
+
+          rabbitmq_charts=()
+          for chart in "${changed_charts[@]}"; do
+            if [[ "${chart}" =~ ${rabbitmq_regex} ]]; then
+              rabbitmq_charts+=("${chart}")
+            fi
+          done
+
+          if [ "${#rabbitmq_charts[@]}" -gt 0 ]; then
+            {
+              echo "changed=true"
+              echo "charts<<EOF"
+              printf '%s\n' "${rabbitmq_charts[@]}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create kind cluster
+        if: steps.rabbitmq.outputs.changed == 'true'
+        uses: helm/kind-action@v1
+
+      - name: Install RabbitMQ charts
+        if: steps.rabbitmq.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          helm dependency build charts/rabbitmq-cluster-operator
+          helm dependency build charts/rabbitmq-cluster
+          helm dependency build charts/rabbitmq-topology
+
+          rabbitmq_crds=(
+            rabbitmqclusters.rabbitmq.com
+            bindings.rabbitmq.com
+            exchanges.rabbitmq.com
+            federations.rabbitmq.com
+            operatorpolicies.rabbitmq.com
+            permissions.rabbitmq.com
+            policies.rabbitmq.com
+            queues.rabbitmq.com
+            schemareplications.rabbitmq.com
+            shovels.rabbitmq.com
+            superstreams.rabbitmq.com
+            topicpermissions.rabbitmq.com
+            users.rabbitmq.com
+            vhosts.rabbitmq.com
+          )
+
+          changed_rabbitmq_charts='${{ steps.rabbitmq.outputs.charts }}'
+
+          if grep -qx 'charts/rabbitmq-topology-operator' <<<"${changed_rabbitmq_charts}"; then
+            helm install rabbitmq-topology-operator charts/rabbitmq-topology-operator \
+              --namespace rabbitmq-topology-operator \
+              --create-namespace
+
+            kubectl rollout status deployment/rabbitmq-topology-operator \
+              --namespace rabbitmq-topology-operator \
+              --timeout=180s
+          fi
+
+          helm install rabbitmq-cluster-operator charts/rabbitmq-cluster-operator \
+            --namespace rabbitmq-cluster-operator \
+            --create-namespace
+
+          kubectl rollout status deployment/rabbitmq-cluster-operator \
+            --namespace rabbitmq-cluster-operator \
+            --timeout=180s
+
+          kubectl rollout status deployment/rabbitmq-cluster-operator-msgtopologyoperator \
+            --namespace rabbitmq-cluster-operator \
+            --timeout=180s
+
+          for crd in "${rabbitmq_crds[@]}"; do
+            kubectl wait --for=condition=Established "crd/${crd}" --timeout=180s
+          done
+
+          helm install rabbitmq-cluster charts/rabbitmq-cluster \
+            --namespace rabbitmq-workloads \
+            --create-namespace \
+            --set rabbitmq.cluster.name=app-rabbitmq \
+            --set rabbitmq-topology.enabled=false
+
+          helm install rabbitmq-topology charts/rabbitmq-topology \
+            --namespace rabbitmq-workloads \
+            -f charts/rabbitmq-topology/examples/01-minimal-standalone.yaml
+
+      - name: Skip when no RabbitMQ chart changed
+        if: steps.rabbitmq.outputs.changed != 'true'
+        run: echo "No changed RabbitMQ charts detected."
