@@ -1,5 +1,8 @@
 # example values for configMaps
 
+image:
+  repository: alpine
+
 configMaps:
   # name of the configMap
   config:
@@ -31,8 +34,6 @@ jobs:
       - /bin/sh
     args:
       - /configMaps/scripts/start.sh
-    image:
-      repository: alpine
   cat:
     schedule: "* * * * *"
     command: ["cat", "/configMaps/config/config.ini"]

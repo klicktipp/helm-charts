@@ -3,7 +3,7 @@ apiVersion: v2
 name: cronjobs
 description: A generic helm cronjob chart for kubernetes
 type: application
-version: 1.6.4
+version: 1.6.5
 appVersion: latest
 home: https://github.com/klicktipp/helm-charts
 keywords:
@@ -17,6 +17,6 @@ annotations:
     - name: Image DockerHub
       url: https://hub.docker.com/_/busybox
 dependencies:
-  - name: common
-    version: 2.36.0
-    repository: https://charts.bitnami.com/bitnami
+  - name: klicktipp-common
+    version: 1.0.1
+    repository: https://klicktipp.github.io/helm-charts
