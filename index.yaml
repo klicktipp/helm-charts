@@ -1669,6 +1669,30 @@ entries:
       license: Apache-2.0
     apiVersion: v2
     appVersion: 1.18.3
+    created: "2026-03-16T10:33:36.131601261Z"
+    description: Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
+    digest: dafb89e4eb1f5146bedc1e69cbe1d347101055882cf17495b7f05dfbe82573cf
+    home: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+    icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
+    keywords:
+    - rabbitmq
+    - topology
+    - operator
+    - messaging
+    - amqp
+    name: rabbitmq-topology-operator
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    - https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+    - https://github.com/rabbitmq/messaging-topology-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-topology-operator-0.1.2/rabbitmq-topology-operator-0.1.2.tgz
+    version: 0.1.2
+  - annotations:
+      license: Apache-2.0
+    apiVersion: v2
+    appVersion: 1.18.3
     created: "2026-03-16T10:06:28.207711785Z"
     description: Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
     digest: c82b290ccd00e90d480a5801a3aefe0310b650522af443c6f5b12bfb5e0fbbf8
@@ -1958,4 +1982,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-03-16T10:06:28.207874569Z"
+generated: "2026-03-16T10:33:36.131773894Z"
