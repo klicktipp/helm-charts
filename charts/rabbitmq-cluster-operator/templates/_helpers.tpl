@@ -176,6 +176,42 @@ Return the proper RabbitMQ Cluster Operator image name.
 {{ include "rabbitmq-cluster-operator.image" (dict "image" .Values.clusterOperator.image "global" .Values.global "chartAppVersion" .Chart.AppVersion) }}
 {{- end -}}
 
+{{/*
+Return the CRD upgrade hook fullname.
+*/}}
+{{- define "rmqco.crdUpgrade.fullname" -}}
+{{- printf "%s-%s" (include "rmqco.clusterOperator.fullname" .) "crd-upgrade" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Return the CRD upgrade hook cluster-scoped fullname.
+*/}}
+{{- define "rmqco.crdUpgrade.fullname.namespace" -}}
+{{- printf "%s-%s" (include "rmqco.crdUpgrade.fullname" .) (include "rabbitmq-cluster-operator.namespace" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Return the CRD upgrade hook service account name.
+*/}}
+{{- define "rmqco.crdUpgrade.serviceAccountName" -}}
+{{- include "rmqco.crdUpgrade.fullname" . -}}
+{{- end -}}
+
+{{/*
+Return the CRD upgrade hook image reference.
+*/}}
+{{- define "rmqco.crdUpgrade.image" -}}
+{{ include "rabbitmq-cluster-operator.image" (dict "image" .Values.clusterOperator.crdUpgrade.image "global" .Values.global "chartAppVersion" .Values.clusterOperator.crdUpgrade.image.tag) }}
+{{- end -}}
+
+{{/*
+Return the CRD upgrade hook ConfigMap name for a CRD path.
+*/}}
+{{- define "rmqco.crdUpgrade.configMapName" -}}
+{{- $base := trimSuffix ".yaml" (base .path) -}}
+{{- printf "%s-%s" (include "rmqco.crdUpgrade.fullname" .context) $base | lower | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 Return the proper RabbitMQ image name.
 */}}
 {{- define "rmqco.rabbitmq.image" -}}

@@ -1,0 +1,132 @@
+{{- if .Values.clusterOperator.crdUpgrade.enabled }}
+{{- $hookAnnotations := dict "helm.sh/hook" "pre-upgrade" "helm.sh/hook-weight" "-40" "helm.sh/hook-delete-policy" "before-hook-creation,hook-succeeded" -}}
+{{- range $path, $_ := .Files.Glob "crds/*.yaml" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rmqco.crdUpgrade.configMapName" (dict "context" $ "path" $path) }}
+  namespace: {{ include "rabbitmq-cluster-operator.namespace" $ }}
+  labels:
+    {{- include "rmqco.labels" $ | nindent 4 }}
+  annotations:
+    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict $.Values.commonAnnotations) (default dict $.Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+data:
+  {{ base $path }}: |
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "rmqco.crdUpgrade.serviceAccountName" . }}
+  namespace: {{ include "rabbitmq-cluster-operator.namespace" . }}
+  labels:
+    {{- include "rmqco.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "rmqco.crdUpgrade.fullname.namespace" . }}
+  labels:
+    {{- include "rmqco.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+rules:
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+      - create
+      - patch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "rmqco.crdUpgrade.fullname.namespace" . }}
+  labels:
+    {{- include "rmqco.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "rmqco.crdUpgrade.fullname.namespace" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "rmqco.crdUpgrade.serviceAccountName" . }}
+    namespace: {{ include "rabbitmq-cluster-operator.namespace" . }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "rmqco.crdUpgrade.fullname" . }}
+  namespace: {{ include "rabbitmq-cluster-operator.namespace" . }}
+  labels:
+    {{- include "rmqco.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+spec:
+  backoffLimit: {{ .Values.clusterOperator.crdUpgrade.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        {{- include "rmqco.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "rmqco.crdUpgrade.serviceAccountName" . }}
+      automountServiceAccountToken: true
+      {{- $pullSecrets := list }}
+      {{- if .Values.global }}
+        {{- range .Values.global.imagePullSecrets }}
+          {{- $pullSecrets = append $pullSecrets . }}
+        {{- end }}
+      {{- end }}
+      {{- range .Values.clusterOperator.crdUpgrade.image.pullSecrets }}
+        {{- $pullSecrets = append $pullSecrets . }}
+      {{- end }}
+      {{- if not (empty $pullSecrets) }}
+      imagePullSecrets:
+        {{- range $pullSecrets | uniq }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: crd-upgrade
+          image: {{ include "rmqco.crdUpgrade.image" . }}
+          imagePullPolicy: {{ .Values.clusterOperator.crdUpgrade.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              for file in /crds/*.yaml; do
+                echo "Applying ${file}"
+                kubectl apply -f "${file}"
+              done
+          {{- if .Values.clusterOperator.crdUpgrade.resources }}
+          resources:
+            {{- toYaml .Values.clusterOperator.crdUpgrade.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: crds
+              mountPath: /crds
+              readOnly: true
+      volumes:
+        - name: crds
+          projected:
+            sources:
+              {{- range $path, $_ := .Files.Glob "crds/*.yaml" }}
+              - configMap:
+                  name: {{ include "rmqco.crdUpgrade.configMapName" (dict "context" $ "path" $path) }}
+                  items:
+                    - key: {{ base $path }}
+                      path: {{ base $path }}
+              {{- end }}
+{{- end }}

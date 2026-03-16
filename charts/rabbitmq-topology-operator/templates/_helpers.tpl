@@ -199,6 +199,42 @@ Return the operator image name.
 {{- end -}}
 
 {{/*
+Return the CRD upgrade hook job fullname.
+*/}}
+{{- define "rmqto.crdUpgrade.fullname" -}}
+{{- printf "%s-%s" (include "rmqto.fullname" .) "crd-upgrade" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Return the CRD upgrade hook cluster-scoped fullname.
+*/}}
+{{- define "rmqto.crdUpgrade.fullname.namespace" -}}
+{{- printf "%s-%s" (include "rmqto.crdUpgrade.fullname" .) (include "rabbitmq-topology-operator.namespace" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Return the CRD upgrade hook service account name.
+*/}}
+{{- define "rmqto.crdUpgrade.serviceAccountName" -}}
+{{- include "rmqto.crdUpgrade.fullname" . -}}
+{{- end -}}
+
+{{/*
+Return the CRD upgrade hook image reference.
+*/}}
+{{- define "rmqto.crdUpgrade.image" -}}
+{{ include "rabbitmq-topology-operator.image" (dict "image" .Values.crdUpgrade.image "global" .Values.global "chartAppVersion" .Values.crdUpgrade.image.tag) }}
+{{- end -}}
+
+{{/*
+Return the CRD upgrade hook ConfigMap name for a CRD path.
+*/}}
+{{- define "rmqto.crdUpgrade.configMapName" -}}
+{{- $base := trimSuffix ".yaml" (base .path) -}}
+{{- printf "%s-%s" (include "rmqto.crdUpgrade.fullname" .context) $base | lower | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 Return the imagePullSecrets section.
 */}}
 {{- define "rmqto.imagePullSecrets" -}}

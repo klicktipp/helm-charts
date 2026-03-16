@@ -79,6 +79,30 @@ clusterOperator:
     pullPolicy: IfNotPresent
     # -- RabbitMQ Cluster Operator image pull secrets
     pullSecrets: []
+  # -- CRD upgrade hook configuration.
+  crdUpgrade:
+    # -- Enable the pre-upgrade hook that reapplies CRDs with kubectl.
+    enabled: true
+    # -- Kubectl image used by the CRD upgrade hook.
+    image:
+      # -- Kubectl image registry.
+      registry: docker.io
+      # -- Kubectl image repository.
+      repository: bitnami/kubectl
+      # -- Kubectl image tag.
+      tag: 1.32.3
+      # -- Kubectl image digest in the form `sha256:...`; overrides `clusterOperator.crdUpgrade.image.tag` when set.
+      digest: ""
+      # -- Image pull policy for the CRD upgrade hook.
+      pullPolicy: IfNotPresent
+      # -- Image pull secrets for the CRD upgrade hook.
+      pullSecrets: []
+    # -- Annotations added to CRD upgrade hook resources.
+    annotations: {}
+    # -- Resource requests and limits for the CRD upgrade hook job.
+    resources: {}
+    # -- Number of retries before the CRD upgrade hook job is marked as failed.
+    backoffLimit: 1
   # -- Number of old ReplicaSets to retain
   revisionHistoryLimit: 10
   # -- Watch resources across all namespaces
@@ -408,6 +432,30 @@ msgTopologyOperator:
     pullPolicy: IfNotPresent
     # -- RabbitMQ Messaging Topology Operator image pull secrets
     pullSecrets: []
+  # -- CRD upgrade hook configuration.
+  crdUpgrade:
+    # -- Enable the pre-upgrade hook that reapplies CRDs with kubectl.
+    enabled: true
+    # -- Kubectl image used by the CRD upgrade hook.
+    image:
+      # -- Kubectl image registry.
+      registry: docker.io
+      # -- Kubectl image repository.
+      repository: bitnami/kubectl
+      # -- Kubectl image tag.
+      tag: 1.32.3
+      # -- Kubectl image digest in the form `sha256:...`; overrides `msgTopologyOperator.crdUpgrade.image.tag` when set.
+      digest: ""
+      # -- Image pull policy for the CRD upgrade hook.
+      pullPolicy: IfNotPresent
+      # -- Image pull secrets for the CRD upgrade hook.
+      pullSecrets: []
+    # -- Annotations added to CRD upgrade hook resources.
+    annotations: {}
+    # -- Resource requests and limits for the CRD upgrade hook job.
+    resources: {}
+    # -- Number of retries before the CRD upgrade hook job is marked as failed.
+    backoffLimit: 1
   # -- Number of old ReplicaSets to retain
   revisionHistoryLimit: 10
   # -- Watch resources across all namespaces
