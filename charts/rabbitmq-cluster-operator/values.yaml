@@ -46,7 +46,7 @@ rabbitmqImage:
   ## @param rabbitmqImage.repository [default: REPOSITORY_NAME/rabbitmq] RabbitMQ Image repository
   repository: library/rabbitmq
   ## @skip rabbitmqImage.tag RabbitMQ Image tag (immutable tags are recommended)
-  tag: 4.1.6-management-alpine
+  tag: 4.2.4-management-alpine
   ## @param rabbitmqImage.digest RabbitMQ image digest in the form `sha256:...`; overrides `rabbitmqImage.tag` when set
   digest: ""
   ## @param rabbitmqImage.pullSecrets RabbitMQ Image pull secrets
@@ -66,7 +66,7 @@ credentialUpdaterImage:
   ## @param credentialUpdaterImage.repository [default: REPOSITORY_NAME/rmq-default-credential-updater] RabbitMQ Default User Credential Updater image repository
   repository: rabbitmqoperator/default-user-credential-updater
   ## @skip credentialUpdaterImage.tag RabbitMQ Default User Credential Updater image tag (immutable tags are recommended)
-  tag: 1.0.9
+  tag: 1.0.12
   ## @param credentialUpdaterImage.digest Credential updater image digest in the form `sha256:...`; overrides `credentialUpdaterImage.tag` when set
   digest: ""
   ## @param credentialUpdaterImage.pullSecrets RabbitMQ Default User Credential Updater image pull secrets

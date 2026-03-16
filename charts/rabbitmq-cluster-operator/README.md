@@ -9,6 +9,7 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 ## Source Code
 
 * <https://github.com/klicktipp/helm-charts>
+* <https://www.rabbitmq.com/kubernetes/operator/operator-overview.html>
 * <https://github.com/rabbitmq/cluster-operator>
 * <https://github.com/rabbitmq/messaging-topology-operator>
 
@@ -37,12 +38,12 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 | diagnosticMode.enabled | bool | `false` |  |
 | rabbitmqImage.registry | string | `"docker.io"` |  |
 | rabbitmqImage.repository | string | `"library/rabbitmq"` |  |
-| rabbitmqImage.tag | string | `"4.1.6-management-alpine"` |  |
+| rabbitmqImage.tag | string | `"4.2.4-management-alpine"` |  |
 | rabbitmqImage.digest | string | `""` |  |
 | rabbitmqImage.pullSecrets | list | `[]` |  |
 | credentialUpdaterImage.registry | string | `"docker.io"` |  |
 | credentialUpdaterImage.repository | string | `"rabbitmqoperator/default-user-credential-updater"` |  |
-| credentialUpdaterImage.tag | string | `"1.0.9"` |  |
+| credentialUpdaterImage.tag | string | `"1.0.12"` |  |
 | credentialUpdaterImage.digest | string | `""` |  |
 | credentialUpdaterImage.pullSecrets | list | `[]` |  |
 | clusterOperator.image.registry | string | `"docker.io"` |  |
