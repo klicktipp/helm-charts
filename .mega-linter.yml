@@ -4,6 +4,13 @@
 IGNORE_GITIGNORED_FILES: true
 YAML_YAMLLINT_CONFIG_FILE: .yamllint
 
+# Generated chart READMEs, vendored CRDs and Helm-specific template/test files
+# create a lot of low-signal noise in generic Markdown and spelling linters.
+MARKDOWN_MARKDOWNLINT_FILTER_REGEX_EXCLUDE: '(^|.*/)charts/[^/]+/README\.md$'
+MARKDOWN_MARKDOWN_TABLE_FORMATTER_FILTER_REGEX_EXCLUDE: '(^|.*/)charts/[^/]+/README\.md$'
+SPELL_CSPELL_FILTER_REGEX_EXCLUDE: '(^|.*/)charts/[^/]+/(crds|templates|tests)/.*|(^|.*/)charts/[^/]+/(README\.md|values\.ya?ml|Chart\.ya?ml)$|(^|.*/)scripts/update-rabbitmq-crds\.sh$'
+SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: '(^|.*/)charts/[^/]+/(crds|README\.md|values\.ya?ml|Chart\.ya?ml)$'
+
 # Helm templates are Go templates, vendored CRDs should stay byte-close to upstream,
 # and Helm unittest/values files do not map cleanly to a JSON schema for v8r.
 YAML_PRETTIER_FILTER_REGEX_EXCLUDE: (^|.*/)charts/[^/]+/(templates|crds)/.*\.ya?ml$
