@@ -208,7 +208,7 @@ Return the CRD upgrade hook image reference.
 Return the CRD upgrade hook ConfigMap name for a CRD path.
 */}}
 {{- define "rmqco.crdUpgrade.configMapName" -}}
-{{- $base := trimSuffix ".yaml" (base .path) -}}
+{{- $base := trimSuffix ".yaml" (base .path) | replace "_" "-" -}}
 {{- $hash := sha256sum .path | trunc 8 -}}
 {{- printf "%.54s-%s" (printf "%s-%s" (include "rmqco.crdUpgrade.fullname" .context) $base | lower) $hash | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
