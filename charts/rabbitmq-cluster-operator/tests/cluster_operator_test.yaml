@@ -283,7 +283,7 @@ tests:
           path: spec.template.spec.securityContext.fsGroupChangePolicy
           value: Always
         template: templates/cluster-operator/deployment.yaml
-      - isNull:
+      - notExists:
           path: spec.template.spec.securityContext.enabled
         template: templates/cluster-operator/deployment.yaml
 
@@ -319,6 +319,6 @@ tests:
           path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
           value: false
         template: templates/cluster-operator/deployment.yaml
-      - isNull:
+      - notExists:
           path: spec.template.spec.containers[0].securityContext.enabled
         template: templates/cluster-operator/deployment.yaml
