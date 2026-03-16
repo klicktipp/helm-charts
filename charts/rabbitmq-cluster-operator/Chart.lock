@@ -1,6 +1,6 @@
 dependencies:
 - name: rabbitmq-topology-operator
-  repository: file://../rabbitmq-topology-operator
+  repository: https://klicktipp.github.io/helm-charts
   version: 0.1.0
-digest: sha256:fe58d5eeab05309a9efe5cd8a8145eaf982154d5e1c3445be630d4a286706fa2
-generated: "2026-03-14T17:48:39.698863+01:00"
+digest: sha256:73ab9ee6707cee745b82941c2ab09c6c4bcd79c5de5d59f9f3d4d596c5cc5eba
+generated: "2026-03-16T10:02:08.554203+01:00"
