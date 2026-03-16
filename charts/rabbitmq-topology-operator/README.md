@@ -1,6 +1,6 @@
 # rabbitmq-topology-operator
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.19.0](https://img.shields.io/badge/AppVersion-1.19.0-informational?style=flat-square)
+![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.19.0](https://img.shields.io/badge/AppVersion-1.19.0-informational?style=flat-square)
 
 Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 
@@ -17,8 +17,8 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | enabled | bool | `true` | Deploy the RabbitMQ Messaging Topology Operator. |
-| image | object | `{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"docker.io","repository":"rabbitmqoperator/messaging-topology-operator","tag":""}` | Messaging Topology Operator image |
-| image.registry | string | `"docker.io"` | RabbitMQ Messaging Topology Operator image registry |
+| image | object | `{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"ghcr.io","repository":"rabbitmqoperator/messaging-topology-operator","tag":""}` | Messaging Topology Operator image |
+| image.registry | string | `"ghcr.io"` | RabbitMQ Messaging Topology Operator image registry |
 | image.repository | string | `"rabbitmqoperator/messaging-topology-operator"` | RabbitMQ Messaging Topology Operator image repository |
 | image.tag | string | `""` | RabbitMQ Messaging Topology Operator image tag. When empty, `.Chart.AppVersion` is used |
 | image.digest | string | `""` | Messaging Topology Operator image digest in the form `sha256:...`; overrides `image.tag` when set |
@@ -33,7 +33,7 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | terminationGracePeriodSeconds | string | `""` | Time in seconds to allow the Messaging Topology Operator pod to terminate gracefully |
 | hostNetwork | bool | `false` | Run the pod in the host network namespace |
 | dnsPolicy | string | `"ClusterFirst"` | Alternative DNS policy |
-| livenessProbe | object | `{"enabled":true,"failureThreshold":5,"initialDelaySeconds":5,"periodSeconds":30,"successThreshold":1,"timeoutSeconds":5}` | Health probes for the Messaging Topology Operator container |
+| livenessProbe | object | `{"enabled":true,"failureThreshold":5,"initialDelaySeconds":5,"periodSeconds":30,"successThreshold":1,"timeoutSeconds":5}` | Health probes for the Messaging Topology Operator container on the dedicated health port |
 | livenessProbe.enabled | bool | `true` | Enable livenessProbe on RabbitMQ Messaging Topology Operator nodes |
 | livenessProbe.initialDelaySeconds | int | `5` | Initial delay seconds for livenessProbe |
 | livenessProbe.periodSeconds | int | `30` | Period seconds for livenessProbe |
@@ -106,7 +106,9 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | updateStrategy.type | string | `"RollingUpdate"` | Can be set to RollingUpdate or OnDelete |
 | priorityClassName | string | `""` | PriorityClass name for Messaging Topology Operator pods |
 | lifecycleHooks | object | `{}` | Lifecycle hooks for the Messaging Topology Operator container |
-| containerPorts | object | `{"metrics":8080}` | Metrics port exposed by the Messaging Topology Operator container |
+| containerPorts | object | `{"health":8081,"metrics":8443}` | Container ports exposed by the Messaging Topology Operator |
+| containerPorts.metrics | int | `8443` | HTTPS metrics port exposed by the Messaging Topology Operator |
+| containerPorts.health | int | `8081` | HTTP health probe port exposed by the Messaging Topology Operator |
 | extraEnvVars | list | `[]` | Additional environment variables for the container. |
 | extraEnvVarsCM | string | `""` | Name of an existing ConfigMap with extra environment variables for the Messaging Topology Operator |
 | extraEnvVarsSecret | string | `""` | Name of an existing Secret with extra environment variables for the Messaging Topology Operator |
@@ -144,7 +146,7 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | serviceAccount.name | string | `""` | If not set and create is true, a name is generated using the rabbitmq-topology-operator.fullname template |
 | serviceAccount.annotations | object | `{}` | Add annotations |
 | serviceAccount.automountServiceAccountToken | bool | `false` | Mount API credentials into the service account. |
-| metrics.service | object | `{"annotations":{"prometheus.io/port":"{{ .Values.metrics.service.ports.http }}","prometheus.io/scrape":"true"},"clusterIP":"","enabled":false,"externalTrafficPolicy":"Cluster","extraPorts":[],"loadBalancerIP":"","loadBalancerSourceRanges":[],"nodePorts":{"http":""},"ports":{"http":80},"sessionAffinity":"None","sessionAffinityConfig":{},"type":"ClusterIP"}` | Metrics service configuration. |
+| metrics.service | object | `{"annotations":{"prometheus.io/port":"{{ .Values.metrics.service.ports.http }}","prometheus.io/scheme":"https","prometheus.io/scrape":"true"},"clusterIP":"","enabled":false,"externalTrafficPolicy":"Cluster","extraPorts":[],"loadBalancerIP":"","loadBalancerSourceRanges":[],"nodePorts":{"http":""},"ports":{"http":80},"sessionAffinity":"None","sessionAffinityConfig":{},"type":"ClusterIP"}` | Metrics service configuration. |
 | metrics.service.enabled | bool | `false` | Create a Service for the Messaging Topology Operator metrics endpoint |
 | metrics.service.type | string | `"ClusterIP"` | Kubernetes Service type for the Messaging Topology Operator metrics endpoint |
 | metrics.service.ports | object | `{"http":80}` | Service port for the Messaging Topology Operator metrics endpoint |
@@ -154,7 +156,7 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | metrics.service.loadBalancerIP | string | `""` | LoadBalancer IP for the Messaging Topology Operator metrics service |
 | metrics.service.loadBalancerSourceRanges | list | `[]` | Allowed source ranges for the metrics service load balancer. |
 | metrics.service.externalTrafficPolicy | string | `"Cluster"` | External traffic policy for the metrics service. |
-| metrics.service.annotations | object | `{"prometheus.io/port":"{{ .Values.metrics.service.ports.http }}","prometheus.io/scrape":"true"}` | Additional annotations for the Messaging Topology Operator metrics service |
+| metrics.service.annotations | object | `{"prometheus.io/port":"{{ .Values.metrics.service.ports.http }}","prometheus.io/scheme":"https","prometheus.io/scrape":"true"}` | Additional annotations for the Messaging Topology Operator metrics service |
 | metrics.service.sessionAffinity | string | `"None"` | If "ClientIP", consecutive client requests will be directed to the same Pod |
 | metrics.service.sessionAffinityConfig | object | `{}` | Session affinity configuration. |
 | metrics.serviceMonitor.enabled | bool | `false` | Create a ServiceMonitor for the metrics service. |
@@ -166,6 +168,8 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | metrics.serviceMonitor.interval | string | `""` | Scrape interval; uses the Prometheus default when empty |
 | metrics.serviceMonitor.metricRelabelings | list | `[]` | Metric relabeling rules |
 | metrics.serviceMonitor.relabelings | list | `[]` | Target relabeling rules |
+| metrics.serviceMonitor.scheme | string | `"https"` | Scheme used when scraping the metrics endpoint |
+| metrics.serviceMonitor.tlsConfig | object | `{}` | Optional TLS configuration for the ServiceMonitor endpoint |
 | metrics.serviceMonitor.labels | object | `{}` | Additional labels for the ServiceMonitor |
 | metrics.podMonitor.enabled | bool | `false` | Create a PodMonitor resource for scraping Messaging Topology Operator metrics |
 | metrics.podMonitor.jobLabel | string | `"app.kubernetes.io/name"` | Label to use as the Prometheus job name |
@@ -177,6 +181,8 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | metrics.podMonitor.additionalLabels | object | `{}` | Additional labels for the PodMonitor |
 | metrics.podMonitor.relabelings | list | `[]` | Target relabeling rules |
 | metrics.podMonitor.metricRelabelings | list | `[]` | Metric relabeling rules |
+| metrics.podMonitor.scheme | string | `"https"` | Scheme used when scraping the pod metrics endpoint |
+| metrics.podMonitor.tlsConfig | object | `{}` | Optional TLS configuration for the PodMonitor endpoint |
 | global | object | `{"imagePullSecrets":[],"imageRegistry":""}` | Global image settings shared with this chart. |
 | global.imageRegistry | string | `""` | Global Docker image registry |
 | global.imagePullSecrets | list | `[]` | Global Docker registry secret names as an array |

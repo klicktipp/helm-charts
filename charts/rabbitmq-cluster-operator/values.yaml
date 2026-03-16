@@ -476,7 +476,7 @@ msgTopologyOperator:
   hostNetwork: false
   # -- Alternative DNS policy
   dnsPolicy: "ClusterFirst"
-  # -- Health probes for the Messaging Topology Operator container
+  # -- Health probes for the Messaging Topology Operator container on the dedicated health port
   livenessProbe:
     # -- Enable livenessProbe on RabbitMQ Messaging Topology Operator nodes
     enabled: true
@@ -605,9 +605,12 @@ msgTopologyOperator:
   priorityClassName: ""
   # -- Lifecycle hooks for the Messaging Topology Operator container
   lifecycleHooks: {}
-  # -- Metrics port exposed by the Messaging Topology Operator container
+  # -- Container ports exposed by the Messaging Topology Operator
   containerPorts:
-    metrics: 8080
+    # -- HTTPS metrics port exposed by the Messaging Topology Operator
+    metrics: 8443
+    # -- HTTP health probe port exposed by the Messaging Topology Operator
+    health: 8081
   # -- Additional environment variables for the container.
   extraEnvVars: []
   # -- Name of an existing ConfigMap with extra environment variables for the Messaging Topology Operator
@@ -743,6 +746,7 @@ msgTopologyOperator:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ .Values.msgTopologyOperator.metrics.service.ports.http }}"
+        prometheus.io/scheme: "https"
       # -- Session Affinity for Kubernetes service, can be "None" or "ClientIP"
       # -- If "ClientIP", consecutive client requests will be directed to the same Pod
       sessionAffinity: None
@@ -766,6 +770,10 @@ msgTopologyOperator:
       metricRelabelings: []
       # -- Target relabeling rules
       relabelings: []
+      # -- Scheme used when scraping the metrics endpoint
+      scheme: https
+      # -- Optional TLS configuration for the ServiceMonitor endpoint
+      tlsConfig: {}
       # -- Additional labels for the ServiceMonitor
       labels: {}
     podMonitor:
@@ -789,3 +797,7 @@ msgTopologyOperator:
       relabelings: []
       # -- Metric relabeling rules
       metricRelabelings: []
+      # -- Scheme used when scraping the pod metrics endpoint
+      scheme: https
+      # -- Optional TLS configuration for the PodMonitor endpoint
+      tlsConfig: {}

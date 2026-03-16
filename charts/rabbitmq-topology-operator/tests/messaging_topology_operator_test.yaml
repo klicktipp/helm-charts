@@ -37,6 +37,30 @@ tests:
           path: spec.template.spec.serviceAccountName
           value: RELEASE-NAME-rabbitmq-topology-operator
         template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].args[0]
+          value: --metrics-bind-address=:8443
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].args[2]
+          value: --health-probe-bind-address=:8081
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /readyz
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.port
+          value: http-health
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /healthz
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.port
+          value: http-health
+        template: templates/deployment.yaml
 
   - it: When setting global image pull secrets, deployment should include them
     set:
@@ -220,6 +244,14 @@ tests:
           path: metadata.name
           value: RELEASE-NAME-rabbitmq-topology-operator-metrics
         template: templates/metrics-service.yaml
+      - equal:
+          path: spec.ports[0].name
+          value: https
+        template: templates/metrics-service.yaml
+      - equal:
+          path: spec.ports[0].targetPort
+          value: https-metrics
+        template: templates/metrics-service.yaml
 
   - it: should not create podmonitor by default
     asserts:
@@ -237,6 +269,14 @@ tests:
       - equal:
           path: metadata.name
           value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/podmonitor.yaml
+      - equal:
+          path: spec.podMetricsEndpoints[0].port
+          value: https-metrics
+        template: templates/podmonitor.yaml
+      - equal:
+          path: spec.podMetricsEndpoints[0].scheme
+          value: https
         template: templates/podmonitor.yaml
 
   - it: should not create servicemonitor by default
@@ -256,6 +296,14 @@ tests:
       - equal:
           path: metadata.name
           value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/servicemonitor.yaml
+      - equal:
+          path: spec.endpoints[0].port
+          value: https
+        template: templates/servicemonitor.yaml
+      - equal:
+          path: spec.endpoints[0].scheme
+          value: https
         template: templates/servicemonitor.yaml
 
   - it: should not create certificate by default
