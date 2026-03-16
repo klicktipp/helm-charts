@@ -31,7 +31,7 @@ tests:
         template: templates/deployment.yaml
       - matchRegex:
           path: spec.template.spec.containers[0].image
-          pattern: ^docker\.io/rabbitmqoperator/messaging-topology-operator:.*$
+          pattern: ^ghcr\.io/rabbitmqoperator/messaging-topology-operator:.*$
         template: templates/deployment.yaml
       - equal:
           path: spec.template.spec.serviceAccountName
