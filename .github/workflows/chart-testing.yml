@@ -153,7 +153,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          helm plugin install https://github.com/helm-unittest/helm-unittest --version v0.8.2 --verify=false
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version v1.0.3 --verify=false
 
       - name: Add chart dependency repositories
         shell: bash
