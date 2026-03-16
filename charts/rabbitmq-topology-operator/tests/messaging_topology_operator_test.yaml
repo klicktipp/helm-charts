@@ -1,0 +1,368 @@
+suite: rabbitmq-messaging-topology-operator-tests
+templates:
+  - templates/deployment.yaml
+  - templates/sa.yaml
+  - templates/clusterrole.yaml
+  - templates/clusterrolebinding.yaml
+  - templates/role.yaml
+  - templates/rolebinding.yaml
+  - templates/networkpolicy.yaml
+  - templates/pdb.yaml
+  - templates/webhook-service.yaml
+  - templates/validating-webhook-configuration.yaml
+  - templates/metrics-service.yaml
+  - templates/podmonitor.yaml
+  - templates/servicemonitor.yaml
+  - templates/certificate.yaml
+
+tests:
+  - it: should render messaging topology operator deployment with default values
+    asserts:
+      - isKind:
+          of: Deployment
+        template: templates/deployment.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.replicas
+          value: 1
+        template: templates/deployment.yaml
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^docker\.io/rabbitmqoperator/messaging-topology-operator:.*$
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/deployment.yaml
+
+  - it: When setting global image pull secrets, deployment should include them
+    set:
+      global.imagePullSecrets:
+        - mySecret1
+        - mySecret2
+        - mySecret3
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets[0].name
+          value: mySecret1
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.imagePullSecrets[1].name
+          value: mySecret2
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.imagePullSecrets[2].name
+          value: mySecret3
+        template: templates/deployment.yaml
+
+  - it: When setting global image pull secrets, deployment should include them
+    set:
+      global.imagePullSecrets:
+        - mySecret1
+        - mySecret2
+        - mySecret3
+      image.pullSecrets:
+        - mySecret2
+        - mySecret3
+        - mySecret4
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets[0].name
+          value: mySecret1
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.imagePullSecrets[1].name
+          value: mySecret2
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.imagePullSecrets[2].name
+          value: mySecret3
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.imagePullSecrets[3].name
+          value: mySecret4
+        template: templates/deployment.yaml
+
+  - it: should create service account with default values
+    asserts:
+      - isKind:
+          of: ServiceAccount
+        template: templates/sa.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/sa.yaml
+
+  - it: should create clusterrole with default values
+    asserts:
+      - isKind:
+          of: ClusterRole
+        template: templates/clusterrole.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator-NAMESPACE
+        template: templates/clusterrole.yaml
+
+  - it: should create clusterrolebinding with default values
+    asserts:
+      - isKind:
+          of: ClusterRoleBinding
+        template: templates/clusterrolebinding.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator-NAMESPACE
+        template: templates/clusterrolebinding.yaml
+      - equal:
+          path: roleRef.name
+          value: RELEASE-NAME-rabbitmq-topology-operator-NAMESPACE
+        template: templates/clusterrolebinding.yaml
+      - equal:
+          path: subjects[0].kind
+          value: ServiceAccount
+        template: templates/clusterrolebinding.yaml
+      - equal:
+          path: subjects[0].name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/clusterrolebinding.yaml
+
+  - it: should create role with default values
+    asserts:
+      - isKind:
+          of: Role
+        template: templates/role.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/role.yaml
+
+  - it: should create rolebinding with default values
+    asserts:
+      - isKind:
+          of: RoleBinding
+        template: templates/rolebinding.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/rolebinding.yaml
+      - equal:
+          path: roleRef.name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/rolebinding.yaml
+      - equal:
+          path: subjects[0].kind
+          value: ServiceAccount
+        template: templates/rolebinding.yaml
+      - equal:
+          path: subjects[0].name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/rolebinding.yaml
+
+  - it: should create network policy with default values
+    asserts:
+      - isKind:
+          of: NetworkPolicy
+        template: templates/networkpolicy.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/networkpolicy.yaml
+
+  - it: should create pdb with default values
+    asserts:
+      - isKind:
+          of: PodDisruptionBudget
+        template: templates/pdb.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/pdb.yaml
+
+  - it: should create webhook service with default values
+    asserts:
+      - isKind:
+          of: Service
+        template: templates/webhook-service.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator-webhook
+        template: templates/webhook-service.yaml
+
+  - it: should create validating webhook configuration with default values
+    asserts:
+      - isKind:
+          of: ValidatingWebhookConfiguration
+        template: templates/validating-webhook-configuration.yaml
+        documentIndex: 1
+
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator-webhook-NAMESPACE
+        template: templates/validating-webhook-configuration.yaml
+        documentIndex: 1
+
+  - it: should not create metrics service by default
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/metrics-service.yaml
+
+  - it: should create metrics service when enabled
+    set:
+      metrics.service.enabled: true
+    asserts:
+      - isKind:
+          of: Service
+        template: templates/metrics-service.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator-metrics
+        template: templates/metrics-service.yaml
+
+  - it: should not create podmonitor by default
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/podmonitor.yaml
+
+  - it: should create podmonitor when enabled
+    set:
+      metrics.podMonitor.enabled: true
+    asserts:
+      - isKind:
+          of: PodMonitor
+        template: templates/podmonitor.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/podmonitor.yaml
+
+  - it: should not create servicemonitor by default
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/servicemonitor.yaml
+
+  - it: should create servicemonitor when enabled
+    set:
+      metrics.serviceMonitor.enabled: true
+      metrics.service.enabled: true
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+        template: templates/servicemonitor.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator
+        template: templates/servicemonitor.yaml
+
+  - it: should not create certificate by default
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/certificate.yaml
+
+  - it: should create certificate when useCertManager is enabled
+    set:
+      useCertManager: true
+    asserts:
+      - isKind:
+          of: Certificate
+        template: templates/certificate.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-topology-operator-webhook
+        template: templates/certificate.yaml
+
+  - it: should render messaging topology operator deployment with nodeSelector
+    set:
+      nodeSelector:
+        disktype: ssd
+    asserts:
+      - isKind:
+          of: Deployment
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.nodeSelector.disktype
+          value: ssd
+        template: templates/deployment.yaml
+
+  - it: should render messaging topology operator deployment with affinity
+    set:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/e2e-az-name
+                    operator: In
+                    values:
+                      - e2e-az1
+                      - e2e-az2
+    asserts:
+      - isKind:
+          of: Deployment
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key
+          value: kubernetes.io/e2e-az-name
+        template: templates/deployment.yaml
+
+  - it: should render messaging topology operator deployment with podSecurityContext
+    set:
+      podSecurityContext.enabled: true
+      podSecurityContext.fsGroup: 1001
+      podSecurityContext.fsGroupChangePolicy: Always
+    asserts:
+      - isKind:
+          of: Deployment
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1001
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.securityContext.fsGroupChangePolicy
+          value: Always
+        template: templates/deployment.yaml
+      - notExists:
+          path: spec.template.spec.securityContext.enabled
+        template: templates/deployment.yaml
+
+  - it: should render messaging topology operator deployment with containerSecurityContext
+    set:
+      containerSecurityContext.enabled: true
+      containerSecurityContext.runAsUser: 1001
+      containerSecurityContext.runAsGroup: 1001
+      containerSecurityContext.runAsNonRoot: true
+      containerSecurityContext.readOnlyRootFilesystem: true
+      containerSecurityContext.allowPrivilegeEscalation: false
+    asserts:
+      - isKind:
+          of: Deployment
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 1001
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsGroup
+          value: 1001
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsNonRoot
+          value: true
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+        template: templates/deployment.yaml
+      - notExists:
+          path: spec.template.spec.containers[0].securityContext.enabled
+        template: templates/deployment.yaml

@@ -1,0 +1,374 @@
+# Default values for rabbitmq-topology-operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Deploy the RabbitMQ Messaging Topology Operator.
+enabled: true
+# -- Messaging Topology Operator image
+image:
+  # -- RabbitMQ Messaging Topology Operator image registry
+  registry: docker.io
+  # -- RabbitMQ Messaging Topology Operator image repository
+  repository: rabbitmqoperator/messaging-topology-operator
+  # -- RabbitMQ Messaging Topology Operator image tag. When empty, `.Chart.AppVersion` is used
+  tag: ""
+  # -- Messaging Topology Operator image digest in the form `sha256:...`; overrides `image.tag` when set
+  digest: ""
+  # -- Kubernetes image pull policy
+  # -- RabbitMQ Messaging Topology Operator image pull policy
+  pullPolicy: IfNotPresent
+  # -- RabbitMQ Messaging Topology Operator image pull secrets
+  pullSecrets: []
+# -- Number of old ReplicaSets to retain
+revisionHistoryLimit: 10
+# -- Watch resources across all namespaces
+watchAllNamespaces: true
+# -- List of namespaces to watch when `watchAllNamespaces=false`
+watchNamespaces: []
+# -- Number of RabbitMQ Messaging Topology Operator replicas to deploy
+replicaCount: 1
+# -- Topology spread constraints for Messaging Topology Operator pods
+# -- https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+# -- The value is evaluated as a template
+topologySpreadConstraints: []
+# -- Alternative scheduler
+schedulerName: ""
+# -- Time in seconds to allow the Messaging Topology Operator pod to terminate gracefully
+terminationGracePeriodSeconds: ""
+# -- Run the pod in the host network namespace
+hostNetwork: false
+# -- Alternative DNS policy
+dnsPolicy: "ClusterFirst"
+# -- Health probes for the Messaging Topology Operator container
+livenessProbe:
+  # -- Enable livenessProbe on RabbitMQ Messaging Topology Operator nodes
+  enabled: true
+  # -- Initial delay seconds for livenessProbe
+  initialDelaySeconds: 5
+  # -- Period seconds for livenessProbe
+  periodSeconds: 30
+  # -- Timeout seconds for livenessProbe
+  timeoutSeconds: 5
+  # -- Success threshold for livenessProbe
+  successThreshold: 1
+  # -- Failure threshold for livenessProbe
+  failureThreshold: 5
+readinessProbe:
+  # -- Enable readinessProbe on RabbitMQ Messaging Topology Operator nodes
+  enabled: true
+  # -- Initial delay seconds for readinessProbe
+  initialDelaySeconds: 5
+  # -- Period seconds for readinessProbe
+  periodSeconds: 30
+  # -- Timeout seconds for readinessProbe
+  timeoutSeconds: 5
+  # -- Success threshold for readinessProbe
+  successThreshold: 1
+  # -- Failure threshold for readinessProbe
+  failureThreshold: 5
+startupProbe:
+  # -- Enable startupProbe on RabbitMQ Messaging Topology Operator nodes
+  enabled: false
+  # -- Initial delay seconds for startupProbe
+  initialDelaySeconds: 5
+  # -- Period seconds for startupProbe
+  periodSeconds: 30
+  # -- Timeout seconds for startupProbe
+  timeoutSeconds: 5
+  # -- Success threshold for startupProbe
+  successThreshold: 1
+  # -- Failure threshold for startupProbe
+  failureThreshold: 5
+# -- Custom livenessProbe that overrides the default one
+customLivenessProbe: {}
+# -- Custom readinessProbe that overrides the default one
+customReadinessProbe: {}
+# -- Custom startupProbe that overrides the default one
+customStartupProbe: {}
+# -- Skip creation of the ValidatingWebhookConfiguration
+skipCreateAdmissionWebhookConfig: false
+# -- Name of an existing secret containing the webhook certificates
+existingWebhookCertSecret: ""
+# -- PEM-encoded CA Bundle of the existing secret provided in existingWebhookCertSecret (only if useCertManager=false)
+existingWebhookCertCABundle: ""
+# -- Deploy cert-manager objects (Issuer and Certificate) for webhooks
+useCertManager: false
+# -- Container resource requests and limits.
+resources: {}
+# -- PodDisruptionBudget settings for the Messaging Topology Operator
+pdb:
+  # -- Enable a Pod Disruption Budget creation
+  create: true
+  # -- Minimum number/percentage of pods that should remain scheduled
+  minAvailable: ""
+  # -- Maximum number/percentage of pods that may be made unavailable
+  maxUnavailable: ""
+# -- Pod security context for the Messaging Topology Operator pod
+podSecurityContext:
+  # -- Enable the pod security context for the Messaging Topology Operator
+  enabled: true
+  # -- Set filesystem group change policy
+  fsGroupChangePolicy: Always
+  # -- Set kernel settings using the sysctl interface
+  sysctls: []
+  # -- Set filesystem extra groups
+  supplementalGroups: []
+  # -- Set RabbitMQ Messaging Topology Operator pod's Security Context fsGroup
+  fsGroup: 1001
+# -- Container security context for the Messaging Topology Operator container
+containerSecurityContext:
+  # -- Enable the container security context for the Messaging Topology Operator
+  enabled: true
+  # -- Set SELinux options in container
+  seLinuxOptions: {}
+  # -- Set containers' Security Context runAsUser
+  runAsUser: 1001
+  # -- Set containers' Security Context runAsGroup
+  runAsGroup: 1001
+  # -- Set container's Security Context runAsNonRoot
+  runAsNonRoot: true
+  # -- Set container's Security Context privileged
+  privileged: false
+  # -- Set container's Security Context readOnlyRootFilesystem
+  readOnlyRootFilesystem: true
+  # -- Set container's Security Context allowPrivilegeEscalation
+  allowPrivilegeEscalation: false
+  capabilities:
+    # -- List of capabilities to be dropped
+    drop: ["ALL"]
+  seccompProfile:
+    # -- Set container's Security Context seccomp profile
+    type: "RuntimeDefault"
+# -- Override the default container command
+command: []
+# -- Override the default container arguments
+args: []
+# -- Mount the service account token into the pod
+automountServiceAccountToken: true
+# -- Additional host aliases for Messaging Topology Operator pods
+# -- https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+hostAliases: []
+# -- Additional labels for Messaging Topology Operator pods
+podLabels: {}
+# -- Additional annotations for Messaging Topology Operator pods
+podAnnotations: {}
+# -- Affinity rules for Messaging Topology Operator pods
+affinity: {}
+# -- Node selector for Messaging Topology Operator pods
+nodeSelector: {}
+# -- Tolerations for Messaging Topology Operator pods
+tolerations: []
+# -- Deployment update strategy for the Messaging Topology Operator
+updateStrategy:
+  # -- Can be set to RollingUpdate or OnDelete
+  type: RollingUpdate
+# -- PriorityClass name for Messaging Topology Operator pods
+priorityClassName: ""
+# -- Lifecycle hooks for the Messaging Topology Operator container
+lifecycleHooks: {}
+# -- Metrics port exposed by the Messaging Topology Operator container
+containerPorts:
+  metrics: 8080
+# -- Additional environment variables for the container.
+extraEnvVars: []
+# -- Name of an existing ConfigMap with extra environment variables for the Messaging Topology Operator
+extraEnvVarsCM: ""
+# -- Name of an existing Secret with extra environment variables for the Messaging Topology Operator
+extraEnvVarsSecret: ""
+# -- Additional volumes for Messaging Topology Operator pods
+extraVolumes: []
+# -- Additional volume mounts for the Messaging Topology Operator container
+extraVolumeMounts: []
+# -- Additional sidecar containers for the pod.
+sidecars: []
+# -- Additional init containers for the pod.
+initContainers: []
+# -- Webhook Service settings
+service:
+  # -- Kubernetes Service type for the webhook service
+  type: ClusterIP
+  # -- Service port for the webhook endpoint
+  ports:
+    webhook: 443
+  # -- Node ports to expose.
+  nodePorts:
+    http: ""
+  # -- ClusterIP for the webhook service.
+  clusterIP: ""
+  # -- LoadBalancer IP for the webhook Service
+  loadBalancerIP: ""
+  # -- Additional ports to expose on the webhook Service
+  extraPorts: []
+  # -- Allowed source ranges for the webhook service load balancer.
+  loadBalancerSourceRanges: []
+  # -- External traffic policy for the webhook service.
+  externalTrafficPolicy: Cluster
+  # -- Additional annotations for the webhook Service
+  annotations: {}
+  # -- Session Affinity for Kubernetes service, can be "None" or "ClientIP"
+  # -- If "ClientIP", consecutive client requests will be directed to the same Pod
+  sessionAffinity: None
+  # -- Session affinity configuration.
+  sessionAffinityConfig: {}
+# -- NetworkPolicy settings for the Messaging Topology Operator
+networkPolicy:
+  # -- Create a NetworkPolicy for the Messaging Topology Operator
+  enabled: true
+  # -- List of Kubernetes API server ports to allow
+  kubeAPIServerPorts: [443, 6443, 8443]
+  # -- Allow ingress from arbitrary sources
+  # -- When set to false, ingress is limited to explicitly allowed sources.
+  allowExternal: true
+  # -- Allow unrestricted egress traffic
+  allowExternalEgress: true
+  # -- Add extra ingress rules to the NetworkPolicy
+  # -- extraIngress:
+  # --   - ports:
+  # --       - port: 1234
+  # --     from:
+  # --       - podSelector:
+  # --           - matchLabels:
+  # --               - role: frontend
+  # --       - podSelector:
+  # --           - matchExpressions:
+  # --               - key: role
+  # --                 operator: In
+  # --                 values:
+  # --                   - frontend
+  extraIngress: []
+  # -- Add extra egress rules to the NetworkPolicy
+  # -- extraEgress:
+  # --   - ports:
+  # --       - port: 1234
+  # --     to:
+  # --       - podSelector:
+  # --           - matchLabels:
+  # --               - role: frontend
+  # --       - podSelector:
+  # --           - matchExpressions:
+  # --               - key: role
+  # --                 operator: In
+  # --                 values:
+  # --                   - frontend
+  extraEgress: []
+  # -- Labels to match to allow traffic from other namespaces
+  # -- Pod labels to match to allow traffic from other namespaces
+  ingressNSMatchLabels: {}
+  ingressNSPodMatchLabels: {}
+# -- RBAC configuration
+rbac:
+  # -- Specifies whether RBAC resources should be created
+  create: true
+  # -- ClusterRole configuration.
+  clusterRole:
+    # -- Custom access rules for the ClusterRole.
+    customRules: []
+    # -- Extra access rules appended to the default ClusterRole.
+    extraRules: []
+# -- ServiceAccount configuration
+serviceAccount:
+  # -- Specifies whether a ServiceAccount should be created
+  create: true
+  # -- The name of the ServiceAccount to use.
+  # -- If not set and create is true, a name is generated using the rabbitmq-topology-operator.fullname template
+  name: ""
+  # -- Add annotations
+  annotations: {}
+  # -- Mount API credentials into the service account.
+  automountServiceAccountToken: false
+metrics:
+  # -- Metrics service configuration.
+  service:
+    # -- Create a Service for the Messaging Topology Operator metrics endpoint
+    enabled: false
+    # -- Kubernetes Service type for the Messaging Topology Operator metrics endpoint
+    type: ClusterIP
+    # -- Service port for the Messaging Topology Operator metrics endpoint
+    ports:
+      http: 80
+    # -- Node ports to expose.
+    nodePorts:
+      http: ""
+    # -- ClusterIP for the metrics service.
+    clusterIP: ""
+    # -- Additional ports to expose on the metrics Service
+    extraPorts: []
+    # -- LoadBalancer IP for the Messaging Topology Operator metrics service
+    loadBalancerIP: ""
+    # -- Allowed source ranges for the metrics service load balancer.
+    loadBalancerSourceRanges: []
+    # -- External traffic policy for the metrics service.
+    externalTrafficPolicy: Cluster
+    # -- Additional annotations for the Messaging Topology Operator metrics service
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "{{ .Values.metrics.service.ports.http }}"
+    # -- Session Affinity for Kubernetes service, can be "None" or "ClientIP"
+    # -- If "ClientIP", consecutive client requests will be directed to the same Pod
+    sessionAffinity: None
+    # -- Session affinity configuration.
+    sessionAffinityConfig: {}
+  serviceMonitor:
+    # -- Create a ServiceMonitor for the metrics service.
+    enabled: false
+    # -- Namespace in which to create the ServiceMonitor.
+    namespace: ""
+    # -- Label to use as the Prometheus job name
+    jobLabel: app.kubernetes.io/name
+    # -- Additional selector labels for the ServiceMonitor.
+    selector: {}
+    # -- Honor metrics labels
+    honorLabels: false
+    # -- Timeout for a single scrape request.
+    scrapeTimeout: ""
+    # -- Scrape interval; uses the Prometheus default when empty
+    interval: ""
+    # -- Metric relabeling rules
+    metricRelabelings: []
+    # -- Target relabeling rules
+    relabelings: []
+    # -- Additional labels for the ServiceMonitor
+    labels: {}
+  podMonitor:
+    # -- Create a PodMonitor resource for scraping Messaging Topology Operator metrics
+    enabled: false
+    # -- Label to use as the Prometheus job name
+    jobLabel: app.kubernetes.io/name
+    # -- Namespace in which to create the PodMonitor
+    namespace: ""
+    # -- Honor metrics labels
+    honorLabels: false
+    # -- Additional selector labels for the PodMonitor
+    selector: {}
+    # -- Specify the interval at which metrics should be scraped
+    interval: 30s
+    # -- Specify the timeout after which the scrape is ended
+    scrapeTimeout: 30s
+    # -- Additional labels for the PodMonitor
+    additionalLabels: {}
+    # -- Target relabeling rules
+    relabelings: []
+    # -- Metric relabeling rules
+    metricRelabelings: []
+
+# -- Global image settings shared with this chart.
+global:
+  # -- Global Docker image registry
+  imageRegistry: ""
+  # -- Global Docker registry secret names as an array
+  imagePullSecrets: []
+
+# -- Override the chart name used in resource names
+nameOverride: ""
+# -- Fully override the generated resource names
+fullnameOverride: ""
+# -- Additional labels to add to all rendered resources
+commonLabels: {}
+# -- Additional annotations to add to all rendered resources
+commonAnnotations: {}
+# -- Kubernetes cluster domain name
+clusterDomain: cluster.local
+# -- Enable diagnostic mode in the operator deployment
+diagnosticMode:
+  # -- Enable diagnostic mode (all probes will be disabled)
+  enabled: false

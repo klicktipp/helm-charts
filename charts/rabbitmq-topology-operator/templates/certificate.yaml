@@ -1,0 +1,21 @@
+{{- if and (.Values.enabled) (.Values.useCertManager) (not .Values.existingWebhookCertSecret) }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    {{- include "rmqto.labels" . | nindent 4 }}
+  name: {{ template "rmqto.webhook.fullname" . }}
+  namespace: {{ include "rabbitmq-topology-operator.namespace" . }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "rabbitmq-topology-operator.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  commonName: {{ template "rmqto.webhook.fullname" . }}
+  dnsNames:
+    - {{ printf "%s.%s.svc" (include "rmqto.webhook.fullname" .) (include "rabbitmq-topology-operator.namespace" .) }}
+    - {{ printf "%s.%s.svc.%s" (include "rmqto.webhook.fullname" .) (include "rabbitmq-topology-operator.namespace" .) .Values.clusterDomain }}
+  issuerRef:
+    kind: Issuer
+    name: {{ template "rabbitmq-topology-operator.fullname" . }}
+  secretName: {{ template "rmqto.webhook.fullname" . }}
+{{- end }}
