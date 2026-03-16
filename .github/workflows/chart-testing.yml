@@ -480,7 +480,7 @@ jobs:
             --namespace rabbitmq-cluster-operator \
             --timeout=180s
 
-          kubectl rollout status deployment/rabbitmq-cluster-operator-msgTopologyOperator \
+          kubectl rollout status deployment/rabbitmq-cluster-operator-msgtopologyoperator \
             --namespace rabbitmq-cluster-operator \
             --timeout=180s
 
