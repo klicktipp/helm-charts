@@ -9,6 +9,7 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 ## Source Code
 
 * <https://github.com/klicktipp/helm-charts>
+* <https://www.rabbitmq.com/kubernetes/operator/using-topology-operator>
 * <https://github.com/rabbitmq/messaging-topology-operator>
 
 ## Values
@@ -75,7 +76,6 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
 | containerSecurityContext.capabilities.drop[0] | string | `"ALL"` |  |
 | containerSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
-| fullnameOverride | string | `""` |  |
 | command | list | `[]` |  |
 | args | list | `[]` |  |
 | automountServiceAccountToken | bool | `true` |  |
