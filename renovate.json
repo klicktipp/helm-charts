@@ -3,6 +3,7 @@
   "extends": [
     "config:best-practices"
   ],
+  "semanticCommits": "enabled",
   "ignorePresets": [
     "docker:pinDigests",
     ":pinDevDependencies",
