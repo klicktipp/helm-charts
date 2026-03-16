@@ -1,6 +1,6 @@
 # rabbitmq-topology-operator
 
-![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.18.3](https://img.shields.io/badge/AppVersion-1.18.3-informational?style=flat-square)
+![Version: 0.1.3](https://img.shields.io/badge/Version-0.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.18.3](https://img.shields.io/badge/AppVersion-1.18.3-informational?style=flat-square)
 
 Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 
@@ -59,12 +59,12 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | existingWebhookCertSecret | string | `""` | Name of an existing secret containing the webhook certificates |
 | existingWebhookCertCABundle | string | `""` | PEM-encoded CA Bundle of the existing secret provided in existingWebhookCertSecret (only if useCertManager=false) |
 | useCertManager | bool | `false` | Deploy cert-manager objects (Issuer and Certificate) for webhooks |
-| crdUpgrade | object | `{"annotations":{},"backoffLimit":1,"enabled":true,"image":{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"docker.io","repository":"bitnami/kubectl","tag":"1.32.3"},"resources":{}}` | CRD upgrade hook configuration. |
+| crdUpgrade | object | `{"annotations":{},"backoffLimit":1,"enabled":true,"image":{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"docker.io","repository":"bitnamilegacy/kubectl","tag":"1.32.4"},"resources":{}}` | CRD upgrade hook configuration. |
 | crdUpgrade.enabled | bool | `true` | Enable the pre-upgrade hook that reapplies CRDs with kubectl. |
-| crdUpgrade.image | object | `{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"docker.io","repository":"bitnami/kubectl","tag":"1.32.3"}` | Kubectl image used by the CRD upgrade hook. |
+| crdUpgrade.image | object | `{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"docker.io","repository":"bitnamilegacy/kubectl","tag":"1.32.4"}` | Kubectl image used by the CRD upgrade hook. |
 | crdUpgrade.image.registry | string | `"docker.io"` | Kubectl image registry. |
-| crdUpgrade.image.repository | string | `"bitnami/kubectl"` | Kubectl image repository. |
-| crdUpgrade.image.tag | string | `"1.32.3"` | Kubectl image tag. |
+| crdUpgrade.image.repository | string | `"bitnamilegacy/kubectl"` | Kubectl image repository. |
+| crdUpgrade.image.tag | string | `"1.32.4"` | Kubectl image tag. |
 | crdUpgrade.image.digest | string | `""` | Kubectl image digest in the form `sha256:...`; overrides `crdUpgrade.image.tag` when set. |
 | crdUpgrade.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy for the CRD upgrade hook. |
 | crdUpgrade.image.pullSecrets | list | `[]` | Image pull secrets for the CRD upgrade hook. |
