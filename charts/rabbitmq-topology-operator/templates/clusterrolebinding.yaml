@@ -1,0 +1,44 @@
+{{- if and .Values.enabled .Values.rbac.create }}
+{{- if .Values.watchAllNamespaces }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    {{- include "rmqto.labels" . | nindent 4 }}
+  name: {{ template "rmqto.fullname.namespace" . }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "rabbitmq-topology-operator.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "rmqto.fullname.namespace" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "rmqto.serviceAccountName" . }}
+    namespace: {{ include "rabbitmq-topology-operator.namespace" . }}
+{{- else }}
+{{- $watchNamespaces := default (list (include "rabbitmq-topology-operator.namespace" .)) .Values.watchNamespaces }}
+{{- range $namespace := $watchNamespaces }}
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ printf "%s-%s" (include "rmqto.fullname" $) $namespace | trunc 63 | trimSuffix "-" }}
+  namespace: {{ $namespace | quote }}
+  labels:
+    {{- include "rmqto.labels" $ | nindent 4 }}
+  {{- if $.Values.commonAnnotations }}
+  annotations: {{- include "rabbitmq-topology-operator.tplvalues.render" ( dict "value" $.Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "rmqto.fullname.namespace" $ }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "rmqto.serviceAccountName" $ }}
+    namespace: {{ include "rabbitmq-topology-operator.namespace" $ | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
