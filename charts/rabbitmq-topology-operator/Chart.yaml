@@ -3,7 +3,7 @@ apiVersion: v2
 name: rabbitmq-topology-operator
 description: Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 type: application
-version: 0.1.4
+version: 0.1.5
 # renovate: datasource=docker depName=rabbitmqoperator/messaging-topology-operator
 appVersion: 1.18.3
 home: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator

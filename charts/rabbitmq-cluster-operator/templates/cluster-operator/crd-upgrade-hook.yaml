@@ -1,5 +1,7 @@
 {{- if .Values.clusterOperator.crdUpgrade.enabled }}
-{{- $hookAnnotations := dict "helm.sh/hook" "pre-upgrade" "helm.sh/hook-weight" "-40" "helm.sh/hook-delete-policy" "before-hook-creation,hook-succeeded" -}}
+{{- $configMapHookAnnotations := dict "helm.sh/hook" "pre-upgrade" "helm.sh/hook-weight" "-40" "helm.sh/hook-delete-policy" "before-hook-creation,hook-succeeded" -}}
+{{- $rbacHookAnnotations := dict "helm.sh/hook" "pre-upgrade" "helm.sh/hook-weight" "-30" "helm.sh/hook-delete-policy" "before-hook-creation,hook-succeeded" -}}
+{{- $jobHookAnnotations := dict "helm.sh/hook" "pre-upgrade" "helm.sh/hook-weight" "-20" "helm.sh/hook-delete-policy" "before-hook-creation,hook-succeeded" -}}
 {{- range $path, $_ := .Files.Glob "crds/*.yaml" }}
 ---
 apiVersion: v1
@@ -10,7 +12,7 @@ metadata:
   labels:
     {{- include "rmqco.labels" $ | nindent 4 }}
   annotations:
-    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict $.Values.commonAnnotations) (default dict $.Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+    {{- toYaml (mergeOverwrite (deepCopy $configMapHookAnnotations) (default dict $.Values.commonAnnotations) (default dict $.Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
 data:
   {{ base $path }}: |
 {{ $.Files.Get $path | indent 4 }}
@@ -24,7 +26,7 @@ metadata:
   labels:
     {{- include "rmqco.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+    {{- toYaml (mergeOverwrite (deepCopy $rbacHookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
 automountServiceAccountToken: true
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -34,7 +36,7 @@ metadata:
   labels:
     {{- include "rmqco.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+    {{- toYaml (mergeOverwrite (deepCopy $rbacHookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
 rules:
   - apiGroups:
       - apiextensions.k8s.io
@@ -53,7 +55,7 @@ metadata:
   labels:
     {{- include "rmqco.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+    {{- toYaml (mergeOverwrite (deepCopy $rbacHookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -71,7 +73,7 @@ metadata:
   labels:
     {{- include "rmqco.labels" . | nindent 4 }}
   annotations:
-    {{- toYaml (mergeOverwrite (deepCopy $hookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
+    {{- toYaml (mergeOverwrite (deepCopy $jobHookAnnotations) (default dict .Values.commonAnnotations) (default dict .Values.clusterOperator.crdUpgrade.annotations)) | nindent 4 }}
 spec:
   backoffLimit: {{ .Values.clusterOperator.crdUpgrade.backoffLimit }}
   template:
