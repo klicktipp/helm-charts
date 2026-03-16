@@ -3,7 +3,7 @@ apiVersion: v2
 name: rabbitmq-cluster-operator
 description: Helm chart to deploy the official RabbitMQ Cluster Operator and optionally include the Messaging Topology Operator chart.
 type: application
-version: 0.1.7
+version: 0.1.8
 # renovate: datasource=docker depName=rabbitmqoperator/cluster-operator
 appVersion: 2.19.2
 home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
@@ -24,6 +24,6 @@ annotations:
 dependencies:
   - name: rabbitmq-topology-operator
     alias: msgTopologyOperator
-    version: 0.1.6
+    version: 0.2.0
     repository: file://../rabbitmq-topology-operator
     condition: msgTopologyOperator.enabled

@@ -23,6 +23,6 @@ dependencies:
     version: 1.0.1
     repository: "file://../klicktipp-common"
   - name: rabbitmq-topology
-    version: 1.0.3
+    version: 1.1.0
     repository: "file://../rabbitmq-topology"
     condition: rabbitmq-topology.enabled
