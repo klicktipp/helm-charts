@@ -1,9 +1,9 @@
 dependencies:
 - name: klicktipp-common
-  repository: https://klicktipp.github.io/helm-charts
+  repository: file://../klicktipp-common
   version: 1.0.1
 - name: rabbitmq-topology
-  repository: https://klicktipp.github.io/helm-charts
-  version: 1.0.2
-digest: sha256:41ee7a9c7710dd63cf43353dbe74180a6fbfaa4960745c6312df59cdabdd5e23
-generated: "2026-03-13T13:31:29.287666+01:00"
+  repository: file://../rabbitmq-topology
+  version: 1.0.3
+digest: sha256:849a55926e453408343431343780509b7339c14abb631c1df92cb467c79a85a9
+generated: "2026-03-16T13:08:55.832045+01:00"
