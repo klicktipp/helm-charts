@@ -209,7 +209,8 @@ Return the CRD upgrade hook ConfigMap name for a CRD path.
 */}}
 {{- define "rmqco.crdUpgrade.configMapName" -}}
 {{- $base := trimSuffix ".yaml" (base .path) -}}
-{{- printf "%s-%s" (include "rmqco.crdUpgrade.fullname" .context) $base | lower | trunc 63 | trimSuffix "-" -}}
+{{- $hash := sha256sum .path | trunc 8 -}}
+{{- printf "%.54s-%s" (printf "%s-%s" (include "rmqco.crdUpgrade.fullname" .context) $base | lower) $hash | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 Return the proper RabbitMQ image name.

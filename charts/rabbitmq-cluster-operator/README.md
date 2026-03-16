@@ -17,7 +17,7 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../rabbitmq-topology-operator | msgTopologyOperator(rabbitmq-topology-operator) | 0.1.1 |
+| file://../rabbitmq-topology-operator | msgTopologyOperator(rabbitmq-topology-operator) | 0.1.2 |
 
 ## Values
 
