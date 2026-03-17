@@ -5,7 +5,7 @@
 {{- $queues := (index (index $topologyRabbitmq "topology" | default (dict)) "queues") | default (dict) }}
 
 {{- if and .Values.monitoring.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
-{{- if .Values.monitoring.serviceMonitor.enabled }}
+{{- if .Values.monitoring.rabbitmqServiceMonitor.enabled }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -59,8 +59,9 @@ spec:
       scrapeTimeout: 14s
       tlsConfig:
         insecureSkipVerify: true
-{{- end }} {{/* END if servicemonitor enabled */}}
+{{- end }} {{/* END if RabbitMQ ServiceMonitor enabled */}}
 
+{{- if .Values.monitoring.queueAlerts.enabled }}
 {{- range $name, $queue := $queues }}
 {{- if and ($queue.enabled | default true) ($queue.alert_when_has_messages | default false ) }}
 {{- $queueName := $queue.name | default $name }}
@@ -101,5 +102,6 @@ spec:
 
 {{- end }} {{/* END if alert enabled */}}
 {{- end }} {{/* END queue loop */}}
+{{- end }} {{/* END if queue alerts enabled */}}
 
 {{- end }} {{/* END if monitoring enabled */}}

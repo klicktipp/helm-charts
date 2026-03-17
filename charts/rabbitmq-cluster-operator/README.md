@@ -1,6 +1,6 @@
 # rabbitmq-cluster-operator
 
-![Version: 0.1.14](https://img.shields.io/badge/Version-0.1.14-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.2](https://img.shields.io/badge/AppVersion-2.19.2-informational?style=flat-square)
+![Version: 0.1.15](https://img.shields.io/badge/Version-0.1.15-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.2](https://img.shields.io/badge/AppVersion-2.19.2-informational?style=flat-square)
 
 Helm chart to deploy the official RabbitMQ Cluster Operator and optionally include the Messaging Topology Operator chart.
 
@@ -199,6 +199,18 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 | clusterOperator.metrics.podMonitor.relabelings | list | `[]` | Target relabeling rules |
 | clusterOperator.metrics.podMonitor.metricRelabelings | list | `[]` | Metric relabeling rules |
 | clusterOperator.metrics.podMonitor.params | object | `{}` | HTTP query parameters for scrape requests |
+| monitoring.rabbitmqServiceMonitor.enabled | bool | `false` | Create the upstream-style ServiceMonitor that scrapes RabbitMQ clusters managed by the operator. |
+| monitoring.rabbitmqServiceMonitor.namespace | string | `""` | Namespace in which to create the RabbitMQ ServiceMonitor. |
+| monitoring.rabbitmqServiceMonitor.labels | object | `{}` | Additional labels for the RabbitMQ ServiceMonitor. |
+| monitoring.rabbitmqServiceMonitor.annotations | object | `{}` | Additional annotations for the RabbitMQ ServiceMonitor. |
+| monitoring.clusterOperatorRules.enabled | bool | `false` | Create the upstream RabbitMQ Cluster Operator alert rule for unavailable replicas. |
+| monitoring.clusterOperatorRules.namespace | string | `""` | Namespace in which to create the Cluster Operator PrometheusRule. |
+| monitoring.clusterOperatorRules.labels | object | `{"role":"alert-rules"}` | Additional labels for the Cluster Operator PrometheusRule. |
+| monitoring.clusterOperatorRules.annotations | object | `{}` | Additional annotations for the Cluster Operator PrometheusRule. |
+| monitoring.rabbitmqRules.enabled | bool | `false` | Create the upstream RabbitMQ alert and recording rules bundle. |
+| monitoring.rabbitmqRules.namespace | string | `""` | Namespace in which to create the RabbitMQ PrometheusRules. |
+| monitoring.rabbitmqRules.labels | object | `{"role":"alert-rules"}` | Additional labels for the RabbitMQ PrometheusRules. |
+| monitoring.rabbitmqRules.annotations | object | `{}` | Additional annotations for the RabbitMQ PrometheusRules. |
 | msgTopologyOperator.enabled | bool | `true` | Deploy RabbitMQ Messaging Topology Operator as part of the installation |
 | msgTopologyOperator.commonLabels | object | `{}` | Additional labels to add to all rendered Messaging Topology Operator resources |
 | msgTopologyOperator.commonAnnotations | object | `{}` | Additional annotations to add to all rendered Messaging Topology Operator resources |
