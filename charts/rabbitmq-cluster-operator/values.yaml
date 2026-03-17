@@ -53,9 +53,9 @@ rabbitmqImage:
 # -- RabbitMQ Default User Credential Updater image
 credentialUpdaterImage:
   # -- RabbitMQ Default User Credential Updater image registry
-  registry: docker.io
+  registry: ghcr.io
   # -- RabbitMQ Default User Credential Updater image repository
-  repository: rabbitmqoperator/default-user-credential-updater
+  repository: rabbitmq/default-user-credential-updater
   # -- RabbitMQ Default User Credential Updater image tag (immutable tags are recommended)
   tag: 1.0.12
   # -- Credential updater image digest in the form `sha256:...`; overrides `credentialUpdaterImage.tag` when set

@@ -1,6 +1,6 @@
 # rabbitmq-cluster-operator
 
-![Version: 0.1.10](https://img.shields.io/badge/Version-0.1.10-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.2](https://img.shields.io/badge/AppVersion-2.19.2-informational?style=flat-square)
+![Version: 0.1.11](https://img.shields.io/badge/Version-0.1.11-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.2](https://img.shields.io/badge/AppVersion-2.19.2-informational?style=flat-square)
 
 Helm chart to deploy the official RabbitMQ Cluster Operator and optionally include the Messaging Topology Operator chart.
 
@@ -45,9 +45,9 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 | rabbitmqImage.tag | string | `"4.2.4-management-alpine"` | RabbitMQ Image tag (immutable tags are recommended) |
 | rabbitmqImage.digest | string | `""` | RabbitMQ image digest in the form `sha256:...`; overrides `rabbitmqImage.tag` when set |
 | rabbitmqImage.pullSecrets | list | `[]` | RabbitMQ Image pull secrets |
-| credentialUpdaterImage | object | `{"digest":"","pullSecrets":[],"registry":"docker.io","repository":"rabbitmqoperator/default-user-credential-updater","tag":"1.0.12"}` | RabbitMQ Default User Credential Updater image |
-| credentialUpdaterImage.registry | string | `"docker.io"` | RabbitMQ Default User Credential Updater image registry |
-| credentialUpdaterImage.repository | string | `"rabbitmqoperator/default-user-credential-updater"` | RabbitMQ Default User Credential Updater image repository |
+| credentialUpdaterImage | object | `{"digest":"","pullSecrets":[],"registry":"ghcr.io","repository":"rabbitmq/default-user-credential-updater","tag":"1.0.12"}` | RabbitMQ Default User Credential Updater image |
+| credentialUpdaterImage.registry | string | `"ghcr.io"` | RabbitMQ Default User Credential Updater image registry |
+| credentialUpdaterImage.repository | string | `"rabbitmq/default-user-credential-updater"` | RabbitMQ Default User Credential Updater image repository |
 | credentialUpdaterImage.tag | string | `"1.0.12"` | RabbitMQ Default User Credential Updater image tag (immutable tags are recommended) |
 | credentialUpdaterImage.digest | string | `""` | Credential updater image digest in the form `sha256:...`; overrides `credentialUpdaterImage.tag` when set |
 | credentialUpdaterImage.pullSecrets | list | `[]` | RabbitMQ Default User Credential Updater image pull secrets |
