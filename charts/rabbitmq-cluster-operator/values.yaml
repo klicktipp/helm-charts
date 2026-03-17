@@ -86,11 +86,11 @@ clusterOperator:
     # -- Kubectl image used by the CRD upgrade hook.
     image:
       # -- Kubectl image registry.
-      registry: docker.io
+      registry: ghcr.io
       # -- Kubectl image repository.
-      repository: bitnamilegacy/kubectl
+      repository: klicktipp/kubectl
       # -- Kubectl image tag.
-      tag: 1.32.4
+      tag: 1.35.2
       # -- Kubectl image digest in the form `sha256:...`; overrides `clusterOperator.crdUpgrade.image.tag` when set.
       digest: ""
       # -- Image pull policy for the CRD upgrade hook.
@@ -435,15 +435,15 @@ msgTopologyOperator:
   # -- CRD upgrade hook configuration.
   crdUpgrade:
     # -- Enable the pre-upgrade hook that reapplies CRDs with kubectl.
-    enabled: false
+    enabled: true
     # -- Kubectl image used by the CRD upgrade hook.
     image:
       # -- Kubectl image registry.
-      registry: ""
+      registry: ghcr.io
       # -- Kubectl image repository.
-      repository: ""
+      repository: klicktipp/kubectl
       # -- Kubectl image tag.
-      tag: ""
+      tag: 1.35.2
       # -- Kubectl image digest in the form `sha256:...`; overrides `msgTopologyOperator.crdUpgrade.image.tag` when set.
       digest: ""
       # -- Image pull policy for the CRD upgrade hook.
