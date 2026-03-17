@@ -31,6 +31,16 @@ rules:
       - create
       - get
       - patch
+      - update
+  - apiGroups:
+      - events.k8s.io
+    resources:
+      - events
+    verbs:
+      - create
+      - get
+      - patch
+      - update
   - apiGroups:
       - ""
     resources:
