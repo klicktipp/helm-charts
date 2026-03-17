@@ -1,6 +1,6 @@
 # rabbitmq-cluster-operator
 
-![Version: 0.1.13](https://img.shields.io/badge/Version-0.1.13-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.2](https://img.shields.io/badge/AppVersion-2.19.2-informational?style=flat-square)
+![Version: 0.1.15](https://img.shields.io/badge/Version-0.1.15-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.2](https://img.shields.io/badge/AppVersion-2.19.2-informational?style=flat-square)
 
 Helm chart to deploy the official RabbitMQ Cluster Operator and optionally include the Messaging Topology Operator chart.
 
@@ -212,12 +212,12 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 | msgTopologyOperator.image.digest | string | `""` | Messaging Topology Operator image digest in the form `sha256:...`; overrides `msgTopologyOperator.image.tag` when set |
 | msgTopologyOperator.image.pullPolicy | string | `"IfNotPresent"` | RabbitMQ Messaging Topology Operator image pull policy |
 | msgTopologyOperator.image.pullSecrets | list | `[]` | RabbitMQ Messaging Topology Operator image pull secrets |
-| msgTopologyOperator.crdUpgrade | object | `{"annotations":{},"backoffLimit":1,"enabled":false,"image":{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"","repository":"","tag":""},"resources":{}}` | CRD upgrade hook configuration. |
-| msgTopologyOperator.crdUpgrade.enabled | bool | `false` | Enable the pre-upgrade hook that reapplies CRDs with kubectl. |
-| msgTopologyOperator.crdUpgrade.image | object | `{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"","repository":"","tag":""}` | Kubectl image used by the CRD upgrade hook. |
-| msgTopologyOperator.crdUpgrade.image.registry | string | `""` | Kubectl image registry. |
-| msgTopologyOperator.crdUpgrade.image.repository | string | `""` | Kubectl image repository. |
-| msgTopologyOperator.crdUpgrade.image.tag | string | `""` | Kubectl image tag. |
+| msgTopologyOperator.crdUpgrade | object | `{"annotations":{},"backoffLimit":1,"enabled":true,"image":{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"ghcr.io","repository":"klicktipp/kubectl","tag":"1.35.2"},"resources":{}}` | CRD upgrade hook configuration. |
+| msgTopologyOperator.crdUpgrade.enabled | bool | `true` | Enable the pre-upgrade hook that reapplies CRDs with kubectl. |
+| msgTopologyOperator.crdUpgrade.image | object | `{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"ghcr.io","repository":"klicktipp/kubectl","tag":"1.35.2"}` | Kubectl image used by the CRD upgrade hook. |
+| msgTopologyOperator.crdUpgrade.image.registry | string | `"ghcr.io"` | Kubectl image registry. |
+| msgTopologyOperator.crdUpgrade.image.repository | string | `"klicktipp/kubectl"` | Kubectl image repository. |
+| msgTopologyOperator.crdUpgrade.image.tag | string | `"1.35.2"` | Kubectl image tag. |
 | msgTopologyOperator.crdUpgrade.image.digest | string | `""` | Kubectl image digest in the form `sha256:...`; overrides `msgTopologyOperator.crdUpgrade.image.tag` when set. |
 | msgTopologyOperator.crdUpgrade.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy for the CRD upgrade hook. |
 | msgTopologyOperator.crdUpgrade.image.pullSecrets | list | `[]` | Image pull secrets for the CRD upgrade hook. |

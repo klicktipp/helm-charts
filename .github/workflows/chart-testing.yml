@@ -477,6 +477,19 @@ jobs:
             kubectl wait --for=condition=Established "crd/${crd}" --timeout=180s
           done
 
+          helm upgrade rabbitmq-cluster-operator charts/rabbitmq-cluster-operator \
+            --namespace rabbitmq-cluster-operator \
+            --wait \
+            --timeout=180s
+
+          kubectl rollout status deployment/rabbitmq-cluster-operator \
+            --namespace rabbitmq-cluster-operator \
+            --timeout=180s
+
+          kubectl rollout status deployment/rabbitmq-cluster-operator-msgtopologyoperator \
+            --namespace rabbitmq-cluster-operator \
+            --timeout=180s
+
           helm install rabbitmq-cluster charts/rabbitmq-cluster \
             --namespace rabbitmq-workloads \
             --create-namespace \
