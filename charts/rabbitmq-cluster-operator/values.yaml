@@ -67,9 +67,9 @@ credentialUpdaterImage:
 clusterOperator:
   image:
     # -- RabbitMQ Cluster Operator image registry
-    registry: docker.io
+    registry: ghcr.io
     # -- RabbitMQ Cluster Operator image repository
-    repository: rabbitmqoperator/cluster-operator
+    repository: rabbitmq/cluster-operator
     # -- RabbitMQ Cluster Operator image tag. When empty, `.Chart.AppVersion` is used
     tag: ""
     # -- Cluster Operator image digest in the form `sha256:...`; overrides `clusterOperator.image.tag` when set
@@ -420,9 +420,9 @@ msgTopologyOperator:
   # -- Messaging Topology Operator image
   image:
     # -- RabbitMQ Messaging Topology Operator image registry
-    registry: docker.io
+    registry: ghcr.io
     # -- RabbitMQ Messaging Topology Operator image repository
-    repository: rabbitmqoperator/messaging-topology-operator
+    repository: rabbitmq/messaging-topology-operator
     # -- RabbitMQ Messaging Topology Operator image tag. When empty, the subchart `.Chart.AppVersion` is used
     tag: ""
     # -- Messaging Topology Operator image digest in the form `sha256:...`; overrides `msgTopologyOperator.image.tag` when set
