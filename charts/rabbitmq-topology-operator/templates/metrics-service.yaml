@@ -32,9 +32,9 @@ spec:
   sessionAffinityConfig: {{- include "rabbitmq-topology-operator.tplvalues.render" (dict "value" .Values.metrics.service.sessionAffinityConfig "context" $) | nindent 4 }}
   {{- end }}
   ports:
-    - name: http
+    - name: https
       port: {{ .Values.metrics.service.ports.http }}
-      targetPort: http-metrics
+      targetPort: https-metrics
       protocol: TCP
       {{- if (and (or (eq .Values.metrics.service.type "NodePort") (eq .Values.metrics.service.type "LoadBalancer")) (not (empty .Values.metrics.service.nodePorts.http))) }}
       nodePort: {{ .Values.metrics.service.nodePorts.http }}

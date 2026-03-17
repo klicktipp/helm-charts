@@ -461,18 +461,6 @@ jobs:
             vhosts.rabbitmq.com
           )
 
-          changed_rabbitmq_charts='${{ steps.rabbitmq.outputs.charts }}'
-
-          if grep -qx 'charts/rabbitmq-topology-operator' <<<"${changed_rabbitmq_charts}"; then
-            helm install rabbitmq-topology-operator charts/rabbitmq-topology-operator \
-              --namespace rabbitmq-topology-operator \
-              --create-namespace
-
-            kubectl rollout status deployment/rabbitmq-topology-operator \
-              --namespace rabbitmq-topology-operator \
-              --timeout=180s
-          fi
-
           helm install rabbitmq-cluster-operator charts/rabbitmq-cluster-operator \
             --namespace rabbitmq-cluster-operator \
             --create-namespace

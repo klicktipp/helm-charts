@@ -87,6 +87,8 @@ spec:
           {{- else }}
           args:
             - --metrics-bind-address=:{{ .Values.containerPorts.metrics }}
+            - --leader-elect
+            - --health-probe-bind-address=:{{ .Values.containerPorts.health }}
           {{- end }}
           env:
             - name: OPERATOR_NAMESPACE
@@ -117,32 +119,36 @@ spec:
             - name: https-webhook
               containerPort: 9443
               protocol: TCP
-            - name: http-metrics
+            - name: https-metrics
               containerPort: {{ .Values.containerPorts.metrics }}
+              protocol: TCP
+            - name: http-health
+              containerPort: {{ .Values.containerPorts.health }}
               protocol: TCP
           {{- if not .Values.diagnosticMode.enabled }}
           {{- if .Values.customLivenessProbe }}
           livenessProbe: {{- include "rabbitmq-topology-operator.tplvalues.render" (dict "value" .Values.customLivenessProbe "context" $) | nindent 12 }}
           {{- else if .Values.livenessProbe.enabled }}
           livenessProbe: {{- include "rabbitmq-topology-operator.tplvalues.render" (dict "value" (omit .Values.livenessProbe "enabled") "context" $) | nindent 12 }}
-            tcpSocket:
-              port: http-metrics
+            httpGet:
+              path: /healthz
+              port: http-health
           {{- end }}
           {{- if .Values.customReadinessProbe }}
           readinessProbe: {{- include "rabbitmq-topology-operator.tplvalues.render" (dict "value" .Values.customReadinessProbe "context" $) | nindent 12 }}
           {{- else if .Values.readinessProbe.enabled }}
           readinessProbe: {{- include "rabbitmq-topology-operator.tplvalues.render" (dict "value" (omit .Values.readinessProbe "enabled") "context" $) | nindent 12 }}
             httpGet:
-              path: /metrics
-              port: http-metrics
+              path: /readyz
+              port: http-health
           {{- end }}
           {{- if .Values.customStartupProbe }}
           startupProbe: {{- include "rabbitmq-topology-operator.tplvalues.render" (dict "value" .Values.customStartupProbe "context" $) | nindent 12 }}
           {{- else if .Values.startupProbe.enabled }}
           startupProbe: {{- include "rabbitmq-topology-operator.tplvalues.render" (dict "value" (omit .Values.startupProbe "enabled") "context" $) | nindent 12 }}
             httpGet:
-              path: /metrics
-              port: http-metrics
+              path: /readyz
+              port: http-health
           {{- end }}
           {{- end }}
           {{- if .Values.lifecycleHooks }}
