@@ -404,6 +404,38 @@ clusterOperator:
       metricRelabelings: []
       # -- HTTP query parameters for scrape requests
       params: {}
+
+monitoring:
+  rabbitmqServiceMonitor:
+    # -- Create the upstream-style ServiceMonitor that scrapes RabbitMQ clusters managed by the operator.
+    enabled: false
+    # -- Namespace in which to create the RabbitMQ ServiceMonitor.
+    namespace: ""
+    # -- Additional labels for the RabbitMQ ServiceMonitor.
+    labels: {}
+    # -- Additional annotations for the RabbitMQ ServiceMonitor.
+    annotations: {}
+  clusterOperatorRules:
+    # -- Create the upstream RabbitMQ Cluster Operator alert rule for unavailable replicas.
+    enabled: false
+    # -- Namespace in which to create the Cluster Operator PrometheusRule.
+    namespace: ""
+    # -- Additional labels for the Cluster Operator PrometheusRule.
+    labels:
+      role: alert-rules
+    # -- Additional annotations for the Cluster Operator PrometheusRule.
+    annotations: {}
+  rabbitmqRules:
+    # -- Create the upstream RabbitMQ alert and recording rules bundle.
+    enabled: false
+    # -- Namespace in which to create the RabbitMQ PrometheusRules.
+    namespace: ""
+    # -- Additional labels for the RabbitMQ PrometheusRules.
+    labels:
+      role: alert-rules
+    # -- Additional annotations for the RabbitMQ PrometheusRules.
+    annotations: {}
+
 msgTopologyOperator:
   # -- Deploy RabbitMQ Messaging Topology Operator as part of the installation
   enabled: true
