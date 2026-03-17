@@ -9,7 +9,7 @@ image:
   # -- RabbitMQ Messaging Topology Operator image registry
   registry: ghcr.io
   # -- RabbitMQ Messaging Topology Operator image repository
-  repository: rabbitmqoperator/messaging-topology-operator
+  repository: rabbitmq/messaging-topology-operator
   # -- RabbitMQ Messaging Topology Operator image tag. When empty, `.Chart.AppVersion` is used
   tag: ""
   # -- Messaging Topology Operator image digest in the form `sha256:...`; overrides `image.tag` when set

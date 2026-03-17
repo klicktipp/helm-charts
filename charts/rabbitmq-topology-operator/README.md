@@ -1,6 +1,6 @@
 # rabbitmq-topology-operator
 
-![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.19.0](https://img.shields.io/badge/AppVersion-1.19.0-informational?style=flat-square)
+![Version: 0.2.2](https://img.shields.io/badge/Version-0.2.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.19.0](https://img.shields.io/badge/AppVersion-1.19.0-informational?style=flat-square)
 
 Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 
@@ -17,9 +17,9 @@ Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | enabled | bool | `true` | Deploy the RabbitMQ Messaging Topology Operator. |
-| image | object | `{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"ghcr.io","repository":"rabbitmqoperator/messaging-topology-operator","tag":""}` | Messaging Topology Operator image |
+| image | object | `{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"ghcr.io","repository":"rabbitmq/messaging-topology-operator","tag":""}` | Messaging Topology Operator image |
 | image.registry | string | `"ghcr.io"` | RabbitMQ Messaging Topology Operator image registry |
-| image.repository | string | `"rabbitmqoperator/messaging-topology-operator"` | RabbitMQ Messaging Topology Operator image repository |
+| image.repository | string | `"rabbitmq/messaging-topology-operator"` | RabbitMQ Messaging Topology Operator image repository |
 | image.tag | string | `""` | RabbitMQ Messaging Topology Operator image tag. When empty, `.Chart.AppVersion` is used |
 | image.digest | string | `""` | Messaging Topology Operator image digest in the form `sha256:...`; overrides `image.tag` when set |
 | image.pullPolicy | string | `"IfNotPresent"` | RabbitMQ Messaging Topology Operator image pull policy |
