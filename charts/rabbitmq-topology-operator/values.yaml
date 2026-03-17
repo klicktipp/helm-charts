@@ -100,11 +100,11 @@ crdUpgrade:
   # -- Kubectl image used by the CRD upgrade hook.
   image:
     # -- Kubectl image registry.
-    registry: docker.io
+    registry: ghcr.io
     # -- Kubectl image repository.
-    repository: bitnamilegacy/kubectl
+    repository: klicktipp/kubectl
     # -- Kubectl image tag.
-    tag: 1.32.4
+    tag: 1.35.2
     # -- Kubectl image digest in the form `sha256:...`; overrides `crdUpgrade.image.tag` when set.
     digest: ""
     # -- Image pull policy for the CRD upgrade hook.
