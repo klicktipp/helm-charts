@@ -110,7 +110,7 @@ spec:
             - |
               for file in /crds/*.yaml; do
                 echo "Applying ${file}"
-                kubectl apply -f "${file}"
+                kubectl apply --server-side --force-conflicts -f "${file}"
               done
           {{- if .Values.clusterOperator.crdUpgrade.resources }}
           resources:
