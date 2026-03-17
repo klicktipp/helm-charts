@@ -4,7 +4,7 @@ name: rabbitmq-cluster
 description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (RabbitmqCluster).
 type: application
 version: 3.0.5
-# renovate: datasource=docker depName=rabbitmqoperator/cluster-operator
+# renovate: datasource=docker depName=ghcr.io/rabbitmq/cluster-operator
 appVersion: 2.19.2
 home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
 icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
