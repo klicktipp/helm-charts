@@ -20,4 +20,5 @@ spec:
     matchLabels:
       {{- include "rmqto.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: messaging-topology-operator
+      rabbitmq.com/pdb-target: "true"
 {{- end }}

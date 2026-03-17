@@ -21,4 +21,5 @@ spec:
     matchLabels:
       {{- include "rmqco.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: rabbitmq-operator
+      rabbitmq.com/pdb-target: "true"
 {{- end }}

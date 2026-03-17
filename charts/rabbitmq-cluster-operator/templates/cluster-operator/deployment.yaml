@@ -26,6 +26,7 @@ spec:
       {{- end }}
       labels:
         {{- include "rmqco.labels" . | nindent 8 }}
+        rabbitmq.com/pdb-target: "true"
     spec:
       serviceAccountName: {{ template "rmqco.clusterOperator.serviceAccountName" . }}
       {{- include "rmqco.imagePullSecrets" . | indent 6 }}
