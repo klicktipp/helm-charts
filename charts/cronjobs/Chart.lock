@@ -1,6 +1,6 @@
 dependencies:
-- name: common
-  repository: https://charts.bitnami.com/bitnami
-  version: 2.36.0
-digest: sha256:e630fb2ef09fe7314904df5f38b0a86367e3fff11baec74650fe189e5e546efd
-generated: "2026-02-12T10:04:24.853686421Z"
+- name: klicktipp-common
+  repository: https://klicktipp.github.io/helm-charts
+  version: 1.0.1
+digest: sha256:e67288ead93b2e5621876f9bbff2800da0a1e171f6cdae015b584b09583e25c6
+generated: "2026-03-13T13:34:19.113037+01:00"
