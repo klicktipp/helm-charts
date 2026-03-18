@@ -188,7 +188,7 @@ tests:
 
   - it: should create metrics service when enabled
     set:
-      clusterOperator.metrics.service.enabled: true
+      monitoring.clusterOperator.service.enabled: true
     asserts:
       - isKind:
           of: Service
@@ -206,7 +206,7 @@ tests:
 
   - it: should create podmonitor when enabled
     set:
-      clusterOperator.metrics.podMonitor.enabled: true
+      monitoring.clusterOperator.podMonitor.enabled: true
     asserts:
       - isKind:
           of: PodMonitor
@@ -224,8 +224,8 @@ tests:
 
   - it: should create servicemonitor when enabled
     set:
-      clusterOperator.metrics.serviceMonitor.enabled: true
-      clusterOperator.metrics.service.enabled: true
+      monitoring.clusterOperator.serviceMonitor.enabled: true
+      monitoring.clusterOperator.service.enabled: true
     asserts:
       - isKind:
           of: ServiceMonitor
