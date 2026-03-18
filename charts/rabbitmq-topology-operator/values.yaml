@@ -303,8 +303,8 @@ serviceAccount:
   annotations: {}
   # -- Mount API credentials into the service account.
   automountServiceAccountToken: false
-metrics:
-  # -- Metrics service configuration.
+monitoring:
+  # -- Monitoring resources for the Messaging Topology Operator itself.
   service:
     # -- Create a Service for the Messaging Topology Operator metrics endpoint
     enabled: false
@@ -327,17 +327,14 @@ metrics:
     # -- External traffic policy for the metrics service.
     externalTrafficPolicy: Cluster
     # -- Additional annotations for the Messaging Topology Operator metrics service
-    annotations:
-      prometheus.io/scrape: "true"
-      prometheus.io/port: "{{ .Values.metrics.service.ports.http }}"
-      prometheus.io/scheme: "https"
+    annotations: {}
     # -- Session Affinity for Kubernetes service, can be "None" or "ClientIP"
     # -- If "ClientIP", consecutive client requests will be directed to the same Pod
     sessionAffinity: None
     # -- Session affinity configuration.
     sessionAffinityConfig: {}
   serviceMonitor:
-    # -- Create a ServiceMonitor for the metrics service.
+    # -- Create a ServiceMonitor for the Messaging Topology Operator metrics service.
     enabled: false
     # -- Namespace in which to create the ServiceMonitor.
     namespace: ""
@@ -377,7 +374,7 @@ metrics:
     # -- Specify the timeout after which the scrape is ended
     scrapeTimeout: 30s
     # -- Additional labels for the PodMonitor
-    additionalLabels: {}
+    labels: {}
     # -- Target relabeling rules
     relabelings: []
     # -- Metric relabeling rules

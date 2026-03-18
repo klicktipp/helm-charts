@@ -24,6 +24,6 @@ annotations:
 dependencies:
   - name: rabbitmq-topology-operator
     alias: msgTopologyOperator
-    version: 0.2.5
+    version: 0.2.6
     repository: file://../rabbitmq-topology-operator
     condition: msgTopologyOperator.enabled

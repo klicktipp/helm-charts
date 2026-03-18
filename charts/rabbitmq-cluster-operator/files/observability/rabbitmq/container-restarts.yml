@@ -26,6 +26,6 @@ spec:
               Check the logs of the previous container: `kubectl -n {{ $labels.namespace }} logs {{ $labels.pod }} --previous`
               Check the last state of the container: `kubectl -n {{ $labels.namespace }} get pod {{ $labels.pod }} -o jsonpath='{.status.containerStatuses[].lastState}'`
           labels:
-            rabbitmq_cluster: '{{ $labels.rabbitmq_cluster }}'
+            rabbitmq_cluster: "{{ $labels.rabbitmq_cluster }}"
             rulesgroup: rabbitmq
             severity: warning
