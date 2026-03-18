@@ -1,51 +1,51 @@
-{{- if and .Values.clusterOperator.metrics.serviceMonitor.enabled .Values.clusterOperator.metrics.service.enabled }}
+{{- if and .Values.monitoring.clusterOperator.serviceMonitor.enabled .Values.monitoring.clusterOperator.service.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ template "rmqco.clusterOperator.fullname" . }}
   labels:
     {{- include "rmqco.labels" . | nindent 4 }}
-    {{- $serviceMonitorLabels := default .Values.clusterOperator.metrics.serviceMonitor.additionalLabels .Values.clusterOperator.metrics.serviceMonitor.labels }}
+    {{- $serviceMonitorLabels := .Values.monitoring.clusterOperator.serviceMonitor.labels }}
     {{- if $serviceMonitorLabels }}
     {{- include "rabbitmq-cluster-operator.tplvalues.render" (dict "value" $serviceMonitorLabels "context" $) | nindent 4 }}
     {{- end }}
-  namespace: {{ default (include "rabbitmq-cluster-operator.namespace" .) .Values.clusterOperator.metrics.serviceMonitor.namespace | quote }}
+  namespace: {{ default (include "rabbitmq-cluster-operator.namespace" .) .Values.monitoring.clusterOperator.serviceMonitor.namespace | quote }}
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
-  jobLabel: {{ .Values.clusterOperator.metrics.serviceMonitor.jobLabel }}
+  jobLabel: {{ .Values.monitoring.clusterOperator.serviceMonitor.jobLabel }}
   selector:
     matchLabels:
       {{- include "rmqco.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: rabbitmq-operator
-      {{- if .Values.clusterOperator.metrics.serviceMonitor.selector }}
-      {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.clusterOperator.metrics.serviceMonitor.selector "context" $ ) | nindent 6 }}
+      {{- if .Values.monitoring.clusterOperator.serviceMonitor.selector }}
+      {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.monitoring.clusterOperator.serviceMonitor.selector "context" $ ) | nindent 6 }}
       {{- end }}
   namespaceSelector:
     matchNames:
       - {{ include "rabbitmq-cluster-operator.namespace" . }}
   endpoints:
     - port: http
-      {{- if .Values.clusterOperator.metrics.serviceMonitor.path }}
-      path: {{ .Values.clusterOperator.metrics.serviceMonitor.path }}
+      {{- if .Values.monitoring.clusterOperator.serviceMonitor.path }}
+      path: {{ .Values.monitoring.clusterOperator.serviceMonitor.path }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.serviceMonitor.params }}
-      params: {{ toYaml .Values.clusterOperator.metrics.serviceMonitor.params | nindent 8 }}
+      {{- if .Values.monitoring.clusterOperator.serviceMonitor.params }}
+      params: {{ toYaml .Values.monitoring.clusterOperator.serviceMonitor.params | nindent 8 }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.serviceMonitor.interval }}
-      interval: {{ .Values.clusterOperator.metrics.serviceMonitor.interval }}
+      {{- if .Values.monitoring.clusterOperator.serviceMonitor.interval }}
+      interval: {{ .Values.monitoring.clusterOperator.serviceMonitor.interval }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.serviceMonitor.honorLabels }}
-      honorLabels: {{ .Values.clusterOperator.metrics.serviceMonitor.honorLabels }}
+      {{- if .Values.monitoring.clusterOperator.serviceMonitor.honorLabels }}
+      honorLabels: {{ .Values.monitoring.clusterOperator.serviceMonitor.honorLabels }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.serviceMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ .Values.clusterOperator.metrics.serviceMonitor.scrapeTimeout }}
+      {{- if .Values.monitoring.clusterOperator.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.monitoring.clusterOperator.serviceMonitor.scrapeTimeout }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.serviceMonitor.relabelings }}
-      relabelings: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.clusterOperator.metrics.serviceMonitor.relabelings "context" $) | nindent 8 }}
+      {{- if .Values.monitoring.clusterOperator.serviceMonitor.relabelings }}
+      relabelings: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.monitoring.clusterOperator.serviceMonitor.relabelings "context" $) | nindent 8 }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.serviceMonitor.metricRelabelings }}
-      metricRelabelings: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.clusterOperator.metrics.serviceMonitor.metricRelabelings "context" $) | nindent 8 }}
+      {{- if .Values.monitoring.clusterOperator.serviceMonitor.metricRelabelings }}
+      metricRelabelings: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.monitoring.clusterOperator.serviceMonitor.metricRelabelings "context" $) | nindent 8 }}
       {{- end }}
 {{- end }}

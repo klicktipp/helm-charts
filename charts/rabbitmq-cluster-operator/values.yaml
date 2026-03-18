@@ -321,15 +321,16 @@ clusterOperator:
     annotations: {}
     # -- Mount API credentials into the service account.
     automountServiceAccountToken: false
-  # -- Metrics configuration.
-  metrics:
-    # -- Metrics service configuration.
+monitoring:
+  # -- Monitoring resources for the Cluster Operator itself.
+  clusterOperator:
+    # -- Metrics service configuration for the Cluster Operator.
     service:
-      # -- Create a Service for the Cluster Operator metrics endpoint
+      # -- Create a Service for the Cluster Operator metrics endpoint.
       enabled: false
-      # -- Kubernetes Service type for the Cluster Operator metrics endpoint
+      # -- Kubernetes Service type for the Cluster Operator metrics endpoint.
       type: ClusterIP
-      # -- Service port for the Cluster Operator metrics endpoint
+      # -- Service port for the Cluster Operator metrics endpoint.
       ports:
         http: 80
       # -- Node ports to expose.
@@ -337,73 +338,102 @@ clusterOperator:
         http: ""
       # -- ClusterIP for the metrics service.
       clusterIP: ""
-      # -- Additional ports to expose on the metrics Service
+      # -- Additional ports to expose on the metrics Service.
       extraPorts: []
-      # -- LoadBalancer IP for the Cluster Operator metrics Service
+      # -- LoadBalancer IP for the Cluster Operator metrics Service.
       loadBalancerIP: ""
       # -- Allowed source ranges for the metrics service load balancer.
       loadBalancerSourceRanges: []
       # -- External traffic policy for the metrics service.
       externalTrafficPolicy: Cluster
-      # -- Additional annotations for the metrics Service
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Values.clusterOperator.metrics.service.ports.http }}"
-      # -- Session Affinity for Kubernetes service, can be "None" or "ClientIP"
-      # -- If "ClientIP", consecutive client requests will be directed to the same Pod
+      # -- Additional annotations for the metrics Service.
+      annotations: {}
+      # -- Session Affinity for Kubernetes service, can be "None" or "ClientIP".
       sessionAffinity: None
       # -- Session affinity configuration.
       sessionAffinityConfig: {}
+    # -- ServiceMonitor configuration for the Cluster Operator metrics Service.
     serviceMonitor:
-      # -- Create a ServiceMonitor for the metrics service.
+      # -- Create a ServiceMonitor for the Cluster Operator metrics service.
       enabled: false
       # -- Namespace in which to create the ServiceMonitor.
       namespace: ""
-      # -- Label to use as the Prometheus job name
+      # -- Label to use as the Prometheus job name.
       jobLabel: app.kubernetes.io/name
-      # -- Honor metrics labels
+      # -- Honor metrics labels.
       honorLabels: false
       # -- Additional selector labels for the ServiceMonitor.
       selector: {}
       # -- Timeout for a single scrape request.
       scrapeTimeout: ""
-      # -- Scrape interval; uses the Prometheus default when empty
+      # -- Scrape interval; uses the Prometheus default when empty.
       interval: ""
-      # -- Metric relabeling rules
+      # -- Metric relabeling rules.
       metricRelabelings: []
-      # -- Target relabeling rules
+      # -- Target relabeling rules.
       relabelings: []
-      # -- Additional labels for the ServiceMonitor
+      # -- Additional labels for the ServiceMonitor.
       labels: {}
       # -- Path used by the ServiceMonitor to scrape metrics.
       path: ""
-      # -- HTTP query parameters for scrape requests
+      # -- HTTP query parameters for scrape requests.
       params: {}
+    # -- PodMonitor configuration for scraping Cluster Operator pods directly.
     podMonitor:
-      # -- Create a PodMonitor resource for scraping Cluster Operator metrics
+      # -- Create a PodMonitor resource for scraping Cluster Operator metrics.
       enabled: false
-      # -- Label to use as the Prometheus job name
+      # -- Label to use as the Prometheus job name.
       jobLabel: app.kubernetes.io/name
-      # -- Namespace in which to create the PodMonitor
+      # -- Namespace in which to create the PodMonitor.
       namespace: ""
-      # -- Honor metrics labels
+      # -- Honor metrics labels.
       honorLabels: false
-      # -- Additional selector labels for the PodMonitor
+      # -- Additional selector labels for the PodMonitor.
       selector: {}
-      # -- Specify the interval at which metrics should be scraped
+      # -- Scrape interval for the PodMonitor.
       interval: 30s
-      # -- Specify the timeout after which the scrape is ended
+      # -- Scrape timeout for the PodMonitor.
       scrapeTimeout: 30s
-      # -- Additional labels for the PodMonitor
-      additionalLabels: {}
-      # -- Define HTTP path to scrape for metrics.
+      # -- Additional labels for the PodMonitor.
+      labels: {}
+      # -- HTTP path used to scrape pod metrics.
       path: ""
-      # -- Target relabeling rules
+      # -- Target relabeling rules.
       relabelings: []
-      # -- Metric relabeling rules
+      # -- Metric relabeling rules.
       metricRelabelings: []
-      # -- HTTP query parameters for scrape requests
+      # -- HTTP query parameters for scrape requests.
       params: {}
+  rabbitmqServiceMonitor:
+    # -- Create the upstream-style ServiceMonitor that scrapes RabbitMQ clusters managed by the operator.
+    enabled: false
+    # -- Namespace in which to create the RabbitMQ ServiceMonitor.
+    namespace: ""
+    # -- Additional labels for the RabbitMQ ServiceMonitor.
+    labels: {}
+    # -- Additional annotations for the RabbitMQ ServiceMonitor.
+    annotations: {}
+  clusterOperatorRules:
+    # -- Create the upstream RabbitMQ Cluster Operator alert rule for unavailable replicas.
+    enabled: false
+    # -- Namespace in which to create the Cluster Operator PrometheusRule.
+    namespace: ""
+    # -- Additional labels for the Cluster Operator PrometheusRule.
+    labels:
+      role: alert-rules
+    # -- Additional annotations for the Cluster Operator PrometheusRule.
+    annotations: {}
+  rabbitmqRules:
+    # -- Create the upstream RabbitMQ alert and recording rules bundle.
+    enabled: false
+    # -- Namespace in which to create the RabbitMQ PrometheusRules.
+    namespace: ""
+    # -- Additional labels for the RabbitMQ PrometheusRules.
+    labels:
+      role: alert-rules
+    # -- Additional annotations for the RabbitMQ PrometheusRules.
+    annotations: {}
+
 msgTopologyOperator:
   # -- Deploy RabbitMQ Messaging Topology Operator as part of the installation
   enabled: true
@@ -718,8 +748,8 @@ msgTopologyOperator:
     annotations: {}
     # -- Mount API credentials into the service account.
     automountServiceAccountToken: false
-  # -- Metrics configuration.
-  metrics:
+  # -- Monitoring resources for the embedded Messaging Topology Operator.
+  monitoring:
     # -- Metrics service configuration.
     service:
       # -- Create a Service for the Messaging Topology Operator metrics endpoint
@@ -743,10 +773,7 @@ msgTopologyOperator:
       # -- External traffic policy for the metrics service.
       externalTrafficPolicy: Cluster
       # -- Additional annotations for the Messaging Topology Operator metrics service
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Values.msgTopologyOperator.metrics.service.ports.http }}"
-        prometheus.io/scheme: "https"
+      annotations: {}
       # -- Session Affinity for Kubernetes service, can be "None" or "ClientIP"
       # -- If "ClientIP", consecutive client requests will be directed to the same Pod
       sessionAffinity: None
@@ -792,7 +819,7 @@ msgTopologyOperator:
       # -- Specify the timeout after which the scrape is ended
       scrapeTimeout: 30s
       # -- Additional labels for the PodMonitor
-      additionalLabels: {}
+      labels: {}
       # -- Target relabeling rules
       relabelings: []
       # -- Metric relabeling rules

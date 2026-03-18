@@ -235,7 +235,7 @@ tests:
 
   - it: should create metrics service when enabled
     set:
-      metrics.service.enabled: true
+      monitoring.service.enabled: true
     asserts:
       - isKind:
           of: Service
@@ -261,7 +261,7 @@ tests:
 
   - it: should create podmonitor when enabled
     set:
-      metrics.podMonitor.enabled: true
+      monitoring.podMonitor.enabled: true
     asserts:
       - isKind:
           of: PodMonitor
@@ -287,8 +287,8 @@ tests:
 
   - it: should create servicemonitor when enabled
     set:
-      metrics.serviceMonitor.enabled: true
-      metrics.service.enabled: true
+      monitoring.serviceMonitor.enabled: true
+      monitoring.service.enabled: true
     asserts:
       - isKind:
           of: ServiceMonitor

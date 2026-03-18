@@ -444,6 +444,25 @@ jobs:
           helm dependency build charts/rabbitmq-cluster
           helm dependency build charts/rabbitmq-topology
 
+          rendered_monitoring="$(mktemp)"
+          helm template rabbitmq-cluster-operator charts/rabbitmq-cluster-operator \
+            --set monitoring.clusterOperator.service.enabled=true \
+            --set monitoring.clusterOperator.serviceMonitor.enabled=true \
+            --set monitoring.clusterOperator.podMonitor.enabled=true \
+            --set monitoring.rabbitmqServiceMonitor.enabled=true \
+            --set monitoring.clusterOperatorRules.enabled=true \
+            --set monitoring.rabbitmqRules.enabled=true \
+            --set msgTopologyOperator.monitoring.service.enabled=true \
+            --set msgTopologyOperator.monitoring.serviceMonitor.enabled=true \
+            --set msgTopologyOperator.monitoring.podMonitor.enabled=true \
+            > "${rendered_monitoring}"
+
+          grep -q 'kind: ServiceMonitor' "${rendered_monitoring}"
+          grep -q 'name: rabbitmq-cluster-operator-rabbitmq' "${rendered_monitoring}"
+          grep -q 'name: rabbitmq-cluster-operator-unavailable-replicas' "${rendered_monitoring}"
+          grep -q 'name: rabbitmq-cluster-operator-metrics' "${rendered_monitoring}"
+          grep -q 'name: rabbitmq-cluster-operator-msgtopologyoperator-metrics' "${rendered_monitoring}"
+
           rabbitmq_crds=(
             rabbitmqclusters.rabbitmq.com
             bindings.rabbitmq.com

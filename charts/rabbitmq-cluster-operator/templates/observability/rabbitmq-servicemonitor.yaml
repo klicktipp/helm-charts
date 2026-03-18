@@ -1,0 +1,14 @@
+{{- if .Values.monitoring.rabbitmqServiceMonitor.enabled }}
+{{- $resource := .Files.Get "files/observability/rabbitmq-servicemonitor.yml" | fromYaml }}
+{{- $_ := set $resource.metadata "name" (printf "%s-rabbitmq" (include "rmqco.clusterOperator.fullname" .) | trunc 63 | trimSuffix "-") }}
+{{- $_ := set $resource.metadata "namespace" (default (include "rabbitmq-cluster-operator.namespace" .) .Values.monitoring.rabbitmqServiceMonitor.namespace) }}
+{{- $labels := mergeOverwrite (deepCopy (default dict $resource.metadata.labels)) (default dict .Values.monitoring.rabbitmqServiceMonitor.labels) }}
+{{- if not (empty $labels) }}
+{{- $_ := set $resource.metadata "labels" $labels }}
+{{- end }}
+{{- $annotations := mergeOverwrite (deepCopy (default dict $resource.metadata.annotations)) (default dict .Values.monitoring.rabbitmqServiceMonitor.annotations) }}
+{{- if not (empty $annotations) }}
+{{- $_ := set $resource.metadata "annotations" $annotations }}
+{{- end }}
+{{ toYaml $resource }}
+{{- end }}
