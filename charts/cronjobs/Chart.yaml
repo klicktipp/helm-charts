@@ -19,4 +19,4 @@ annotations:
 dependencies:
   - name: klicktipp-common
     version: 1.0.2
-    repository: "file://../klicktipp-common"
+    repository: "https://klicktipp.github.io/helm-charts"
