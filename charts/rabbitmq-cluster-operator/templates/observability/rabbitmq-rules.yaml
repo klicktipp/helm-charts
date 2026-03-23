@@ -1,0 +1,31 @@
+{{- if .Values.monitoring.rules.rabbitmq.enabled }}
+{{- $namespace := default (include "rabbitmq-cluster-operator.namespace" .) .Values.monitoring.rules.rabbitmq.namespace }}
+{{- $fullname := include "rmqco.clusterOperator.fullname" . }}
+{{- $paths := list
+      "files/observability/rabbitmq/cluster-alarms.yml"
+      "files/observability/rabbitmq/container-restarts.yml"
+      "files/observability/rabbitmq/file-descriptors-near-limit.yml"
+      "files/observability/rabbitmq/high-connection-churn.yml"
+      "files/observability/rabbitmq/insufficient-established-erlang-distribution-links.yml"
+      "files/observability/rabbitmq/low-disk-watermark-predicted.yml"
+      "files/observability/rabbitmq/no-majority-of-nodes-ready.yml"
+      "files/observability/rabbitmq/persistent-volume-missing.yml"
+      "files/observability/rabbitmq/recording-rules.yml"
+      "files/observability/rabbitmq/unroutable-messages.yml"
+}}
+{{- range $path := $paths }}
+{{- $resource := $.Files.Get $path | fromYaml }}
+{{- $_ := set $resource.metadata "name" (printf "%s-%s" $fullname (trimSuffix ".yml" (base $path)) | trunc 63 | trimSuffix "-") }}
+{{- $_ := set $resource.metadata "namespace" $namespace }}
+{{- $labels := mergeOverwrite (deepCopy (default dict $resource.metadata.labels)) (default dict $.Values.monitoring.rules.rabbitmq.labels) }}
+{{- if not (empty $labels) }}
+{{- $_ := set $resource.metadata "labels" $labels }}
+{{- end }}
+{{- $annotations := mergeOverwrite (deepCopy (default dict $resource.metadata.annotations)) (default dict $.Values.monitoring.rules.rabbitmq.annotations) }}
+{{- if not (empty $annotations) }}
+{{- $_ := set $resource.metadata "annotations" $annotations }}
+{{- end }}
+---
+{{ toYaml $resource }}
+{{- end }}
+{{- end }}

@@ -1,24 +1,24 @@
-{{- if and .Values.enabled  .Values.metrics.podMonitor.enabled }}
+{{- if and .Values.enabled  .Values.monitoring.podMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: {{ template "rmqto.fullname" . }}
   labels:
     {{- include "rmqto.labels" . | nindent 4 }}
-    {{- if .Values.metrics.podMonitor.additionalLabels }}
-    {{- include "rabbitmq-topology-operator.tplvalues.render" (dict "value" .Values.metrics.podMonitor.additionalLabels "context" $) | nindent 4 }}
+    {{- if .Values.monitoring.podMonitor.labels }}
+    {{- include "rabbitmq-topology-operator.tplvalues.render" (dict "value" .Values.monitoring.podMonitor.labels "context" $) | nindent 4 }}
     {{- end }}
-  namespace: {{ default (include "rabbitmq-topology-operator.namespace" .) .Values.metrics.podMonitor.namespace | quote }}
+  namespace: {{ default (include "rabbitmq-topology-operator.namespace" .) .Values.monitoring.podMonitor.namespace | quote }}
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "rabbitmq-topology-operator.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
-  jobLabel: {{ .Values.metrics.podMonitor.jobLabel }}
+  jobLabel: {{ .Values.monitoring.podMonitor.jobLabel }}
   selector:
     matchLabels:
       {{- include "rmqto.selectorLabels" . | nindent 6 }}
-      {{- if .Values.metrics.podMonitor.selector }}
-      {{- include "rabbitmq-topology-operator.tplvalues.render" ( dict "value" .Values.metrics.podMonitor.selector "context" $ ) | nindent 6 }}
+      {{- if .Values.monitoring.podMonitor.selector }}
+      {{- include "rabbitmq-topology-operator.tplvalues.render" ( dict "value" .Values.monitoring.podMonitor.selector "context" $ ) | nindent 6 }}
       {{- end }}
       app.kubernetes.io/component: messaging-topology-operator
   namespaceSelector:
@@ -26,25 +26,25 @@ spec:
       - {{ include "rabbitmq-topology-operator.namespace" . }}
   podMetricsEndpoints:
     - port: https-metrics
-      {{- if .Values.metrics.podMonitor.scheme }}
-      scheme: {{ .Values.metrics.podMonitor.scheme }}
+      {{- if .Values.monitoring.podMonitor.scheme }}
+      scheme: {{ .Values.monitoring.podMonitor.scheme }}
       {{- end }}
-      {{- if .Values.metrics.podMonitor.interval }}
-      interval: {{ .Values.metrics.podMonitor.interval }}
+      {{- if .Values.monitoring.podMonitor.interval }}
+      interval: {{ .Values.monitoring.podMonitor.interval }}
       {{- end }}
-      {{- if .Values.metrics.podMonitor.honorLabels }}
-      honorLabels: {{ .Values.metrics.podMonitor.honorLabels }}
+      {{- if .Values.monitoring.podMonitor.honorLabels }}
+      honorLabels: {{ .Values.monitoring.podMonitor.honorLabels }}
       {{- end }}
-      {{- if .Values.metrics.podMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ .Values.metrics.podMonitor.scrapeTimeout }}
+      {{- if .Values.monitoring.podMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.monitoring.podMonitor.scrapeTimeout }}
       {{- end }}
-      {{- if .Values.metrics.podMonitor.relabelings }}
-      relabelings: {{ toYaml .Values.metrics.podMonitor.relabelings | nindent 8 }}
+      {{- if .Values.monitoring.podMonitor.relabelings }}
+      relabelings: {{ toYaml .Values.monitoring.podMonitor.relabelings | nindent 8 }}
       {{- end }}
-      {{- if .Values.metrics.podMonitor.metricRelabelings }}
-      metricRelabelings: {{ toYaml .Values.metrics.podMonitor.metricRelabelings | nindent 8 }}
+      {{- if .Values.monitoring.podMonitor.metricRelabelings }}
+      metricRelabelings: {{ toYaml .Values.monitoring.podMonitor.metricRelabelings | nindent 8 }}
       {{- end }}
-      {{- if .Values.metrics.podMonitor.tlsConfig }}
-      tlsConfig: {{ toYaml .Values.metrics.podMonitor.tlsConfig | nindent 8 }}
+      {{- if .Values.monitoring.podMonitor.tlsConfig }}
+      tlsConfig: {{ toYaml .Values.monitoring.podMonitor.tlsConfig | nindent 8 }}
       {{- end }}
 {{- end }}

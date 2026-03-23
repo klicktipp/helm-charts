@@ -1,24 +1,24 @@
-{{- if .Values.clusterOperator.metrics.podMonitor.enabled }}
+{{- if .Values.monitoring.podMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   labels:
     {{- include "rmqco.labels" . | nindent 4 }}
-    {{- if .Values.clusterOperator.metrics.podMonitor.additionalLabels }}
-    {{- include "rabbitmq-cluster-operator.tplvalues.render" (dict "value" .Values.clusterOperator.metrics.podMonitor.additionalLabels "context" $) | nindent 4 }}
+    {{- if .Values.monitoring.podMonitor.labels }}
+    {{- include "rabbitmq-cluster-operator.tplvalues.render" (dict "value" .Values.monitoring.podMonitor.labels "context" $) | nindent 4 }}
     {{- end }}
   name: {{ printf "%s-metrics" (include "rmqco.clusterOperator.fullname" .) }}
-  namespace: {{ default (include "rabbitmq-cluster-operator.namespace" .) .Values.clusterOperator.metrics.podMonitor.namespace | quote }}
+  namespace: {{ default (include "rabbitmq-cluster-operator.namespace" .) .Values.monitoring.podMonitor.namespace | quote }}
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $) | nindent 4 }}
   {{- end }}
 spec:
-  jobLabel: {{ .Values.clusterOperator.metrics.podMonitor.jobLabel }}
+  jobLabel: {{ .Values.monitoring.podMonitor.jobLabel }}
   selector:
     matchLabels:
       {{- include "rmqco.selectorLabels" . | nindent 6 }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.selector }}
-      {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.clusterOperator.metrics.podMonitor.selector "context" $ ) | nindent 6 }}
+      {{- if .Values.monitoring.podMonitor.selector }}
+      {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.monitoring.podMonitor.selector "context" $ ) | nindent 6 }}
       {{- end }}
       app.kubernetes.io/component: rabbitmq-operator
   namespaceSelector:
@@ -26,41 +26,41 @@ spec:
       - {{ include "rabbitmq-cluster-operator.namespace" . }}
   podMetricsEndpoints:
     - port: http
-      {{- if .Values.clusterOperator.metrics.podMonitor.interval }}
-      interval: {{ .Values.clusterOperator.metrics.podMonitor.interval }}
+      {{- if .Values.monitoring.podMonitor.interval }}
+      interval: {{ .Values.monitoring.podMonitor.interval }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.honorLabels }}
-      honorLabels: {{ .Values.clusterOperator.metrics.podMonitor.honorLabels }}
+      {{- if .Values.monitoring.podMonitor.honorLabels }}
+      honorLabels: {{ .Values.monitoring.podMonitor.honorLabels }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ .Values.clusterOperator.metrics.podMonitor.scrapeTimeout }}
+      {{- if .Values.monitoring.podMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.monitoring.podMonitor.scrapeTimeout }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.relabelings }}
-      relabelings: {{ toYaml .Values.clusterOperator.metrics.podMonitor.relabelings | nindent 8 }}
+      {{- if .Values.monitoring.podMonitor.relabelings }}
+      relabelings: {{ toYaml .Values.monitoring.podMonitor.relabelings | nindent 8 }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.metricRelabelings }}
-      metricRelabelings: {{ toYaml .Values.clusterOperator.metrics.podMonitor.metricRelabelings | nindent 8 }}
+      {{- if .Values.monitoring.podMonitor.metricRelabelings }}
+      metricRelabelings: {{ toYaml .Values.monitoring.podMonitor.metricRelabelings | nindent 8 }}
       {{- end }}
     - port: metrics
-      {{- if .Values.clusterOperator.metrics.podMonitor.path }}
-      path: {{ .Values.clusterOperator.metrics.podMonitor.path }}
+      {{- if .Values.monitoring.podMonitor.path }}
+      path: {{ .Values.monitoring.podMonitor.path }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.params }}
-      params: {{ toYaml .Values.clusterOperator.metrics.podMonitor.params | nindent 8 }}
+      {{- if .Values.monitoring.podMonitor.params }}
+      params: {{ toYaml .Values.monitoring.podMonitor.params | nindent 8 }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.interval }}
-      interval: {{ .Values.clusterOperator.metrics.podMonitor.interval }}
+      {{- if .Values.monitoring.podMonitor.interval }}
+      interval: {{ .Values.monitoring.podMonitor.interval }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.scrapeTimeout }}
-      scrapeTimeout: {{ .Values.clusterOperator.metrics.podMonitor.scrapeTimeout }}
+      {{- if .Values.monitoring.podMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.monitoring.podMonitor.scrapeTimeout }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.honorLabels }}
-      honorLabels: {{ .Values.clusterOperator.metrics.podMonitor.honorLabels }}
+      {{- if .Values.monitoring.podMonitor.honorLabels }}
+      honorLabels: {{ .Values.monitoring.podMonitor.honorLabels }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.relabelings }}
-      relabelings: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.clusterOperator.metrics.podMonitor.relabelings "context" $) | nindent 8 }}
+      {{- if .Values.monitoring.podMonitor.relabelings }}
+      relabelings: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.monitoring.podMonitor.relabelings "context" $) | nindent 8 }}
       {{- end }}
-      {{- if .Values.clusterOperator.metrics.podMonitor.metricRelabelings }}
-      metricRelabelings: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.clusterOperator.metrics.podMonitor.metricRelabelings "context" $) | nindent 8 }}
+      {{- if .Values.monitoring.podMonitor.metricRelabelings }}
+      metricRelabelings: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.monitoring.podMonitor.metricRelabelings "context" $) | nindent 8 }}
       {{- end }}
 {{- end }}

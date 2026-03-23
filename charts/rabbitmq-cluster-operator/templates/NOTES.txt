@@ -47,13 +47,13 @@ Admission webhook:
 {{- end }}
 {{- end }}
 
-{{- if .Values.clusterOperator.metrics.service.enabled }}
+{{- if .Values.monitoring.service.enabled }}
 
 Cluster Operator metrics service:
   kubectl get svc -n {{ include "rabbitmq-cluster-operator.namespace" . }} {{ include "rmqco.clusterOperator.fullname" . }}-metrics
 {{- end }}
 
-{{- if and .Values.msgTopologyOperator.enabled .Values.msgTopologyOperator.metrics.service.enabled }}
+{{- if and .Values.msgTopologyOperator.enabled .Values.msgTopologyOperator.monitoring.service.enabled }}
 
 Messaging Topology Operator metrics service:
   kubectl get svc -n {{ include "rabbitmq-cluster-operator.namespace" . }} -l app.kubernetes.io/component=messaging-topology-operator,app.kubernetes.io/instance={{ .Release.Name }}

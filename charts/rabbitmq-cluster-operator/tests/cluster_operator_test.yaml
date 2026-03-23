@@ -11,6 +11,9 @@ templates:
   - templates/cluster-operator/metrics-service.yaml
   - templates/cluster-operator/podmonitor.yaml
   - templates/cluster-operator/servicemonitor.yaml
+  - templates/observability/rabbitmq-servicemonitor.yaml
+  - templates/observability/cluster-operator-rules.yaml
+  - templates/observability/rabbitmq-rules.yaml
 
 tests:
   - it: should render cluster operator deployment with default values
@@ -185,7 +188,7 @@ tests:
 
   - it: should create metrics service when enabled
     set:
-      clusterOperator.metrics.service.enabled: true
+      monitoring.service.enabled: true
     asserts:
       - isKind:
           of: Service
@@ -203,7 +206,7 @@ tests:
 
   - it: should create podmonitor when enabled
     set:
-      clusterOperator.metrics.podMonitor.enabled: true
+      monitoring.podMonitor.enabled: true
     asserts:
       - isKind:
           of: PodMonitor
@@ -221,8 +224,8 @@ tests:
 
   - it: should create servicemonitor when enabled
     set:
-      clusterOperator.metrics.serviceMonitor.enabled: true
-      clusterOperator.metrics.service.enabled: true
+      monitoring.serviceMonitor.enabled: true
+      monitoring.service.enabled: true
     asserts:
       - isKind:
           of: ServiceMonitor
@@ -231,6 +234,50 @@ tests:
           path: metadata.name
           value: RELEASE-NAME-rabbitmq-cluster-operator
         template: templates/cluster-operator/servicemonitor.yaml
+
+  - it: should not create additional monitoring resources by default
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/observability/rabbitmq-servicemonitor.yaml
+      - hasDocuments:
+          count: 0
+        template: templates/observability/cluster-operator-rules.yaml
+      - hasDocuments:
+          count: 0
+        template: templates/observability/rabbitmq-rules.yaml
+
+  - it: should create the RabbitMQ ServiceMonitor when enabled
+    set:
+      monitoring.rabbitmqServiceMonitor.enabled: true
+    asserts:
+      - isKind:
+          of: ServiceMonitor
+        template: templates/observability/rabbitmq-servicemonitor.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-cluster-operator-rabbitmq
+        template: templates/observability/rabbitmq-servicemonitor.yaml
+
+  - it: should create the Cluster Operator PrometheusRule when enabled
+    set:
+      monitoring.rules.clusterOperator.enabled: true
+    asserts:
+      - isKind:
+          of: PrometheusRule
+        template: templates/observability/cluster-operator-rules.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rabbitmq-cluster-operator-unavailable-replicas
+        template: templates/observability/cluster-operator-rules.yaml
+
+  - it: should create the RabbitMQ PrometheusRules bundle when enabled
+    set:
+      monitoring.rules.rabbitmq.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 10
+        template: templates/observability/rabbitmq-rules.yaml
 
   - it: should render cluster operator deployment with nodeSelector
     set:

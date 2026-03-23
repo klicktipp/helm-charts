@@ -1,0 +1,38 @@
+{{- if .Values.monitoring.rules.clusterOperator.enabled }}
+{{- $fullname := include "rmqco.clusterOperator.fullname" . }}
+{{- $rawOriginal := .Files.Get "files/observability/rabbitmq-cluster-operator/unavailable-replicas.yml" }}
+{{- if not (contains "deployment=\"rabbitmq-cluster-operator\"" $rawOriginal) }}
+{{- fail "unexpected upstream PrometheusRule: missing deployment=\\\"rabbitmq-cluster-operator\\\" in unavailable-replicas.yml" }}
+{{- end }}
+{{- if not (contains "`rabbitmq-cluster-operator`" $rawOriginal) }}
+{{- fail "unexpected upstream PrometheusRule: missing backticked rabbitmq-cluster-operator in unavailable-replicas.yml" }}
+{{- end }}
+{{- if not (contains "describe deployment rabbitmq-cluster-operator" $rawOriginal) }}
+{{- fail "unexpected upstream PrometheusRule: missing describe deployment rabbitmq-cluster-operator in unavailable-replicas.yml" }}
+{{- end }}
+{{- $raw := $rawOriginal }}
+{{- $raw = replace "deployment=\"rabbitmq-cluster-operator\"" (printf "deployment=%q" $fullname) $raw }}
+{{- $raw = replace "`rabbitmq-cluster-operator`" (printf "`%s`" $fullname) $raw }}
+{{- $raw = replace "describe deployment rabbitmq-cluster-operator" (printf "describe deployment %s" $fullname) $raw }}
+{{- if and (ne $fullname "rabbitmq-cluster-operator") (contains "deployment=\"rabbitmq-cluster-operator\"" $raw) }}
+{{- fail "PrometheusRule rewrite incomplete: deployment matcher still points to rabbitmq-cluster-operator" }}
+{{- end }}
+{{- if and (ne $fullname "rabbitmq-cluster-operator") (contains "`rabbitmq-cluster-operator`" $raw) }}
+{{- fail "PrometheusRule rewrite incomplete: deployment annotation text still points to rabbitmq-cluster-operator" }}
+{{- end }}
+{{- if and (ne $fullname "rabbitmq-cluster-operator") (contains "describe deployment rabbitmq-cluster-operator" $raw) }}
+{{- fail "PrometheusRule rewrite incomplete: deployment help text still points to rabbitmq-cluster-operator" }}
+{{- end }}
+{{- $resource := $raw | fromYaml }}
+{{- $_ := set $resource.metadata "name" (printf "%s-unavailable-replicas" $fullname | trunc 63 | trimSuffix "-") }}
+{{- $_ := set $resource.metadata "namespace" (default (include "rabbitmq-cluster-operator.namespace" .) .Values.monitoring.rules.clusterOperator.namespace) }}
+{{- $labels := mergeOverwrite (deepCopy (default dict $resource.metadata.labels)) (default dict .Values.monitoring.rules.clusterOperator.labels) }}
+{{- if not (empty $labels) }}
+{{- $_ := set $resource.metadata "labels" $labels }}
+{{- end }}
+{{- $annotations := mergeOverwrite (deepCopy (default dict $resource.metadata.annotations)) (default dict .Values.monitoring.rules.clusterOperator.annotations) }}
+{{- if not (empty $annotations) }}
+{{- $_ := set $resource.metadata "annotations" $annotations }}
+{{- end }}
+{{ toYaml $resource }}
+{{- end }}
