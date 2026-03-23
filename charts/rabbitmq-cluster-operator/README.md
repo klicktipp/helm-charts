@@ -204,12 +204,12 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 | monitoring.rabbitmqServiceMonitor.namespace | string | `""` | Namespace in which to create the RabbitMQ ServiceMonitor. |
 | monitoring.rabbitmqServiceMonitor.labels | object | `{}` | Additional labels for the RabbitMQ ServiceMonitor. |
 | monitoring.rabbitmqServiceMonitor.annotations | object | `{}` | Additional annotations for the RabbitMQ ServiceMonitor. |
-| monitoring.rules | object | `{"clusterOperator":{"annotations":{},"enabled":false,"labels":{"role":"alert-rules"},"namespace":""},"rabbitmq":{"annotations":{},"enabled":false,"labels":{"role":"alert-rules"},"namespace":""}}` | Upstream RabbitMQ alert and recording rules. |
-| monitoring.rules.clusterOperator.enabled | bool | `false` | Create the upstream RabbitMQ Cluster Operator alert rule for unavailable replicas. |
+| monitoring.rules | object | `{"clusterOperator":{"annotations":{},"enabled":false,"labels":{"role":"alert-rules"},"namespace":""},"rabbitmq":{"annotations":{},"enabled":false,"labels":{"role":"alert-rules"},"namespace":""}}` | Upstream alert and recording rules for the operator itself and for managed RabbitMQ clusters. |
+| monitoring.rules.clusterOperator.enabled | bool | `false` | Create rules for the Cluster Operator deployment itself, for example unavailable operator replicas. |
 | monitoring.rules.clusterOperator.namespace | string | `""` | Namespace in which to create the Cluster Operator PrometheusRule. |
 | monitoring.rules.clusterOperator.labels | object | `{"role":"alert-rules"}` | Additional labels for the Cluster Operator PrometheusRule. |
 | monitoring.rules.clusterOperator.annotations | object | `{}` | Additional annotations for the Cluster Operator PrometheusRule. |
-| monitoring.rules.rabbitmq.enabled | bool | `false` | Create the upstream RabbitMQ alert and recording rules bundle. |
+| monitoring.rules.rabbitmq.enabled | bool | `false` | Create rules for RabbitMQ clusters managed by the operator, including broker health, alarms, storage, and recording rules. |
 | monitoring.rules.rabbitmq.namespace | string | `""` | Namespace in which to create the RabbitMQ PrometheusRules. |
 | monitoring.rules.rabbitmq.labels | object | `{"role":"alert-rules"}` | Additional labels for the RabbitMQ PrometheusRules. |
 | monitoring.rules.rabbitmq.annotations | object | `{}` | Additional annotations for the RabbitMQ PrometheusRules. |

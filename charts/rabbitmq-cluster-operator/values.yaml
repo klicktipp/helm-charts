@@ -411,10 +411,10 @@ monitoring:
     labels: {}
     # -- Additional annotations for the RabbitMQ ServiceMonitor.
     annotations: {}
-  # -- Upstream RabbitMQ alert and recording rules.
+  # -- Upstream alert and recording rules for the operator itself and for managed RabbitMQ clusters.
   rules:
     clusterOperator:
-      # -- Create the upstream RabbitMQ Cluster Operator alert rule for unavailable replicas.
+      # -- Create rules for the Cluster Operator deployment itself, for example unavailable operator replicas.
       enabled: false
       # -- Namespace in which to create the Cluster Operator PrometheusRule.
       namespace: ""
@@ -424,7 +424,7 @@ monitoring:
       # -- Additional annotations for the Cluster Operator PrometheusRule.
       annotations: {}
     rabbitmq:
-      # -- Create the upstream RabbitMQ alert and recording rules bundle.
+      # -- Create rules for RabbitMQ clusters managed by the operator, including broker health, alarms, storage, and recording rules.
       enabled: false
       # -- Namespace in which to create the RabbitMQ PrometheusRules.
       namespace: ""
