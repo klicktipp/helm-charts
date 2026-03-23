@@ -188,7 +188,7 @@ tests:
 
   - it: should create metrics service when enabled
     set:
-      monitoring.clusterOperator.service.enabled: true
+      monitoring.service.enabled: true
     asserts:
       - isKind:
           of: Service
@@ -206,7 +206,7 @@ tests:
 
   - it: should create podmonitor when enabled
     set:
-      monitoring.clusterOperator.podMonitor.enabled: true
+      monitoring.podMonitor.enabled: true
     asserts:
       - isKind:
           of: PodMonitor
@@ -224,8 +224,8 @@ tests:
 
   - it: should create servicemonitor when enabled
     set:
-      monitoring.clusterOperator.serviceMonitor.enabled: true
-      monitoring.clusterOperator.service.enabled: true
+      monitoring.serviceMonitor.enabled: true
+      monitoring.service.enabled: true
     asserts:
       - isKind:
           of: ServiceMonitor
@@ -261,7 +261,7 @@ tests:
 
   - it: should create the Cluster Operator PrometheusRule when enabled
     set:
-      monitoring.clusterOperatorRules.enabled: true
+      monitoring.rules.clusterOperator.enabled: true
     asserts:
       - isKind:
           of: PrometheusRule
@@ -273,7 +273,7 @@ tests:
 
   - it: should create the RabbitMQ PrometheusRules bundle when enabled
     set:
-      monitoring.rabbitmqRules.enabled: true
+      monitoring.rules.rabbitmq.enabled: true
     asserts:
       - hasDocuments:
           count: 10

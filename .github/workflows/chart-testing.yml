@@ -446,12 +446,12 @@ jobs:
 
           rendered_monitoring="$(mktemp)"
           helm template rabbitmq-cluster-operator charts/rabbitmq-cluster-operator \
-            --set monitoring.clusterOperator.service.enabled=true \
-            --set monitoring.clusterOperator.serviceMonitor.enabled=true \
-            --set monitoring.clusterOperator.podMonitor.enabled=true \
+            --set monitoring.service.enabled=true \
+            --set monitoring.serviceMonitor.enabled=true \
+            --set monitoring.podMonitor.enabled=true \
             --set monitoring.rabbitmqServiceMonitor.enabled=true \
-            --set monitoring.clusterOperatorRules.enabled=true \
-            --set monitoring.rabbitmqRules.enabled=true \
+            --set monitoring.rules.clusterOperator.enabled=true \
+            --set monitoring.rules.rabbitmq.enabled=true \
             --set msgTopologyOperator.monitoring.service.enabled=true \
             --set msgTopologyOperator.monitoring.serviceMonitor.enabled=true \
             --set msgTopologyOperator.monitoring.podMonitor.enabled=true \

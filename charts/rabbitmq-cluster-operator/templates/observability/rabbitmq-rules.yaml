@@ -1,5 +1,5 @@
-{{- if .Values.monitoring.rabbitmqRules.enabled }}
-{{- $namespace := default (include "rabbitmq-cluster-operator.namespace" .) .Values.monitoring.rabbitmqRules.namespace }}
+{{- if .Values.monitoring.rules.rabbitmq.enabled }}
+{{- $namespace := default (include "rabbitmq-cluster-operator.namespace" .) .Values.monitoring.rules.rabbitmq.namespace }}
 {{- $fullname := include "rmqco.clusterOperator.fullname" . }}
 {{- $paths := list
       "files/observability/rabbitmq/cluster-alarms.yml"
@@ -17,11 +17,11 @@
 {{- $resource := $.Files.Get $path | fromYaml }}
 {{- $_ := set $resource.metadata "name" (printf "%s-%s" $fullname (trimSuffix ".yml" (base $path)) | trunc 63 | trimSuffix "-") }}
 {{- $_ := set $resource.metadata "namespace" $namespace }}
-{{- $labels := mergeOverwrite (deepCopy (default dict $resource.metadata.labels)) (default dict $.Values.monitoring.rabbitmqRules.labels) }}
+{{- $labels := mergeOverwrite (deepCopy (default dict $resource.metadata.labels)) (default dict $.Values.monitoring.rules.rabbitmq.labels) }}
 {{- if not (empty $labels) }}
 {{- $_ := set $resource.metadata "labels" $labels }}
 {{- end }}
-{{- $annotations := mergeOverwrite (deepCopy (default dict $resource.metadata.annotations)) (default dict $.Values.monitoring.rabbitmqRules.annotations) }}
+{{- $annotations := mergeOverwrite (deepCopy (default dict $resource.metadata.annotations)) (default dict $.Values.monitoring.rules.rabbitmq.annotations) }}
 {{- if not (empty $annotations) }}
 {{- $_ := set $resource.metadata "annotations" $annotations }}
 {{- end }}

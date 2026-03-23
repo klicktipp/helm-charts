@@ -1,4 +1,4 @@
-{{- if .Values.monitoring.clusterOperatorRules.enabled }}
+{{- if .Values.monitoring.rules.clusterOperator.enabled }}
 {{- $fullname := include "rmqco.clusterOperator.fullname" . }}
 {{- $raw := .Files.Get "files/observability/rabbitmq-cluster-operator/unavailable-replicas.yml" }}
 {{- $raw = replace "deployment=\"rabbitmq-cluster-operator\"" (printf "deployment=%q" $fullname) $raw }}
@@ -6,12 +6,12 @@
 {{- $raw = replace "describe deployment rabbitmq-cluster-operator" (printf "describe deployment %s" $fullname) $raw }}
 {{- $resource := $raw | fromYaml }}
 {{- $_ := set $resource.metadata "name" (printf "%s-unavailable-replicas" $fullname | trunc 63 | trimSuffix "-") }}
-{{- $_ := set $resource.metadata "namespace" (default (include "rabbitmq-cluster-operator.namespace" .) .Values.monitoring.clusterOperatorRules.namespace) }}
-{{- $labels := mergeOverwrite (deepCopy (default dict $resource.metadata.labels)) (default dict .Values.monitoring.clusterOperatorRules.labels) }}
+{{- $_ := set $resource.metadata "namespace" (default (include "rabbitmq-cluster-operator.namespace" .) .Values.monitoring.rules.clusterOperator.namespace) }}
+{{- $labels := mergeOverwrite (deepCopy (default dict $resource.metadata.labels)) (default dict .Values.monitoring.rules.clusterOperator.labels) }}
 {{- if not (empty $labels) }}
 {{- $_ := set $resource.metadata "labels" $labels }}
 {{- end }}
-{{- $annotations := mergeOverwrite (deepCopy (default dict $resource.metadata.annotations)) (default dict .Values.monitoring.clusterOperatorRules.annotations) }}
+{{- $annotations := mergeOverwrite (deepCopy (default dict $resource.metadata.annotations)) (default dict .Values.monitoring.rules.clusterOperator.annotations) }}
 {{- if not (empty $annotations) }}
 {{- $_ := set $resource.metadata "annotations" $annotations }}
 {{- end }}

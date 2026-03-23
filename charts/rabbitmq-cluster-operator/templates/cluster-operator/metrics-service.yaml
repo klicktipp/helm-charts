@@ -1,4 +1,4 @@
-{{- if .Values.monitoring.clusterOperator.service.enabled }}
+{{- if .Values.monitoring.service.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -7,42 +7,42 @@ metadata:
     type: metrics
   name: {{ printf "%s-metrics" (include "rmqco.clusterOperator.fullname" .) | trunc 63 | trimSuffix "-" }}
   namespace: {{ include "rabbitmq-cluster-operator.namespace" . }}
-  {{- if or .Values.commonAnnotations .Values.monitoring.clusterOperator.service.annotations }}
-  {{- $annotations := include "rabbitmq-cluster-operator.tplvalues.merge" ( dict "values" ( list .Values.monitoring.clusterOperator.service.annotations .Values.commonAnnotations ) "context" . ) }}
+  {{- if or .Values.commonAnnotations .Values.monitoring.service.annotations }}
+  {{- $annotations := include "rabbitmq-cluster-operator.tplvalues.merge" ( dict "values" ( list .Values.monitoring.service.annotations .Values.commonAnnotations ) "context" . ) }}
   annotations: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" $annotations "context" $) | nindent 4 }}
   {{- end }}
 spec:
-  type: {{ .Values.monitoring.clusterOperator.service.type }}
-  {{- if (or (eq .Values.monitoring.clusterOperator.service.type "LoadBalancer") (eq .Values.monitoring.clusterOperator.service.type "NodePort")) }}
-  externalTrafficPolicy: {{ .Values.monitoring.clusterOperator.service.externalTrafficPolicy | quote }}
+  type: {{ .Values.monitoring.service.type }}
+  {{- if (or (eq .Values.monitoring.service.type "LoadBalancer") (eq .Values.monitoring.service.type "NodePort")) }}
+  externalTrafficPolicy: {{ .Values.monitoring.service.externalTrafficPolicy | quote }}
   {{- end }}
-  {{- if .Values.monitoring.clusterOperator.service.clusterIP }}
-  clusterIP: {{ .Values.monitoring.clusterOperator.service.clusterIP }}
+  {{- if .Values.monitoring.service.clusterIP }}
+  clusterIP: {{ .Values.monitoring.service.clusterIP }}
   {{- end }}
-  {{- if eq .Values.monitoring.clusterOperator.service.type "LoadBalancer" }}
-  loadBalancerSourceRanges: {{ .Values.monitoring.clusterOperator.service.loadBalancerSourceRanges }}
+  {{- if eq .Values.monitoring.service.type "LoadBalancer" }}
+  loadBalancerSourceRanges: {{ .Values.monitoring.service.loadBalancerSourceRanges }}
   {{- end }}
-  {{- if (and (eq .Values.monitoring.clusterOperator.service.type "LoadBalancer") (not (empty .Values.monitoring.clusterOperator.service.loadBalancerIP))) }}
-  loadBalancerIP: {{ .Values.monitoring.clusterOperator.service.loadBalancerIP }}
+  {{- if (and (eq .Values.monitoring.service.type "LoadBalancer") (not (empty .Values.monitoring.service.loadBalancerIP))) }}
+  loadBalancerIP: {{ .Values.monitoring.service.loadBalancerIP }}
   {{- end }}
-  {{- if .Values.monitoring.clusterOperator.service.sessionAffinity }}
-  sessionAffinity: {{ .Values.monitoring.clusterOperator.service.sessionAffinity }}
+  {{- if .Values.monitoring.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.monitoring.service.sessionAffinity }}
   {{- end }}
-  {{- if .Values.monitoring.clusterOperator.service.sessionAffinityConfig }}
-  sessionAffinityConfig: {{- include "rabbitmq-cluster-operator.tplvalues.render" (dict "value" .Values.monitoring.clusterOperator.service.sessionAffinityConfig "context" $) | nindent 4 }}
+  {{- if .Values.monitoring.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- include "rabbitmq-cluster-operator.tplvalues.render" (dict "value" .Values.monitoring.service.sessionAffinityConfig "context" $) | nindent 4 }}
   {{- end }}
   ports:
     - name: http
-      port: {{ .Values.monitoring.clusterOperator.service.ports.http }}
+      port: {{ .Values.monitoring.service.ports.http }}
       targetPort: http
       protocol: TCP
-      {{- if (and (or (eq .Values.monitoring.clusterOperator.service.type "NodePort") (eq .Values.monitoring.clusterOperator.service.type "LoadBalancer")) (not (empty .Values.monitoring.clusterOperator.service.nodePorts.http))) }}
-      nodePort: {{ .Values.monitoring.clusterOperator.service.nodePorts.http }}
-      {{- else if eq .Values.monitoring.clusterOperator.service.type "ClusterIP" }}
+      {{- if (and (or (eq .Values.monitoring.service.type "NodePort") (eq .Values.monitoring.service.type "LoadBalancer")) (not (empty .Values.monitoring.service.nodePorts.http))) }}
+      nodePort: {{ .Values.monitoring.service.nodePorts.http }}
+      {{- else if eq .Values.monitoring.service.type "ClusterIP" }}
       nodePort: null
       {{- end }}
-    {{- if .Values.monitoring.clusterOperator.service.extraPorts }}
-    {{- include "rabbitmq-cluster-operator.tplvalues.render" (dict "value" .Values.monitoring.clusterOperator.service.extraPorts "context" $) | nindent 4 }}
+    {{- if .Values.monitoring.service.extraPorts }}
+    {{- include "rabbitmq-cluster-operator.tplvalues.render" (dict "value" .Values.monitoring.service.extraPorts "context" $) | nindent 4 }}
     {{- end }}
   {{- $podLabels := include "rabbitmq-cluster-operator.tplvalues.merge" ( dict "values" ( list .Values.clusterOperator.podLabels .Values.commonLabels ) "context" . ) }}
   selector:

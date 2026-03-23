@@ -47,7 +47,7 @@ Admission webhook:
 {{- end }}
 {{- end }}
 
-{{- if .Values.monitoring.clusterOperator.service.enabled }}
+{{- if .Values.monitoring.service.enabled }}
 
 Cluster Operator metrics service:
   kubectl get svc -n {{ include "rabbitmq-cluster-operator.namespace" . }} {{ include "rmqco.clusterOperator.fullname" . }}-metrics

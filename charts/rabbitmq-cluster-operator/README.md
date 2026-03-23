@@ -161,58 +161,58 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 | clusterOperator.serviceAccount.name | string | `""` | If not set and create is true, a name is generated using the rabbitmq-cluster-operator.fullname template |
 | clusterOperator.serviceAccount.annotations | object | `{}` | Add annotations |
 | clusterOperator.serviceAccount.automountServiceAccountToken | bool | `false` | Mount API credentials into the service account. |
-| monitoring.clusterOperator | object | `{"podMonitor":{"enabled":false,"honorLabels":false,"interval":"30s","jobLabel":"app.kubernetes.io/name","labels":{},"metricRelabelings":[],"namespace":"","params":{},"path":"","relabelings":[],"scrapeTimeout":"30s","selector":{}},"service":{"annotations":{},"clusterIP":"","enabled":false,"externalTrafficPolicy":"Cluster","extraPorts":[],"loadBalancerIP":"","loadBalancerSourceRanges":[],"nodePorts":{"http":""},"ports":{"http":80},"sessionAffinity":"None","sessionAffinityConfig":{},"type":"ClusterIP"},"serviceMonitor":{"enabled":false,"honorLabels":false,"interval":"","jobLabel":"app.kubernetes.io/name","labels":{},"metricRelabelings":[],"namespace":"","params":{},"path":"","relabelings":[],"scrapeTimeout":"","selector":{}}}` | Monitoring resources for the Cluster Operator itself. |
-| monitoring.clusterOperator.service | object | `{"annotations":{},"clusterIP":"","enabled":false,"externalTrafficPolicy":"Cluster","extraPorts":[],"loadBalancerIP":"","loadBalancerSourceRanges":[],"nodePorts":{"http":""},"ports":{"http":80},"sessionAffinity":"None","sessionAffinityConfig":{},"type":"ClusterIP"}` | Metrics service configuration for the Cluster Operator. |
-| monitoring.clusterOperator.service.enabled | bool | `false` | Create a Service for the Cluster Operator metrics endpoint. |
-| monitoring.clusterOperator.service.type | string | `"ClusterIP"` | Kubernetes Service type for the Cluster Operator metrics endpoint. |
-| monitoring.clusterOperator.service.ports | object | `{"http":80}` | Service port for the Cluster Operator metrics endpoint. |
-| monitoring.clusterOperator.service.nodePorts | object | `{"http":""}` | Node ports to expose. |
-| monitoring.clusterOperator.service.clusterIP | string | `""` | ClusterIP for the metrics service. |
-| monitoring.clusterOperator.service.extraPorts | list | `[]` | Additional ports to expose on the metrics Service. |
-| monitoring.clusterOperator.service.loadBalancerIP | string | `""` | LoadBalancer IP for the Cluster Operator metrics Service. |
-| monitoring.clusterOperator.service.loadBalancerSourceRanges | list | `[]` | Allowed source ranges for the metrics service load balancer. |
-| monitoring.clusterOperator.service.externalTrafficPolicy | string | `"Cluster"` | External traffic policy for the metrics service. |
-| monitoring.clusterOperator.service.annotations | object | `{}` | Additional annotations for the metrics Service. |
-| monitoring.clusterOperator.service.sessionAffinity | string | `"None"` | Session Affinity for Kubernetes service, can be "None" or "ClientIP". |
-| monitoring.clusterOperator.service.sessionAffinityConfig | object | `{}` | Session affinity configuration. |
-| monitoring.clusterOperator.serviceMonitor | object | `{"enabled":false,"honorLabels":false,"interval":"","jobLabel":"app.kubernetes.io/name","labels":{},"metricRelabelings":[],"namespace":"","params":{},"path":"","relabelings":[],"scrapeTimeout":"","selector":{}}` | ServiceMonitor configuration for the Cluster Operator metrics Service. |
-| monitoring.clusterOperator.serviceMonitor.enabled | bool | `false` | Create a ServiceMonitor for the Cluster Operator metrics service. |
-| monitoring.clusterOperator.serviceMonitor.namespace | string | `""` | Namespace in which to create the ServiceMonitor. |
-| monitoring.clusterOperator.serviceMonitor.jobLabel | string | `"app.kubernetes.io/name"` | Label to use as the Prometheus job name. |
-| monitoring.clusterOperator.serviceMonitor.honorLabels | bool | `false` | Honor metrics labels. |
-| monitoring.clusterOperator.serviceMonitor.selector | object | `{}` | Additional selector labels for the ServiceMonitor. |
-| monitoring.clusterOperator.serviceMonitor.scrapeTimeout | string | `""` | Timeout for a single scrape request. |
-| monitoring.clusterOperator.serviceMonitor.interval | string | `""` | Scrape interval; uses the Prometheus default when empty. |
-| monitoring.clusterOperator.serviceMonitor.metricRelabelings | list | `[]` | Metric relabeling rules. |
-| monitoring.clusterOperator.serviceMonitor.relabelings | list | `[]` | Target relabeling rules. |
-| monitoring.clusterOperator.serviceMonitor.labels | object | `{}` | Additional labels for the ServiceMonitor. |
-| monitoring.clusterOperator.serviceMonitor.path | string | `""` | Path used by the ServiceMonitor to scrape metrics. |
-| monitoring.clusterOperator.serviceMonitor.params | object | `{}` | HTTP query parameters for scrape requests. |
-| monitoring.clusterOperator.podMonitor | object | `{"enabled":false,"honorLabels":false,"interval":"30s","jobLabel":"app.kubernetes.io/name","labels":{},"metricRelabelings":[],"namespace":"","params":{},"path":"","relabelings":[],"scrapeTimeout":"30s","selector":{}}` | PodMonitor configuration for scraping Cluster Operator pods directly. |
-| monitoring.clusterOperator.podMonitor.enabled | bool | `false` | Create a PodMonitor resource for scraping Cluster Operator metrics. |
-| monitoring.clusterOperator.podMonitor.jobLabel | string | `"app.kubernetes.io/name"` | Label to use as the Prometheus job name. |
-| monitoring.clusterOperator.podMonitor.namespace | string | `""` | Namespace in which to create the PodMonitor. |
-| monitoring.clusterOperator.podMonitor.honorLabels | bool | `false` | Honor metrics labels. |
-| monitoring.clusterOperator.podMonitor.selector | object | `{}` | Additional selector labels for the PodMonitor. |
-| monitoring.clusterOperator.podMonitor.interval | string | `"30s"` | Scrape interval for the PodMonitor. |
-| monitoring.clusterOperator.podMonitor.scrapeTimeout | string | `"30s"` | Scrape timeout for the PodMonitor. |
-| monitoring.clusterOperator.podMonitor.labels | object | `{}` | Additional labels for the PodMonitor. |
-| monitoring.clusterOperator.podMonitor.path | string | `""` | HTTP path used to scrape pod metrics. |
-| monitoring.clusterOperator.podMonitor.relabelings | list | `[]` | Target relabeling rules. |
-| monitoring.clusterOperator.podMonitor.metricRelabelings | list | `[]` | Metric relabeling rules. |
-| monitoring.clusterOperator.podMonitor.params | object | `{}` | HTTP query parameters for scrape requests. |
+| monitoring.service | object | `{"annotations":{},"clusterIP":"","enabled":false,"externalTrafficPolicy":"Cluster","extraPorts":[],"loadBalancerIP":"","loadBalancerSourceRanges":[],"nodePorts":{"http":""},"ports":{"http":80},"sessionAffinity":"None","sessionAffinityConfig":{},"type":"ClusterIP"}` | Metrics service configuration for the Cluster Operator. |
+| monitoring.service.enabled | bool | `false` | Create a Service for the Cluster Operator metrics endpoint. |
+| monitoring.service.type | string | `"ClusterIP"` | Kubernetes Service type for the Cluster Operator metrics endpoint. |
+| monitoring.service.ports | object | `{"http":80}` | Service port for the Cluster Operator metrics endpoint. |
+| monitoring.service.nodePorts | object | `{"http":""}` | Node ports to expose. |
+| monitoring.service.clusterIP | string | `""` | ClusterIP for the metrics service. |
+| monitoring.service.extraPorts | list | `[]` | Additional ports to expose on the metrics Service. |
+| monitoring.service.loadBalancerIP | string | `""` | LoadBalancer IP for the Cluster Operator metrics Service. |
+| monitoring.service.loadBalancerSourceRanges | list | `[]` | Allowed source ranges for the metrics service load balancer. |
+| monitoring.service.externalTrafficPolicy | string | `"Cluster"` | External traffic policy for the metrics service. |
+| monitoring.service.annotations | object | `{}` | Additional annotations for the metrics Service. |
+| monitoring.service.sessionAffinity | string | `"None"` | Session Affinity for Kubernetes service, can be "None" or "ClientIP". |
+| monitoring.service.sessionAffinityConfig | object | `{}` | Session affinity configuration. |
+| monitoring.serviceMonitor | object | `{"enabled":false,"honorLabels":false,"interval":"","jobLabel":"app.kubernetes.io/name","labels":{},"metricRelabelings":[],"namespace":"","params":{},"path":"","relabelings":[],"scrapeTimeout":"","selector":{}}` | ServiceMonitor configuration for the Cluster Operator metrics Service. |
+| monitoring.serviceMonitor.enabled | bool | `false` | Create a ServiceMonitor for the Cluster Operator metrics service. |
+| monitoring.serviceMonitor.namespace | string | `""` | Namespace in which to create the ServiceMonitor. |
+| monitoring.serviceMonitor.jobLabel | string | `"app.kubernetes.io/name"` | Label to use as the Prometheus job name. |
+| monitoring.serviceMonitor.honorLabels | bool | `false` | Honor metrics labels. |
+| monitoring.serviceMonitor.selector | object | `{}` | Additional selector labels for the ServiceMonitor. |
+| monitoring.serviceMonitor.scrapeTimeout | string | `""` | Timeout for a single scrape request. |
+| monitoring.serviceMonitor.interval | string | `""` | Scrape interval; uses the Prometheus default when empty. |
+| monitoring.serviceMonitor.metricRelabelings | list | `[]` | Metric relabeling rules. |
+| monitoring.serviceMonitor.relabelings | list | `[]` | Target relabeling rules. |
+| monitoring.serviceMonitor.labels | object | `{}` | Additional labels for the ServiceMonitor. |
+| monitoring.serviceMonitor.path | string | `""` | Path used by the ServiceMonitor to scrape metrics. |
+| monitoring.serviceMonitor.params | object | `{}` | HTTP query parameters for scrape requests. |
+| monitoring.podMonitor | object | `{"enabled":false,"honorLabels":false,"interval":"30s","jobLabel":"app.kubernetes.io/name","labels":{},"metricRelabelings":[],"namespace":"","params":{},"path":"","relabelings":[],"scrapeTimeout":"30s","selector":{}}` | PodMonitor configuration for scraping Cluster Operator pods directly. |
+| monitoring.podMonitor.enabled | bool | `false` | Create a PodMonitor resource for scraping Cluster Operator metrics. |
+| monitoring.podMonitor.jobLabel | string | `"app.kubernetes.io/name"` | Label to use as the Prometheus job name. |
+| monitoring.podMonitor.namespace | string | `""` | Namespace in which to create the PodMonitor. |
+| monitoring.podMonitor.honorLabels | bool | `false` | Honor metrics labels. |
+| monitoring.podMonitor.selector | object | `{}` | Additional selector labels for the PodMonitor. |
+| monitoring.podMonitor.interval | string | `"30s"` | Scrape interval for the PodMonitor. |
+| monitoring.podMonitor.scrapeTimeout | string | `"30s"` | Scrape timeout for the PodMonitor. |
+| monitoring.podMonitor.labels | object | `{}` | Additional labels for the PodMonitor. |
+| monitoring.podMonitor.path | string | `""` | HTTP path used to scrape pod metrics. |
+| monitoring.podMonitor.relabelings | list | `[]` | Target relabeling rules. |
+| monitoring.podMonitor.metricRelabelings | list | `[]` | Metric relabeling rules. |
+| monitoring.podMonitor.params | object | `{}` | HTTP query parameters for scrape requests. |
 | monitoring.rabbitmqServiceMonitor.enabled | bool | `false` | Create the upstream-style ServiceMonitor that scrapes RabbitMQ clusters managed by the operator. |
 | monitoring.rabbitmqServiceMonitor.namespace | string | `""` | Namespace in which to create the RabbitMQ ServiceMonitor. |
 | monitoring.rabbitmqServiceMonitor.labels | object | `{}` | Additional labels for the RabbitMQ ServiceMonitor. |
 | monitoring.rabbitmqServiceMonitor.annotations | object | `{}` | Additional annotations for the RabbitMQ ServiceMonitor. |
-| monitoring.clusterOperatorRules.enabled | bool | `false` | Create the upstream RabbitMQ Cluster Operator alert rule for unavailable replicas. |
-| monitoring.clusterOperatorRules.namespace | string | `""` | Namespace in which to create the Cluster Operator PrometheusRule. |
-| monitoring.clusterOperatorRules.labels | object | `{"role":"alert-rules"}` | Additional labels for the Cluster Operator PrometheusRule. |
-| monitoring.clusterOperatorRules.annotations | object | `{}` | Additional annotations for the Cluster Operator PrometheusRule. |
-| monitoring.rabbitmqRules.enabled | bool | `false` | Create the upstream RabbitMQ alert and recording rules bundle. |
-| monitoring.rabbitmqRules.namespace | string | `""` | Namespace in which to create the RabbitMQ PrometheusRules. |
-| monitoring.rabbitmqRules.labels | object | `{"role":"alert-rules"}` | Additional labels for the RabbitMQ PrometheusRules. |
-| monitoring.rabbitmqRules.annotations | object | `{}` | Additional annotations for the RabbitMQ PrometheusRules. |
+| monitoring.rules | object | `{"clusterOperator":{"annotations":{},"enabled":false,"labels":{"role":"alert-rules"},"namespace":""},"rabbitmq":{"annotations":{},"enabled":false,"labels":{"role":"alert-rules"},"namespace":""}}` | Upstream RabbitMQ alert and recording rules. |
+| monitoring.rules.clusterOperator.enabled | bool | `false` | Create the upstream RabbitMQ Cluster Operator alert rule for unavailable replicas. |
+| monitoring.rules.clusterOperator.namespace | string | `""` | Namespace in which to create the Cluster Operator PrometheusRule. |
+| monitoring.rules.clusterOperator.labels | object | `{"role":"alert-rules"}` | Additional labels for the Cluster Operator PrometheusRule. |
+| monitoring.rules.clusterOperator.annotations | object | `{}` | Additional annotations for the Cluster Operator PrometheusRule. |
+| monitoring.rules.rabbitmq.enabled | bool | `false` | Create the upstream RabbitMQ alert and recording rules bundle. |
+| monitoring.rules.rabbitmq.namespace | string | `""` | Namespace in which to create the RabbitMQ PrometheusRules. |
+| monitoring.rules.rabbitmq.labels | object | `{"role":"alert-rules"}` | Additional labels for the RabbitMQ PrometheusRules. |
+| monitoring.rules.rabbitmq.annotations | object | `{}` | Additional annotations for the RabbitMQ PrometheusRules. |
 | msgTopologyOperator.enabled | bool | `true` | Deploy RabbitMQ Messaging Topology Operator as part of the installation |
 | msgTopologyOperator.commonLabels | object | `{}` | Additional labels to add to all rendered Messaging Topology Operator resources |
 | msgTopologyOperator.commonAnnotations | object | `{}` | Additional annotations to add to all rendered Messaging Topology Operator resources |
