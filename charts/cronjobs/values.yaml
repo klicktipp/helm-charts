@@ -6,6 +6,12 @@ fullnameOverride: ""
 # -- Image pull secrets.
 imagePullSecrets: []
 
+# -- Default container image settings for all jobs. Individual jobs can override these values.
+image: {}
+#  repository: alpine
+#  tag: latest
+#  pullPolicy: IfNotPresent
+
 # will create a kubernetes.io/dockerconfigjson secret
 # and add it to imagePullSecrets
 # i.e.

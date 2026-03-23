@@ -1,6 +1,6 @@
 # cronjobs
 
-![Version: 1.6.4](https://img.shields.io/badge/Version-1.6.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 1.6.5](https://img.shields.io/badge/Version-1.6.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 A generic helm cronjob chart for kubernetes
 
@@ -10,12 +10,6 @@ A generic helm cronjob chart for kubernetes
 
 * <https://github.com/klicktipp/helm-charts>
 
-## Requirements
-
-| Repository | Name | Version |
-|------------|------|---------|
-| https://charts.bitnami.com/bitnami | common | 2.36.0 |
-
 ## Values
 
 | Key | Type | Default | Description |
@@ -23,6 +17,7 @@ A generic helm cronjob chart for kubernetes
 | nameOverride | string | `""` | Partially override generated resource names. |
 | fullnameOverride | string | `""` | Fully override generated resource names. |
 | imagePullSecrets | list | `[]` | Image pull secrets. |
+| image | object | `{}` | Default container image settings for all jobs. Individual jobs can override these values. |
 | secrets | object | `{}` | Configure secrets. |
 | customConfigMap | string | `nil` | Set customConfigMap. |
 | configMaps | object | `{}` | Configure configMaps. |
