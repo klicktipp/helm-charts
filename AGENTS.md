@@ -6,6 +6,8 @@ Whenever you make a user-visible change to a chart, bump the chart version in th
 
 Keep version bumps scoped to the charts that actually changed. Do not bump unrelated charts.
 
+Do not bump chart versions on feature branches. A version may already have been bumped for unreleased work, so defer version bumps until the branch or release flow where the chart is actually being prepared for publication.
+
 ## README consistency
 
 Whenever you change chart values files (`values.yaml` or other values override files) or bump chart versions in `Chart.yaml`, run `scripts/check-readme-consistency.sh` before finishing.
