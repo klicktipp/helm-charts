@@ -10,12 +10,6 @@ A generic helm cronjob chart for kubernetes
 
 * <https://github.com/klicktipp/helm-charts>
 
-## Requirements
-
-| Repository | Name | Version |
-|------------|------|---------|
-| https://klicktipp.github.io/helm-charts | klicktipp-common | 1.0.2 |
-
 ## Values
 
 | Key | Type | Default | Description |
