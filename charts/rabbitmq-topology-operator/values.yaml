@@ -104,7 +104,7 @@ crdUpgrade:
     # -- Kubectl image repository.
     repository: klicktipp/kubectl
     # -- Kubectl image tag.
-    tag: 1.35.2
+    tag: 1.35.3
     # -- Kubectl image digest in the form `sha256:...`; overrides `crdUpgrade.image.tag` when set.
     digest: ""
     # -- Image pull policy for the CRD upgrade hook.
