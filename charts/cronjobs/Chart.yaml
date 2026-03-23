@@ -18,5 +18,5 @@ annotations:
       url: https://hub.docker.com/_/busybox
 dependencies:
   - name: klicktipp-common
-    version: 1.0.1
-    repository: https://klicktipp.github.io/helm-charts
+    version: 1.0.2
+    repository: "file://../klicktipp-common"

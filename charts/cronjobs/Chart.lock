@@ -1,6 +1,6 @@
 dependencies:
 - name: klicktipp-common
-  repository: https://klicktipp.github.io/helm-charts
-  version: 1.0.1
-digest: sha256:e67288ead93b2e5621876f9bbff2800da0a1e171f6cdae015b584b09583e25c6
-generated: "2026-03-13T13:34:19.113037+01:00"
+  repository: file://../klicktipp-common
+  version: 1.0.2
+digest: sha256:ed4163e72f3b9f0e40df513d90de7104dd81eb0cfb61889e909a584882c001ef
+generated: "2026-03-23T08:09:13.027019+01:00"
