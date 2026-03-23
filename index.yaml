@@ -454,6 +454,16 @@ entries:
   klicktipp-common:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2026-03-23T07:12:51.54918582Z"
+    description: A Helm library chart for KlickTipp common templates
+    digest: a30aa59066981f7b82adff466bec58ec0b0d689928dc4f6357376cf88377c3f0
+    name: klicktipp-common
+    type: library
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/klicktipp-common-1.0.2/klicktipp-common-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2026-03-13T12:26:39.101915425Z"
     description: A Helm library chart for KlickTipp common templates
     digest: 72169bb1bcbce13c16c473c7d71577938b9f9696e563614e9fd2008a3f862ec6
@@ -2755,4 +2765,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-03-17T17:54:17.602321763Z"
+generated: "2026-03-23T07:12:51.549454211Z"
