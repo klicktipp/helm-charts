@@ -1,6 +1,6 @@
 # rabbitmq-cluster
 
-![Version: 3.0.5](https://img.shields.io/badge/Version-3.0.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.2](https://img.shields.io/badge/AppVersion-2.19.2-informational?style=flat-square)
+![Version: 3.0.6](https://img.shields.io/badge/Version-3.0.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.2](https://img.shields.io/badge/AppVersion-2.19.2-informational?style=flat-square)
 
 Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (RabbitmqCluster).
 
@@ -29,7 +29,7 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | ingress.hosts | list | `[{"host":"chart-example.local","paths":[{"path":"/","pathType":"Prefix"}]}]` | Ingress host/path rules. |
 | ingress.tls | list | `[]` | TLS configuration entries for Ingress. |
 | monitoring.enabled | bool | `false` | Enable monitoring resources created by this chart. |
-| monitoring.serviceMonitor.enabled | bool | `false` | Create a ServiceMonitor (requires Prometheus Operator CRDs). |
+| monitoring.queueAlerts.enabled | bool | `false` | Create queue-specific PrometheusRule alerts from `rabbitmq-topology.rabbitmq.topology.queues`. |
 | terminationGracePeriodSeconds | int | `600` | Pod termination grace period in seconds for RabbitMQ pods. |
 | extraObjects | list | `[]` | Additional raw Kubernetes objects rendered as-is via `tpl`. |
 | rabbitmq.cluster.enabled | bool | `true` | Create the `RabbitmqCluster` resource. |

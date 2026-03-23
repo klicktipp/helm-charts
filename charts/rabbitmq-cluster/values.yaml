@@ -37,8 +37,8 @@ ingress:
 monitoring:
   # -- Enable monitoring resources created by this chart.
   enabled: false
-  serviceMonitor:
-    # -- Create a ServiceMonitor (requires Prometheus Operator CRDs).
+  queueAlerts:
+    # -- Create queue-specific PrometheusRule alerts from `rabbitmq-topology.rabbitmq.topology.queues`.
     enabled: false
 
 # -- Pod termination grace period in seconds for RabbitMQ pods.
