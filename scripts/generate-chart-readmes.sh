@@ -7,6 +7,6 @@ if ! command -v helm-docs >/dev/null 2>&1; then
   exit 1
 fi
 
-helm-docs --chart-search-root charts --sort-values-order=file
+helm-docs --chart-search-root charts --sort-values-order=file --skip-version-footer
 
 scripts/inject-readme-examples.sh charts

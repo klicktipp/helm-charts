@@ -87,4 +87,3 @@ Creates a postgres cluster using the Zalando Postgres operator and local storage
 | postgres_cluster.resources | object | `{}` | Container resource requests and limits. |
 | postgres_cluster.nodeAffinity | object | `{}` | Set postgres_cluster.nodeAffinity. |
 | postgres_cluster.tolerations | list | `[]` | Tolerations for pod scheduling. |
-
