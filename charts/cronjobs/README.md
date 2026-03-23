@@ -14,7 +14,7 @@ A generic helm cronjob chart for kubernetes
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../klicktipp-common | klicktipp-common | 1.0.2 |
+| https://klicktipp.github.io/helm-charts | klicktipp-common | 1.0.2 |
 
 ## Values
 
