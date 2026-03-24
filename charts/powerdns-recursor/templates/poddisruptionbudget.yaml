@@ -1,5 +1,5 @@
 {{- $pdb := .Values.podDisruptionBudget -}}
-{{- if and (kindIs "map" $pdb) (or (hasKey $pdb "maxUnavailable") (hasKey $pdb "minAvailable")) }}
+{{- if and (eq (include "pdns.workloadType" .) "Deployment") (kindIs "map" $pdb) (or (hasKey $pdb "maxUnavailable") (hasKey $pdb "minAvailable")) }}
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

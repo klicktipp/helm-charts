@@ -1,0 +1,153 @@
+suite: powerdns-recursor-tests
+templates:
+  - templates/configmaps.yaml
+  - templates/deployment.yaml
+  - templates/daemonset.yaml
+  - templates/service.yaml
+  - templates/poddisruptionbudget.yaml
+
+tests:
+  - it: should render a deployment by default
+    asserts:
+      - isKind:
+          of: Deployment
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.replicas
+          value: 1
+        template: templates/deployment.yaml
+      - hasDocuments:
+          count: 0
+        template: templates/daemonset.yaml
+      - notExists:
+          path: spec.internalTrafficPolicy
+        template: templates/service.yaml
+      - equal:
+          path: data["recursor.yml"]
+          value: |
+            dnssec:
+              validation: process
+            incoming:
+              listen:
+              - 0.0.0.0
+              port: 5353
+            logging:
+              loglevel: 6
+              quiet: true
+            outgoing:
+              source_address:
+              - 0.0.0.0
+            recordcache:
+              refresh_on_ttl_perc: 10
+            recursor:
+              config_dir: /etc/powerdns
+              setgid: pdns
+              setuid: pdns
+              socket_mode: "660"
+            webservice:
+              webserver: false
+        template: templates/configmaps.yaml
+
+  - it: should render a daemonset when workload type is set
+    set:
+      workload.type: DaemonSet
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/deployment.yaml
+      - isKind:
+          of: DaemonSet
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.updateStrategy.type
+          value: RollingUpdate
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.updateStrategy.rollingUpdate.maxUnavailable
+          value: 0
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.updateStrategy.rollingUpdate.maxSurge
+          value: 1
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.minReadySeconds
+          value: 5
+        template: templates/daemonset.yaml
+
+  - it: should default service internal traffic policy to local for daemonsets
+    set:
+      workload.type: DaemonSet
+    asserts:
+      - equal:
+          path: spec.internalTrafficPolicy
+          value: Local
+        template: templates/service.yaml
+
+  - it: should allow overriding service internal traffic policy for daemonsets
+    set:
+      workload.type: DaemonSet
+      service.internalTrafficPolicy: Cluster
+    asserts:
+      - equal:
+          path: spec.internalTrafficPolicy
+          value: Cluster
+        template: templates/service.yaml
+
+  - it: should keep the configured clusterIP on the primary service in daemonset mode
+    set:
+      workload.type: DaemonSet
+      service.clusterIP: 10.43.0.53
+    asserts:
+      - equal:
+          path: spec.clusterIP
+          value: 10.43.0.53
+        template: templates/service.yaml
+
+  - it: should render a pod disruption budget only for deployments
+    set:
+      podDisruptionBudget.maxUnavailable: 1
+    asserts:
+      - isKind:
+          of: PodDisruptionBudget
+        template: templates/poddisruptionbudget.yaml
+      - equal:
+          path: spec.maxUnavailable
+          value: 1
+        template: templates/poddisruptionbudget.yaml
+
+  - it: should not render a pod disruption budget for daemonsets
+    set:
+      workload.type: DaemonSet
+      podDisruptionBudget.maxUnavailable: 1
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/poddisruptionbudget.yaml
+
+  - it: should not apply shortcut pod anti-affinity in daemonset mode
+    set:
+      workload.type: DaemonSet
+      podAntiAffinity.type: hard
+    asserts:
+      - notExists:
+          path: spec.template.spec.affinity
+        template: templates/daemonset.yaml
+
+  - it: should keep explicit affinity in daemonset mode
+    set:
+      workload.type: DaemonSet
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+    asserts:
+      - equal:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key
+          value: kubernetes.io/os
+        template: templates/daemonset.yaml
