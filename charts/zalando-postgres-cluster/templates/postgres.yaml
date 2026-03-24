@@ -1,7 +1,7 @@
 ---
-{{- $tls := default dict .Values.postgres_cluster.tls -}}
-{{- $clusterName := .Values.postgres_cluster.name | default (include "zalando-postgres-cluster.fullname" .) | trunc 63 | trimSuffix "-" -}}
-{{- $tlsSecretName := $tls.secretName | default (printf "%s-tls" $clusterName | trunc 63 | trimSuffix "-") -}}
+{{ $tls := default dict .Values.postgres_cluster.tls }}
+{{ $clusterName := .Values.postgres_cluster.name | default (include "zalando-postgres-cluster.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{ $tlsSecretName := $tls.secretName | default (printf "%s-tls" $clusterName | trunc 63 | trimSuffix "-") }}
 apiVersion: acid.zalan.do/v1
 kind: postgresql
 metadata:

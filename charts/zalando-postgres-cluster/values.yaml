@@ -157,9 +157,9 @@ postgres_cluster:
     # -- Set postgres_cluster.tls.organization.
     organization: "ACME INC."
     # -- Set postgres_cluster.tls.duration.
-    duration: "2160h" # 90d
+    duration: "2160h"  # 90d
     # -- Set postgres_cluster.tls.renewBefore.
-    renewBefore: "360h" # 15d
+    renewBefore: "360h"  # 15d
     # -- Set postgres_cluster.tls.issuerRef.
     issuerRef:
       # -- Set postgres_cluster.tls.issuerRef.name.
