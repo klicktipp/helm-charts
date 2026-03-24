@@ -16,10 +16,11 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| replicaCount | int | `1` | Number of pod replicas. |
-| revisionHistoryLimit | int | `10` | Number of old ReplicaSets to retain. |
+| replicaCount | int | `1` | Number of pod replicas. Ignored in DaemonSet mode. |
+| revisionHistoryLimit | int | `10` | Number of old ReplicaSets to retain. Used by both Deployment and DaemonSet histories. |
 | workload | object | `{"daemonSet":{"minReadySeconds":5,"updateStrategy":{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}},"type":"Deployment"}` | Workload configuration. |
 | workload.type | string | `"Deployment"` | Workload kind. Supported values: Deployment, DaemonSet. |
+| workload.daemonSet.updateStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}` | DaemonSet-only settings. Ignored when workload.type=Deployment. |
 | workload.daemonSet.updateStrategy.type | string | `"RollingUpdate"` | DaemonSet update strategy type. |
 | workload.daemonSet.updateStrategy.rollingUpdate.maxUnavailable | int | `0` | Keep the existing pod on a node until a surged replacement is ready. |
 | workload.daemonSet.updateStrategy.rollingUpdate.maxSurge | int | `1` | Allow one extra pod per node during rolling updates to avoid local DNS gaps. |
@@ -47,7 +48,7 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | affinity | object | `{}` | Native affinity rules. If set, this overrides podAntiAffinity. |
 | nodeSelector | object | `{}` | Node selector for scheduling. |
 | tolerations | list | `[]` | Tolerations for scheduling. |
-| podDisruptionBudget | object | `{}` | PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 } |
+| podDisruptionBudget | object | `{}` | PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 }. Ignored in DaemonSet mode. |
 | service | object | `{"annotations":{},"clusterIP":"","headless":{"annotations":{},"enabled":false,"includeDnsPorts":true,"publishNotReadyAddresses":false},"internalTrafficPolicy":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"}` | Service configuration. |
 | service.type | string | `"ClusterIP"` | Service type. |
 | service.clusterIP | string | `""` | Optional fixed ClusterIP for the primary Service. |

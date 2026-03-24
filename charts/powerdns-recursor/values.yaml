@@ -3,10 +3,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# -- Number of pod replicas.
+# -- Number of pod replicas. Ignored in DaemonSet mode.
 replicaCount: 1
 
-# -- Number of old ReplicaSets to retain.
+# -- Number of old ReplicaSets to retain. Used by both Deployment and DaemonSet histories.
 revisionHistoryLimit: 10
 
 # -- Workload configuration.
@@ -14,6 +14,7 @@ workload:
   # -- Workload kind. Supported values: Deployment, DaemonSet.
   type: Deployment
   daemonSet:
+    # -- DaemonSet-only settings. Ignored when workload.type=Deployment.
     updateStrategy:
       # -- DaemonSet update strategy type.
       type: RollingUpdate
@@ -84,7 +85,7 @@ nodeSelector: {}
 # -- Tolerations for scheduling.
 tolerations: []
 
-# -- PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 }
+# -- PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 }. Ignored in DaemonSet mode.
 podDisruptionBudget: {}
 
 # -- Service configuration.
