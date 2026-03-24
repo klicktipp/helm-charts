@@ -44,7 +44,7 @@ rabbitmqImage:
   # -- RabbitMQ Image repository
   repository: library/rabbitmq
   # -- RabbitMQ Image tag (immutable tags are recommended)
-  tag: 4.2.4-management-alpine
+  tag: 4.2.5-management-alpine
   # -- RabbitMQ image digest in the form `sha256:...`; overrides `rabbitmqImage.tag` when set
   digest: ""
   # -- RabbitMQ Image pull secrets
