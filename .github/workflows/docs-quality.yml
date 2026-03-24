@@ -3,9 +3,9 @@ name: Helm Docs Quality
 on:
   pull_request:
     paths:
-      - 'charts/**'
-      - 'scripts/**'
-      - '.github/workflows/docs-quality.yml'
+      - "charts/**"
+      - "scripts/**"
+      - ".github/workflows/docs-quality.yml"
   workflow_dispatch:
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.26'
+          go-version: "1.26"
 
       - name: Install helm-docs
         run: |
