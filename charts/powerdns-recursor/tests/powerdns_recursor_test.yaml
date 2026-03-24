@@ -22,6 +22,31 @@ tests:
       - notExists:
           path: spec.internalTrafficPolicy
         template: templates/service.yaml
+      - equal:
+          path: data["recursor.yml"]
+          value: |
+            dnssec:
+              validation: process
+            incoming:
+              listen:
+              - 0.0.0.0
+              port: 5353
+            logging:
+              loglevel: 6
+              quiet: true
+            outgoing:
+              source_address:
+              - 0.0.0.0
+            recordcache:
+              refresh_on_ttl_perc: 10
+            recursor:
+              config_dir: /etc/powerdns
+              setgid: pdns
+              setuid: pdns
+              socket_mode: "660"
+            webservice:
+              webserver: false
+        template: templates/configmaps.yaml
 
   - it: should render a daemonset when workload type is set
     set:
