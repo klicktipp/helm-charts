@@ -1,6 +1,6 @@
 # powerdns-recursor
 
-![Version: 0.2.4](https://img.shields.io/badge/Version-0.2.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
 
 Helm chart for deploying PowerDNS Recursor on Kubernetes
 
@@ -18,6 +18,12 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 |-----|------|---------|-------------|
 | replicaCount | int | `1` | Number of pod replicas. |
 | revisionHistoryLimit | int | `10` | Number of old ReplicaSets to retain. |
+| workload | object | `{"daemonSet":{"minReadySeconds":5,"updateStrategy":{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}},"type":"Deployment"}` | Workload configuration. |
+| workload.type | string | `"Deployment"` | Workload kind. Supported values: Deployment, DaemonSet. |
+| workload.daemonSet.updateStrategy.type | string | `"RollingUpdate"` | DaemonSet update strategy type. |
+| workload.daemonSet.updateStrategy.rollingUpdate.maxUnavailable | int | `0` | Keep the existing pod on a node until a surged replacement is ready. |
+| workload.daemonSet.updateStrategy.rollingUpdate.maxSurge | int | `1` | Allow one extra pod per node during rolling updates to avoid local DNS gaps. |
+| workload.daemonSet.minReadySeconds | int | `5` | Time a new DaemonSet pod must stay ready before it is considered available. |
 | imagePullSecrets | list | `[]` | Image pull secrets. |
 | nameOverride | string | `""` | Partially override generated resource names. |
 | fullnameOverride | string | `""` | Fully override generated resource names. |
@@ -36,15 +42,16 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | securityContext.runAsGroup | int | `953` | Unix group id. |
 | priorityClassName | string | `""` | Optional priority class for pods. |
 | podAntiAffinity | object | `{"topologyKey":"kubernetes.io/hostname","type":"soft"}` | Pod anti-affinity shortcut (used when affinity is empty). |
-| podAntiAffinity.type | string | `"soft"` | "soft", "hard" or "disabled". |
+| podAntiAffinity.type | string | `"soft"` | "soft", "hard" or "disabled". Ignored in DaemonSet mode. |
 | podAntiAffinity.topologyKey | string | `"kubernetes.io/hostname"` | Topology key used by anti-affinity. |
 | affinity | object | `{}` | Native affinity rules. If set, this overrides podAntiAffinity. |
 | nodeSelector | object | `{}` | Node selector for scheduling. |
 | tolerations | list | `[]` | Tolerations for scheduling. |
 | podDisruptionBudget | object | `{}` | PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 } |
-| service | object | `{"annotations":{},"clusterIP":"","headless":{"annotations":{},"enabled":false,"includeDnsPorts":true,"publishNotReadyAddresses":false},"loadBalancerIP":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"}` | Service configuration. |
+| service | object | `{"annotations":{},"clusterIP":"","headless":{"annotations":{},"enabled":false,"includeDnsPorts":true,"publishNotReadyAddresses":false},"internalTrafficPolicy":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"}` | Service configuration. |
 | service.type | string | `"ClusterIP"` | Service type. |
 | service.clusterIP | string | `""` | Optional fixed ClusterIP for the primary Service. |
+| service.internalTrafficPolicy | string | `""` | Service internal traffic policy. When empty, DaemonSet mode defaults to "Local". |
 | service.port | int | `53` | DNS service port (TCP/UDP). |
 | service.annotations | object | `{}` | Service annotations. |
 | service.loadBalancerIP | string | `""` | Optional fixed LoadBalancer IP. |

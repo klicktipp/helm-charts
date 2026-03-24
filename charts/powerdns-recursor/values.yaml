@@ -9,6 +9,22 @@ replicaCount: 1
 # -- Number of old ReplicaSets to retain.
 revisionHistoryLimit: 10
 
+# -- Workload configuration.
+workload:
+  # -- Workload kind. Supported values: Deployment, DaemonSet.
+  type: Deployment
+  daemonSet:
+    updateStrategy:
+      # -- DaemonSet update strategy type.
+      type: RollingUpdate
+      rollingUpdate:
+        # -- Keep the existing pod on a node until a surged replacement is ready.
+        maxUnavailable: 0
+        # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps.
+        maxSurge: 1
+    # -- Time a new DaemonSet pod must stay ready before it is considered available.
+    minReadySeconds: 5
+
 # -- Image pull secrets.
 imagePullSecrets: []
 
@@ -54,7 +70,7 @@ priorityClassName: ""
 
 # -- Pod anti-affinity shortcut (used when affinity is empty).
 podAntiAffinity:
-  # -- "soft", "hard" or "disabled".
+  # -- "soft", "hard" or "disabled". Ignored in DaemonSet mode.
   type: soft
   # -- Topology key used by anti-affinity.
   topologyKey: kubernetes.io/hostname
@@ -77,6 +93,8 @@ service:
   type: ClusterIP
   # -- Optional fixed ClusterIP for the primary Service.
   clusterIP: ""
+  # -- Service internal traffic policy. When empty, DaemonSet mode defaults to "Local".
+  internalTrafficPolicy: ""
   # -- DNS service port (TCP/UDP).
   port: 53
   # -- Service annotations.

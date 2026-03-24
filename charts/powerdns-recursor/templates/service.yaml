@@ -14,6 +14,9 @@ spec:
   {{- with .Values.service.clusterIP }}
   clusterIP: {{ . | quote }}
   {{- end }}
+  {{- with (include "pdns.internalTrafficPolicy" .) }}
+  internalTrafficPolicy: {{ . | quote }}
+  {{- end }}
   {{- with .Values.service.loadBalancerIP }}
   loadBalancerIP: {{ . | quote }}
   {{- end }}
