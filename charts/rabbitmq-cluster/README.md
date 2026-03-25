@@ -1,6 +1,6 @@
 # rabbitmq-cluster
 
-![Version: 3.0.6](https://img.shields.io/badge/Version-3.0.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.2](https://img.shields.io/badge/AppVersion-2.19.2-informational?style=flat-square)
+![Version: 3.1.0](https://img.shields.io/badge/Version-3.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.0](https://img.shields.io/badge/AppVersion-2.20.0-informational?style=flat-square)
 
 Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (RabbitmqCluster).
 
