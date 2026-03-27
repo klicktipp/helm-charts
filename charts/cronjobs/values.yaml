@@ -183,6 +183,26 @@ commonAnnotations: {}
 # -- Configure commonLabels.
 commonLabels: {}
 
+# -- PrometheusRule configuration.
+prometheusRule:
+  # -- Enable PrometheusRule creation.
+  enabled: false
+  # -- Optional namespace override for the PrometheusRule.
+  namespace: ""
+  # -- Extra labels for PrometheusRule metadata.
+  additionalLabels: {}
+  # -- Extra annotations for PrometheusRule metadata.
+  annotations: {}
+  failedJobs:
+    # -- Enable alerting for failed CronJob Jobs.
+    enabled: true
+    # -- Time the condition must hold before firing.
+    for: 15m
+    # -- Severity label for the failed jobs alert.
+    severity: warning
+  # -- Additional PrometheusRule groups appended to the generated spec.
+  additionalGroups: []
+
 # Given name given to the job container inside the Pod.
 #   Can be oveeriden with .jobs.KEY.containerName
 #   If empty, defaults to the slugified job name.

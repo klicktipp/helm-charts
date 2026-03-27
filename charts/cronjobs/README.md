@@ -1,6 +1,6 @@
 # cronjobs
 
-![Version: 1.6.5](https://img.shields.io/badge/Version-1.6.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 1.7.0](https://img.shields.io/badge/Version-1.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 A generic helm cronjob chart for kubernetes
 
@@ -41,6 +41,15 @@ A generic helm cronjob chart for kubernetes
 | rbac.clusterRole.rules | list | `[]` | Configure rbac.clusterRole.rules. |
 | commonAnnotations | object | `{}` | Configure commonAnnotations. |
 | commonLabels | object | `{}` | Configure commonLabels. |
+| prometheusRule | object | `{"additionalGroups":[],"additionalLabels":{},"annotations":{},"enabled":false,"failedJobs":{"enabled":true,"for":"15m","severity":"warning"},"namespace":""}` | PrometheusRule configuration. |
+| prometheusRule.enabled | bool | `false` | Enable PrometheusRule creation. |
+| prometheusRule.namespace | string | `""` | Optional namespace override for the PrometheusRule. |
+| prometheusRule.additionalLabels | object | `{}` | Extra labels for PrometheusRule metadata. |
+| prometheusRule.annotations | object | `{}` | Extra annotations for PrometheusRule metadata. |
+| prometheusRule.failedJobs.enabled | bool | `true` | Enable alerting for failed CronJob Jobs. |
+| prometheusRule.failedJobs.for | string | `"15m"` | Time the condition must hold before firing. |
+| prometheusRule.failedJobs.severity | string | `"warning"` | Severity label for the failed jobs alert. |
+| prometheusRule.additionalGroups | list | `[]` | Additional PrometheusRule groups appended to the generated spec. |
 | commonContainerName | string | `""` | Set commonContainerName. |
 | podSecurityContext | object | `{}` | Pod security context. |
 | securityContext | object | `{}` | Container security context. |

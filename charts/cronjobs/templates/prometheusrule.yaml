@@ -1,0 +1,44 @@
+{{- if and (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") .Values.prometheusRule.enabled -}}
+{{- if and (not .Values.prometheusRule.failedJobs.enabled) (empty .Values.prometheusRule.additionalGroups) }}
+{{- fail "prometheusRule.enabled=true requires at least one enabled built-in rule or prometheusRule.additionalGroups entries" }}
+{{- end }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "cronjobs.fullname" . }}
+  {{- with .Values.prometheusRule.namespace }}
+  namespace: {{ . }}
+  {{- end }}
+  labels:
+    {{- include "cronjobs.labels" . | nindent 4 }}
+    {{- with .Values.prometheusRule.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.prometheusRule.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  groups:
+    {{- if .Values.prometheusRule.failedJobs.enabled }}
+    - name: cronjobs.failed-jobs
+      rules:
+        - alert: CronJobFailed
+          expr: |
+            sum by (namespace, owner_name) (
+              (kube_job_status_failed{namespace={{ .Release.Namespace | quote }}} > 0)
+              * on (namespace, job_name) group_left(owner_name)
+              kube_job_owner{namespace={{ .Release.Namespace | quote }}, owner_kind="CronJob", owner_name!=""}
+            ) > 0
+          for: {{ .Values.prometheusRule.failedJobs.for | quote }}
+          labels:
+            severity: {{ .Values.prometheusRule.failedJobs.severity | quote }}
+          annotations:
+            summary: "CronJob {{`{{`}} $labels.owner_name {{`}}`}} has failed Jobs"
+            description: "CronJob {{`{{`}} $labels.owner_name {{`}}`}} in namespace {{`{{`}} $labels.namespace {{`}}`}} has one or more failed Jobs."
+    {{- end }}
+    {{- with .Values.prometheusRule.additionalGroups }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}
