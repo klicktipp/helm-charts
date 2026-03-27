@@ -93,6 +93,23 @@ Selected workload type.
 {{- end }}
 
 {{/*
+Validate cross-field settings.
+*/}}
+{{- define "pdns.validate" -}}
+{{- if .Values.transparentDNS.enabled -}}
+{{- if ne (include "pdns.workloadType" .) "DaemonSet" -}}
+{{- fail "transparentDNS.enabled=true requires workload.type=DaemonSet" -}}
+{{- end -}}
+{{- if not .Values.transparentDNS.clusterDNS.serviceIP -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.serviceIP to be set to the kube-dns/CoreDNS Service IP" -}}
+{{- end -}}
+{{- if and (not .Values.transparentDNS.customClusterDNSIP) .Values.transparentDNS.clusterDNS.upstreamService.create (not .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.upstreamService.clusterIP when transparentDNS.clusterDNS.upstreamService.create=true" -}}
+{{- end -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Internal traffic policy with DaemonSet-aware default.
 */}}
 {{- define "pdns.internalTrafficPolicy" -}}
@@ -101,6 +118,69 @@ Internal traffic policy with DaemonSet-aware default.
 {{- else if eq (include "pdns.workloadType" .) "DaemonSet" -}}
 {{- "Local" -}}
 {{- end -}}
+{{- end }}
+
+{{/*
+Name of the auxiliary CoreDNS upstream service.
+*/}}
+{{- define "pdns.transparentDNSUpstreamServiceName" -}}
+{{- if .Values.transparentDNS.clusterDNS.upstreamService.name -}}
+{{- .Values.transparentDNS.clusterDNS.upstreamService.name -}}
+{{- else -}}
+{{- printf "%s-cluster-dns-upstream" (include "pdns.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Effective CoreDNS upstream IP for transparent DNS forwarding.
+*/}}
+{{- define "pdns.transparentDNSClusterDNSIP" -}}
+{{- if .Values.transparentDNS.customClusterDNSIP -}}
+{{- .Values.transparentDNS.customClusterDNSIP -}}
+{{- else -}}
+{{- .Values.transparentDNS.clusterDNS.upstreamService.clusterIP -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Priority class with transparent DNS-aware default.
+*/}}
+{{- define "pdns.priorityClassName" -}}
+{{- if .Values.priorityClassName -}}
+{{- .Values.priorityClassName -}}
+{{- else if .Values.transparentDNS.enabled -}}
+{{- "system-node-critical" -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Effective tolerations.
+*/}}
+{{- define "pdns.tolerations" -}}
+{{- if .Values.tolerations -}}
+{{- toYaml .Values.tolerations -}}
+{{- else if .Values.transparentDNS.enabled -}}
+{{- toYaml .Values.transparentDNS.tolerations -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Rendered PDNS config with transparent DNS forwarding when enabled.
+*/}}
+{{- define "pdns.config" -}}
+{{- $config := mustDeepCopy .Values.pdns.config -}}
+{{- if .Values.transparentDNS.enabled -}}
+{{- $recursor := default (dict) (get $config "recursor") -}}
+{{- $existing := default (list) (get $recursor "forward_zones_recurse") -}}
+{{- $upstreamIP := include "pdns.transparentDNSClusterDNSIP" . -}}
+{{- $zones := list
+    (dict "zone" .Values.transparentDNS.clusterDomain "recurse" true "forwarders" (list (printf "%s:53" $upstreamIP)))
+    (dict "zone" "in-addr.arpa" "recurse" true "forwarders" (list (printf "%s:53" $upstreamIP)))
+    (dict "zone" "ip6.arpa" "recurse" true "forwarders" (list (printf "%s:53" $upstreamIP))) -}}
+{{- $_ := set $recursor "forward_zones_recurse" (concat $existing $zones) -}}
+{{- $_ := set $config "recursor" $recursor -}}
+{{- end -}}
+{{- toYaml $config -}}
 {{- end }}
 
 {{/*
@@ -148,9 +228,13 @@ serviceAccountName: {{ include "pdns.serviceAccountName" . }}
 imagePullSecrets:
   {{- toYaml . | nindent 2 }}
 {{- end }}
+{{- if .Values.transparentDNS.enabled }}
+hostNetwork: true
+dnsPolicy: Default
+{{- end }}
 securityContext:
   {{- toYaml .Values.podSecurityContext | nindent 2 }}
-{{- with .Values.priorityClassName }}
+{{- with (include "pdns.priorityClassName" .) }}
 priorityClassName: {{ . | quote }}
 {{- end }}
 {{- with .Values.nodeSelector }}
@@ -158,9 +242,9 @@ nodeSelector:
   {{- toYaml . | nindent 2 }}
 {{- end }}
 {{- include "pdns.affinity" . }}
-{{- with .Values.tolerations }}
+{{- with (include "pdns.tolerations" .) }}
 tolerations:
-  {{- toYaml . | nindent 2 }}
+  {{- . | nindent 2 }}
 {{- end }}
 containers:
   - name: {{ .Chart.Name }}
@@ -205,6 +289,81 @@ containers:
         mountPath: /etc/powerdns/recursor.lua
         subPath: recursor.lua
       {{- end }}
+  {{- if .Values.transparentDNS.enabled }}
+  - name: dns-interceptor
+    image: "{{ .Values.transparentDNS.interceptor.image.repository }}:{{ .Values.transparentDNS.interceptor.image.tag }}"
+    imagePullPolicy: {{ .Values.transparentDNS.interceptor.image.pullPolicy }}
+    securityContext:
+      {{- toYaml .Values.transparentDNS.securityContext | nindent 6 }}
+    command:
+      - /bin/sh
+      - -ec
+    args:
+      - |
+        set -euo pipefail
+        {{ .Values.transparentDNS.interceptor.installPackagesCommand }}
+
+        add_ip() {
+          ip addr add {{ .Values.transparentDNS.localIP }}/32 dev lo 2>/dev/null || true
+        }
+
+        del_ip() {
+          ip addr del {{ .Values.transparentDNS.localIP }}/32 dev lo 2>/dev/null || true
+        }
+
+        add_rule() {
+          local chain="$1"
+          local proto="$2"
+          iptables -t nat -C "${chain}" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "${proto}" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }} 2>/dev/null \
+            || iptables -t nat -A "${chain}" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "${proto}" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }}
+        }
+
+        del_rule() {
+          local chain="$1"
+          local proto="$2"
+          iptables -t nat -D "${chain}" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "${proto}" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }} 2>/dev/null || true
+        }
+
+        cleanup() {
+          if [ "{{ .Values.transparentDNS.skipTeardown }}" = "true" ]; then
+            exit 0
+          fi
+          if [ "{{ .Values.transparentDNS.setupIptables }}" = "true" ]; then
+            del_rule PREROUTING udp
+            del_rule PREROUTING tcp
+            if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
+              del_rule OUTPUT udp
+              del_rule OUTPUT tcp
+            fi
+          fi
+          if [ "{{ .Values.transparentDNS.setupInterface }}" = "true" ]; then
+            del_ip
+          fi
+        }
+
+        trap cleanup TERM INT EXIT
+
+        if [ "{{ .Values.transparentDNS.setupInterface }}" = "true" ]; then
+          add_ip
+        fi
+
+        if [ "{{ .Values.transparentDNS.setupIptables }}" = "true" ]; then
+          add_rule PREROUTING udp
+          add_rule PREROUTING tcp
+          if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
+            add_rule OUTPUT udp
+            add_rule OUTPUT tcp
+          fi
+        fi
+
+        while true; do sleep 3600; done
+    resources:
+      {{- toYaml .Values.transparentDNS.resources | nindent 6 }}
+    volumeMounts:
+      - mountPath: /run/xtables.lock
+        name: xtables-lock
+        readOnly: false
+  {{- end }}
 volumes:
   - name: pdns-config
     configMap:
@@ -213,5 +372,11 @@ volumes:
   - name: pdns-lua
     configMap:
       name: {{ include "pdns.fullname" . }}-lua
+  {{- end }}
+  {{- if .Values.transparentDNS.enabled }}
+  - name: xtables-lock
+    hostPath:
+      path: /run/xtables.lock
+      type: FileOrCreate
   {{- end }}
 {{- end }}

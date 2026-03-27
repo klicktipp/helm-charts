@@ -26,6 +26,74 @@ workload:
     # -- Time a new DaemonSet pod must stay ready before it is considered available.
     minReadySeconds: 5
 
+# -- Optional transparent DNS takeover mode. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings.
+transparentDNS:
+  # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP.
+  enabled: false
+  # -- Link-local IP bound on each node and used as the local DNAT target.
+  localIP: 169.254.20.25
+  # -- Cluster DNS domain still forwarded to CoreDNS.
+  clusterDomain: cluster.local
+  clusterDNS:
+    # -- Namespace where the cluster DNS pods live.
+    namespace: kube-system
+    # -- ClusterIP of the kube-dns/CoreDNS Service that pods already use today.
+    serviceIP: ""
+    upstreamService:
+      # -- Create an auxiliary Service with its own fixed ClusterIP in front of the CoreDNS pods to avoid recursion through the intercepted clusterDNS.serviceIP.
+      create: true
+      # -- Override the generated upstream Service name.
+      name: ""
+      # -- Fixed ClusterIP of the auxiliary CoreDNS upstream Service. Required when create=true.
+      clusterIP: ""
+      # -- Service annotations for the auxiliary CoreDNS upstream Service.
+      annotations: {}
+    # -- Pod selector for the auxiliary CoreDNS upstream Service.
+    selector:
+      k8s-app: kube-dns
+  # -- Use a pre-existing auxiliary CoreDNS upstream Service IP instead of creating one.
+  customClusterDNSIP: ""
+  interceptor:
+    image:
+      # -- Helper image used to add the local IP and program iptables. The default installs iproute2 and iptables at runtime.
+      repository: alpine
+      # -- Image tag of the interceptor helper image.
+      tag: "3.21"
+      # -- Pull policy for the interceptor helper image.
+      pullPolicy: IfNotPresent
+    # -- Package installation command executed before adding IPs and iptables rules.
+    installPackagesCommand: apk add --no-cache iptables iproute2
+  # -- Configure the network interface alias used by the interceptor.
+  setupInterface: true
+  # -- Configure iptables rules that transparently capture pod DNS traffic to clusterDNS.serviceIP.
+  setupIptables: true
+  # -- Also capture node-local processes hitting the cluster DNS Service IP via the OUTPUT chain.
+  captureOutput: true
+  # -- Leave IP alias and iptables rules behind when the pod exits.
+  skipTeardown: false
+  securityContext:
+    # -- Run the interceptor as root so it can manipulate networking.
+    runAsUser: 0
+    # -- Run the interceptor with the root group.
+    runAsGroup: 0
+    capabilities:
+      add:
+        - NET_ADMIN
+  resources:
+    requests:
+      cpu: 25m
+      memory: 128Mi
+    limits:
+      memory: 128Mi
+  # -- Default tolerations used only when transparentDNS.enabled=true and tolerations is empty.
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    - effect: NoExecute
+      operator: Exists
+    - effect: NoSchedule
+      operator: Exists
+
 # -- Image pull secrets.
 imagePullSecrets: []
 

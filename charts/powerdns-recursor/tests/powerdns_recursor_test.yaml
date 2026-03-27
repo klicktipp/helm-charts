@@ -1,9 +1,12 @@
 suite: powerdns-recursor-tests
+release:
+  namespace: kube-system
 templates:
   - templates/configmaps.yaml
   - templates/deployment.yaml
   - templates/daemonset.yaml
   - templates/service.yaml
+  - templates/service-cluster-dns-upstream.yaml
   - templates/poddisruptionbudget.yaml
 
 tests:
@@ -151,3 +154,77 @@ tests:
           path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key
           value: kubernetes.io/os
         template: templates/daemonset.yaml
+
+  - it: should render transparent dns takeover mode with an interceptor sidecar and host networking
+    set:
+      workload.type: DaemonSet
+      transparentDNS.enabled: true
+      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
+    asserts:
+      - equal:
+          path: spec.template.spec.hostNetwork
+          value: true
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.dnsPolicy
+          value: Default
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.priorityClassName
+          value: system-node-critical
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.tolerations[0].key
+          value: CriticalAddonsOnly
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[1].name
+          value: dns-interceptor
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[1].image
+          value: alpine:3.21
+        template: templates/daemonset.yaml
+      - matchRegex:
+          path: spec.template.spec.containers[1].args[0]
+          pattern: "iptables -t nat -A"
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.volumes[1].hostPath.path
+          value: /run/xtables.lock
+        template: templates/daemonset.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "forward_zones_recurse:[\\s\\S]*zone: cluster\\.local[\\s\\S]*172\\.20\\.0\\.11:53"
+        template: templates/configmaps.yaml
+      - isKind:
+          of: Service
+        template: templates/service-cluster-dns-upstream.yaml
+      - equal:
+          path: metadata.namespace
+          value: kube-system
+        template: templates/service-cluster-dns-upstream.yaml
+      - equal:
+          path: spec.clusterIP
+          value: 172.20.0.11
+        template: templates/service-cluster-dns-upstream.yaml
+      - equal:
+          path: spec.selector["k8s-app"]
+          value: kube-dns
+        template: templates/service-cluster-dns-upstream.yaml
+
+  - it: should not create a generated cluster dns upstream service when a custom cluster dns ip is configured
+    set:
+      workload.type: DaemonSet
+      transparentDNS.enabled: true
+      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.customClusterDNSIP: 172.20.0.99
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/service-cluster-dns-upstream.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "forward_zones_recurse:[\\s\\S]*172\\.20\\.0\\.99:53"
+        template: templates/configmaps.yaml
