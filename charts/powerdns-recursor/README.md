@@ -25,6 +25,29 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | workload.daemonSet.updateStrategy.rollingUpdate.maxUnavailable | int | `0` | Keep the existing pod on a node until a surged replacement is ready. |
 | workload.daemonSet.updateStrategy.rollingUpdate.maxSurge | int | `1` | Allow one extra pod per node during rolling updates to avoid local DNS gaps. |
 | workload.daemonSet.minReadySeconds | int | `5` | Time a new DaemonSet pod must stay ready before it is considered available. |
+| transparentDNS | object | `{"captureOutput":true,"clusterDNS":{"namespace":"kube-system","selector":{"k8s-app":"kube-dns"},"serviceIP":"","upstreamService":{"annotations":{},"clusterIP":"","create":true,"name":""}},"clusterDomain":"cluster.local","customClusterDNSIP":"","enabled":false,"interceptor":{"image":{"pullPolicy":"IfNotPresent","repository":"alpine","tag":"3.21"},"installPackagesCommand":"apk add --no-cache iptables iproute2"},"localIP":"169.254.20.25","resources":{"limits":{"memory":"128Mi"},"requests":{"cpu":"25m","memory":"128Mi"}},"securityContext":{"capabilities":{"add":["NET_ADMIN"]},"runAsGroup":0,"runAsUser":0},"setupInterface":true,"setupIptables":true,"skipTeardown":false,"tolerations":[{"key":"CriticalAddonsOnly","operator":"Exists"},{"effect":"NoExecute","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"}]}` | Optional transparent DNS takeover mode. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings. |
+| transparentDNS.enabled | bool | `false` | Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. |
+| transparentDNS.localIP | string | `"169.254.20.25"` | Link-local IP bound on each node and used as the local DNAT target. |
+| transparentDNS.clusterDomain | string | `"cluster.local"` | Cluster DNS domain still forwarded to CoreDNS. |
+| transparentDNS.clusterDNS.namespace | string | `"kube-system"` | Namespace where the cluster DNS pods live. |
+| transparentDNS.clusterDNS.serviceIP | string | `""` | ClusterIP of the kube-dns/CoreDNS Service that pods already use today. |
+| transparentDNS.clusterDNS.upstreamService.create | bool | `true` | Create an auxiliary Service with its own fixed ClusterIP in front of the CoreDNS pods to avoid recursion through the intercepted clusterDNS.serviceIP. |
+| transparentDNS.clusterDNS.upstreamService.name | string | `""` | Override the generated upstream Service name. |
+| transparentDNS.clusterDNS.upstreamService.clusterIP | string | `""` | Fixed ClusterIP of the auxiliary CoreDNS upstream Service. Required when create=true. |
+| transparentDNS.clusterDNS.upstreamService.annotations | object | `{}` | Service annotations for the auxiliary CoreDNS upstream Service. |
+| transparentDNS.clusterDNS.selector | object | `{"k8s-app":"kube-dns"}` | Pod selector for the auxiliary CoreDNS upstream Service. |
+| transparentDNS.customClusterDNSIP | string | `""` | Use a pre-existing auxiliary CoreDNS upstream Service IP instead of creating one. |
+| transparentDNS.interceptor.image.repository | string | `"alpine"` | Helper image used to add the local IP and program iptables. The default installs iproute2 and iptables at runtime. |
+| transparentDNS.interceptor.image.tag | string | `"3.21"` | Image tag of the interceptor helper image. |
+| transparentDNS.interceptor.image.pullPolicy | string | `"IfNotPresent"` | Pull policy for the interceptor helper image. |
+| transparentDNS.interceptor.installPackagesCommand | string | `"apk add --no-cache iptables iproute2"` | Package installation command executed before adding IPs and iptables rules. |
+| transparentDNS.setupInterface | bool | `true` | Configure the network interface alias used by the interceptor. |
+| transparentDNS.setupIptables | bool | `true` | Configure iptables rules that transparently capture pod DNS traffic to clusterDNS.serviceIP. |
+| transparentDNS.captureOutput | bool | `true` | Also capture node-local processes hitting the cluster DNS Service IP via the OUTPUT chain. |
+| transparentDNS.skipTeardown | bool | `false` | Leave IP alias and iptables rules behind when the pod exits. |
+| transparentDNS.securityContext.runAsUser | int | `0` | Run the interceptor as root so it can manipulate networking. |
+| transparentDNS.securityContext.runAsGroup | int | `0` | Run the interceptor with the root group. |
+| transparentDNS.tolerations | list | `[{"key":"CriticalAddonsOnly","operator":"Exists"},{"effect":"NoExecute","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"}]` | Default tolerations used only when transparentDNS.enabled=true and tolerations is empty. |
 | imagePullSecrets | list | `[]` | Image pull secrets. |
 | nameOverride | string | `""` | Partially override generated resource names. |
 | fullnameOverride | string | `""` | Fully override generated resource names. |
