@@ -1,6 +1,6 @@
 suite: powerdns-recursor-tests
 release:
-  namespace: kube-system
+  namespace: powerdns-recursor
 templates:
   - templates/configmaps.yaml
   - templates/deployment.yaml
@@ -160,6 +160,7 @@ tests:
       workload.type: DaemonSet
       transparentDNS.enabled: true
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
     asserts:
       - equal:
@@ -219,6 +220,7 @@ tests:
       workload.type: DaemonSet
       transparentDNS.enabled: true
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.customClusterDNSIP: 172.20.0.99
     asserts:
       - hasDocuments:
@@ -227,4 +229,30 @@ tests:
       - matchRegex:
           path: data["recursor.yml"]
           pattern: "forward_zones_recurse:[\\s\\S]*172\\.20\\.0\\.99:53"
+        template: templates/configmaps.yaml
+
+  - it: should replace existing transparent dns forwarding zones instead of duplicating them
+    set:
+      workload.type: DaemonSet
+      transparentDNS.enabled: true
+      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.namespace: kube-system
+      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
+      pdns.config.recursor.forward_zones_recurse:
+        - zone: cluster.local
+          recurse: true
+          forwarders:
+            - 10.0.0.53:53
+        - zone: example.org
+          recurse: true
+          forwarders:
+            - 10.0.0.54:53
+    asserts:
+      - notMatchRegex:
+          path: data["recursor.yml"]
+          pattern: "10\\.0\\.0\\.53:53"
+        template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "10\\.0\\.0\\.54:53[\\s\\S]*zone: example\\.org"
         template: templates/configmaps.yaml

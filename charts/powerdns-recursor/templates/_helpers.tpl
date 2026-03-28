@@ -179,11 +179,18 @@ Rendered PDNS config with transparent DNS forwarding when enabled.
 {{- $recursor := default (dict) (get $config "recursor") -}}
 {{- $existing := default (list) (get $recursor "forward_zones_recurse") -}}
 {{- $upstreamIP := include "pdns.transparentDNSClusterDNSIP" . -}}
+{{- $transparentZones := list .Values.transparentDNS.clusterDomain "in-addr.arpa" "ip6.arpa" -}}
+{{- $filtered := list -}}
+{{- range $entry := $existing -}}
+  {{- if not (and (kindIs "map" $entry) (has (get $entry "zone") $transparentZones)) -}}
+    {{- $filtered = append $filtered $entry -}}
+  {{- end -}}
+{{- end -}}
 {{- $zones := list
     (dict "zone" .Values.transparentDNS.clusterDomain "recurse" true "forwarders" (list (printf "%s:53" $upstreamIP)))
     (dict "zone" "in-addr.arpa" "recurse" true "forwarders" (list (printf "%s:53" $upstreamIP)))
     (dict "zone" "ip6.arpa" "recurse" true "forwarders" (list (printf "%s:53" $upstreamIP))) -}}
-{{- $_ := set $recursor "forward_zones_recurse" (concat $existing $zones) -}}
+{{- $_ := set $recursor "forward_zones_recurse" (concat $filtered $zones) -}}
 {{- $_ := set $config "recursor" $recursor -}}
 {{- end -}}
 {{- toYaml $config -}}
@@ -306,7 +313,9 @@ containers:
       - -ec
     args:
       - |
-        set -euo pipefail
+        set -eu
+        # Enable pipefail when the selected shell supports it.
+        (set -o pipefail) 2>/dev/null || true
         {{ .Values.transparentDNS.interceptor.installPackagesCommand }}
 
         add_ip() {
