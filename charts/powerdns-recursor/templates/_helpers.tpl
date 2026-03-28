@@ -103,8 +103,14 @@ Validate cross-field settings.
 {{- if not .Values.transparentDNS.clusterDNS.serviceIP -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.serviceIP to be set to the kube-dns/CoreDNS Service IP" -}}
 {{- end -}}
+{{- if and (not .Values.transparentDNS.customClusterDNSIP) (not .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
+{{- fail "transparentDNS.enabled=true requires either transparentDNS.customClusterDNSIP or transparentDNS.clusterDNS.upstreamService.clusterIP to be set" -}}
+{{- end -}}
 {{- if and (not .Values.transparentDNS.customClusterDNSIP) .Values.transparentDNS.clusterDNS.upstreamService.create (not .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.upstreamService.clusterIP when transparentDNS.clusterDNS.upstreamService.create=true" -}}
+{{- end -}}
+{{- if and (not .Values.transparentDNS.clusterDNS.upstreamService.create) (not .Values.transparentDNS.customClusterDNSIP) -}}
+{{- fail "transparentDNS.enabled=true with transparentDNS.clusterDNS.upstreamService.create=false requires transparentDNS.customClusterDNSIP to be set" -}}
 {{- end -}}
 {{- end -}}
 {{- end }}
@@ -168,7 +174,7 @@ Effective tolerations.
 Rendered PDNS config with transparent DNS forwarding when enabled.
 */}}
 {{- define "pdns.config" -}}
-{{- $config := mustDeepCopy .Values.pdns.config -}}
+{{- $config := deepCopy (default (dict) .Values.pdns.config) -}}
 {{- if .Values.transparentDNS.enabled -}}
 {{- $recursor := default (dict) (get $config "recursor") -}}
 {{- $existing := default (list) (get $recursor "forward_zones_recurse") -}}
@@ -315,7 +321,7 @@ containers:
           local chain="$1"
           local proto="$2"
           iptables -t nat -C "${chain}" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "${proto}" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }} 2>/dev/null \
-            || iptables -t nat -A "${chain}" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "${proto}" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }}
+            || iptables -t nat -I "${chain}" 1 -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "${proto}" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }}
         }
 
         del_rule() {
