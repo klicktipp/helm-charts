@@ -26,9 +26,9 @@ workload:
     # -- Time a new DaemonSet pod must stay ready before it is considered available.
     minReadySeconds: 5
 
-# -- Optional transparent DNS takeover mode. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings.
+# -- Optional transparent DNS takeover mode. Experimental. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings.
 transparentDNS:
-  # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP.
+  # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental.
   enabled: false
   # -- Link-local IP bound on each node and used as the local DNAT target.
   localIP: 169.254.20.25
