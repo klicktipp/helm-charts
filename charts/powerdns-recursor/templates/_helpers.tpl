@@ -112,6 +112,10 @@ Validate cross-field settings.
 {{- if and (not .Values.transparentDNS.clusterDNS.upstreamService.create) (not .Values.transparentDNS.customClusterDNSIP) -}}
 {{- fail "transparentDNS.enabled=true with transparentDNS.clusterDNS.upstreamService.create=false requires transparentDNS.customClusterDNSIP to be set" -}}
 {{- end -}}
+{{- $maxSurge := index .Values "workload" "daemonSet" "updateStrategy" "rollingUpdate" "maxSurge" -}}
+{{- if and $maxSurge (ne (toString $maxSurge) "0") -}}
+{{- fail "transparentDNS.enabled=true requires workload.daemonSet.updateStrategy.rollingUpdate.maxSurge=0 to avoid hostNetwork DaemonSet surge rollouts" -}}
+{{- end -}}
 {{- end -}}
 {{- end }}
 

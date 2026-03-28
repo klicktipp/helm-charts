@@ -158,11 +158,16 @@ tests:
   - it: should render transparent dns takeover mode with an interceptor sidecar and host networking
     set:
       workload.type: DaemonSet
+      workload.daemonSet.updateStrategy.rollingUpdate.maxSurge: 0
       transparentDNS.enabled: true
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
     asserts:
+      - equal:
+          path: spec.updateStrategy.rollingUpdate.maxSurge
+          value: 0
+        template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.hostNetwork
           value: true
@@ -218,6 +223,7 @@ tests:
   - it: should not create a generated cluster dns upstream service when a custom cluster dns ip is configured
     set:
       workload.type: DaemonSet
+      workload.daemonSet.updateStrategy.rollingUpdate.maxSurge: 0
       transparentDNS.enabled: true
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
@@ -234,6 +240,7 @@ tests:
   - it: should replace existing transparent dns forwarding zones instead of duplicating them
     set:
       workload.type: DaemonSet
+      workload.daemonSet.updateStrategy.rollingUpdate.maxSurge: 0
       transparentDNS.enabled: true
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
