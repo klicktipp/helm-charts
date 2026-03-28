@@ -28,7 +28,7 @@ workload:
 
 # -- Optional transparent DNS takeover mode. Experimental. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings.
 transparentDNS:
-  # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental.
+  # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet and workload.daemonSet.updateStrategy.rollingUpdate.maxSurge=0.
   enabled: false
   # -- Link-local IP bound on each node and used as the local DNAT target.
   localIP: 169.254.20.25
@@ -134,7 +134,7 @@ securityContext:
   # -- Unix group id.
   runAsGroup: 953
 
-# -- Optional priority class for pods.
+# -- Optional priority class for pods. When transparentDNS.enabled=true and this value is empty, the chart defaults to "system-node-critical".
 priorityClassName: ""
 
 # -- Pod anti-affinity shortcut (used when affinity is empty).

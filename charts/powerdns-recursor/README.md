@@ -26,7 +26,7 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | workload.daemonSet.updateStrategy.rollingUpdate.maxSurge | int | `1` | Allow one extra pod per node during rolling updates to avoid local DNS gaps. |
 | workload.daemonSet.minReadySeconds | int | `5` | Time a new DaemonSet pod must stay ready before it is considered available. |
 | transparentDNS | object | `{"captureOutput":true,"clusterDNS":{"namespace":"kube-system","selector":{"k8s-app":"kube-dns"},"serviceIP":"","upstreamService":{"annotations":{},"clusterIP":"","create":true,"name":""}},"clusterDomain":"cluster.local","customClusterDNSIP":"","enabled":false,"interceptor":{"image":{"pullPolicy":"IfNotPresent","repository":"alpine","tag":"3.21"},"installPackagesCommand":"apk add --no-cache iptables iproute2"},"localIP":"169.254.20.25","resources":{"limits":{"memory":"128Mi"},"requests":{"cpu":"25m","memory":"128Mi"}},"securityContext":{"capabilities":{"add":["NET_ADMIN"]},"runAsGroup":0,"runAsUser":0},"setupInterface":true,"setupIptables":true,"skipTeardown":false,"tolerations":[{"key":"CriticalAddonsOnly","operator":"Exists"},{"effect":"NoExecute","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"}]}` | Optional transparent DNS takeover mode. Experimental. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings. |
-| transparentDNS.enabled | bool | `false` | Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. |
+| transparentDNS.enabled | bool | `false` | Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet and workload.daemonSet.updateStrategy.rollingUpdate.maxSurge=0. |
 | transparentDNS.localIP | string | `"169.254.20.25"` | Link-local IP bound on each node and used as the local DNAT target. |
 | transparentDNS.clusterDomain | string | `"cluster.local"` | Cluster DNS domain still forwarded to CoreDNS. |
 | transparentDNS.clusterDNS.namespace | string | `"kube-system"` | Namespace where the cluster DNS pods live. |
@@ -64,7 +64,7 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | securityContext | object | `{"runAsGroup":953,"runAsUser":953}` | Container-level security context. |
 | securityContext.runAsUser | int | `953` | Unix user id. |
 | securityContext.runAsGroup | int | `953` | Unix group id. |
-| priorityClassName | string | `""` | Optional priority class for pods. |
+| priorityClassName | string | `""` | Optional priority class for pods. When transparentDNS.enabled=true and this value is empty, the chart defaults to "system-node-critical". |
 | podAntiAffinity | object | `{"topologyKey":"kubernetes.io/hostname","type":"soft"}` | Pod anti-affinity shortcut (used when affinity is empty). |
 | podAntiAffinity.type | string | `"soft"` | "soft", "hard" or "disabled". Ignored in DaemonSet mode. |
 | podAntiAffinity.topologyKey | string | `"kubernetes.io/hostname"` | Topology key used by anti-affinity. |

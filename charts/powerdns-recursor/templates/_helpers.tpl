@@ -360,7 +360,13 @@ containers:
           fi
         }
 
-        trap cleanup TERM INT EXIT
+        signal_handler() {
+          cleanup
+          exit 0
+        }
+
+        trap signal_handler TERM INT
+        trap cleanup EXIT
 
         if [ "{{ .Values.transparentDNS.setupInterface }}" = "true" ]; then
           add_ip
