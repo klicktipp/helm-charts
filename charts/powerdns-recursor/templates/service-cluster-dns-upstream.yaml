@@ -23,8 +23,8 @@ spec:
       port: 53
       protocol: TCP
       targetPort: 53
+  {{- with .Values.transparentDNS.clusterDNS.selector }}
   selector:
-    {{- with .Values.transparentDNS.clusterDNS.selector }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- end }}
 {{- end }}

@@ -188,7 +188,7 @@ tests:
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: "iptables -t nat -A"
+          pattern: "iptables -t nat -I"
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.volumes[1].hostPath.path
