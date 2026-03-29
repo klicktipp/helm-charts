@@ -196,6 +196,10 @@ tests:
           path: spec.template.spec.containers[1].args[0]
           pattern: "iptables -t nat -I"
         template: templates/daemonset.yaml
+      - notMatchRegex:
+          path: spec.template.spec.containers[1].args[0]
+          pattern: "local chain=|local proto="
+        template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.volumes[1].hostPath.path
           value: /run/xtables.lock
@@ -263,3 +267,22 @@ tests:
           path: data["recursor.yml"]
           pattern: "10\\.0\\.0\\.54:53[\\s\\S]*zone: example\\.org"
         template: templates/configmaps.yaml
+
+  - it: should allow disabling runtime package installation in the dns interceptor
+    set:
+      workload.type: DaemonSet
+      workload.daemonSet.updateStrategy.rollingUpdate.maxSurge: 0
+      transparentDNS.enabled: true
+      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.namespace: kube-system
+      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
+      transparentDNS.interceptor.enableRuntimeInstall: false
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[1].args[0]
+          pattern: "Runtime package installation is disabled"
+        template: templates/daemonset.yaml
+      - notMatchRegex:
+          path: spec.template.spec.containers[1].args[0]
+          pattern: "apk add --no-cache iptables iproute2"
+        template: templates/daemonset.yaml
