@@ -103,8 +103,20 @@ Validate cross-field settings.
 {{- if not .Values.transparentDNS.clusterDNS.serviceIP -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.serviceIP to be set to the kube-dns/CoreDNS Service IP" -}}
 {{- end -}}
+{{- if not .Values.transparentDNS.clusterDomain -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDomain to be set" -}}
+{{- end -}}
+{{- if not .Values.transparentDNS.localIP -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be set" -}}
+{{- end -}}
 {{- if and (not .Values.transparentDNS.customClusterDNSIP) (not .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
 {{- fail "transparentDNS.enabled=true requires either transparentDNS.customClusterDNSIP or transparentDNS.clusterDNS.upstreamService.clusterIP to be set" -}}
+{{- end -}}
+{{- if eq .Values.transparentDNS.customClusterDNSIP .Values.transparentDNS.clusterDNS.serviceIP -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.customClusterDNSIP to be different from transparentDNS.clusterDNS.serviceIP to avoid DNS recursion loops" -}}
+{{- end -}}
+{{- if and .Values.transparentDNS.clusterDNS.upstreamService.clusterIP (eq .Values.transparentDNS.clusterDNS.upstreamService.clusterIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.upstreamService.clusterIP to be different from transparentDNS.clusterDNS.serviceIP to avoid DNS recursion loops" -}}
 {{- end -}}
 {{- if and (not .Values.transparentDNS.customClusterDNSIP) .Values.transparentDNS.clusterDNS.upstreamService.create (not .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.upstreamService.clusterIP when transparentDNS.clusterDNS.upstreamService.create=true" -}}
@@ -320,7 +332,11 @@ containers:
         set -eu
         # Enable pipefail when the selected shell supports it.
         (set -o pipefail) 2>/dev/null || true
+        {{- if and .Values.transparentDNS.interceptor.enableRuntimeInstall .Values.transparentDNS.interceptor.installPackagesCommand }}
         {{ .Values.transparentDNS.interceptor.installPackagesCommand }}
+        {{- else }}
+        # Runtime package installation is disabled; the interceptor image must already contain iptables and iproute2/ip.
+        {{- end }}
 
         add_ip() {
           ip addr add {{ .Values.transparentDNS.localIP }}/32 dev lo 2>/dev/null || true
@@ -331,16 +347,12 @@ containers:
         }
 
         add_rule() {
-          local chain="$1"
-          local proto="$2"
-          iptables -t nat -C "${chain}" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "${proto}" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }} 2>/dev/null \
-            || iptables -t nat -I "${chain}" 1 -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "${proto}" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }}
+          iptables -t nat -C "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }} 2>/dev/null \
+            || iptables -t nat -I "$1" 1 -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }}
         }
 
         del_rule() {
-          local chain="$1"
-          local proto="$2"
-          iptables -t nat -D "${chain}" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "${proto}" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }} 2>/dev/null || true
+          iptables -t nat -D "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }} 2>/dev/null || true
         }
 
         cleanup() {
