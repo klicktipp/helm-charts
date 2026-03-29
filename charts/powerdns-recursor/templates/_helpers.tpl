@@ -106,6 +106,9 @@ Validate cross-field settings.
 {{- if not .Values.transparentDNS.clusterDNS.namespace -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.namespace to be set" -}}
 {{- end -}}
+{{- if and .Values.transparentDNS.clusterDNS.upstreamService.create (not .Values.transparentDNS.customClusterDNSIP) (empty .Values.transparentDNS.clusterDNS.selector) -}}
+{{- fail "transparentDNS.enabled=true with transparentDNS.clusterDNS.upstreamService.create=true requires transparentDNS.clusterDNS.selector to be set" -}}
+{{- end -}}
 {{- if not .Values.transparentDNS.clusterDomain -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDomain to be set" -}}
 {{- end -}}
@@ -114,6 +117,10 @@ Validate cross-field settings.
 {{- end -}}
 {{- $incoming := default (dict) (get .Values.pdns.config "incoming") -}}
 {{- $incomingPort := get $incoming "port" -}}
+{{- $incomingListen := default (list) (get $incoming "listen") -}}
+{{- if and $incomingListen (not (or (has "0.0.0.0" $incomingListen) (has .Values.transparentDNS.localIP $incomingListen))) -}}
+{{- fail "transparentDNS.enabled=true requires pdns.config.incoming.listen to include 0.0.0.0 or transparentDNS.localIP when the listen list is set" -}}
+{{- end -}}
 {{- if and $incomingPort (ne (toString $incomingPort) (toString .Values.pdns.port)) -}}
 {{- fail "transparentDNS.enabled=true requires pdns.port to match pdns.config.incoming.port when the latter is set" -}}
 {{- end -}}
@@ -351,14 +358,14 @@ containers:
         {{- end }}
 
         add_ip() {
-          if ip addr show dev lo | grep -q " {{ .Values.transparentDNS.localIP }}/32 "; then
+          if ip -o addr show dev lo to {{ .Values.transparentDNS.localIP }}/32 >/dev/null 2>&1; then
             return 0
           fi
           ip addr add {{ .Values.transparentDNS.localIP }}/32 dev lo
         }
 
         del_ip() {
-          if ! ip addr show dev lo | grep -q " {{ .Values.transparentDNS.localIP }}/32 "; then
+          if ! ip -o addr show dev lo to {{ .Values.transparentDNS.localIP }}/32 >/dev/null 2>&1; then
             return 0
           fi
           ip addr del {{ .Values.transparentDNS.localIP }}/32 dev lo
