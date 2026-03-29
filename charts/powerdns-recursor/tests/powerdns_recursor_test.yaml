@@ -200,6 +200,14 @@ tests:
           path: spec.template.spec.containers[1].args[0]
           pattern: "local chain=|local proto="
         template: templates/daemonset.yaml
+      - matchRegex:
+          path: spec.template.spec.containers[1].args[0]
+          pattern: "ip addr show dev lo \\| grep -q"
+        template: templates/daemonset.yaml
+      - notMatchRegex:
+          path: spec.template.spec.containers[1].args[0]
+          pattern: "ip addr add .*\\|\\| true|ip addr del .*\\|\\| true"
+        template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.volumes[1].hostPath.path
           value: /run/xtables.lock

@@ -103,11 +103,19 @@ Validate cross-field settings.
 {{- if not .Values.transparentDNS.clusterDNS.serviceIP -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.serviceIP to be set to the kube-dns/CoreDNS Service IP" -}}
 {{- end -}}
+{{- if not .Values.transparentDNS.clusterDNS.namespace -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.namespace to be set" -}}
+{{- end -}}
 {{- if not .Values.transparentDNS.clusterDomain -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDomain to be set" -}}
 {{- end -}}
 {{- if not .Values.transparentDNS.localIP -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be set" -}}
+{{- end -}}
+{{- $incoming := default (dict) (get .Values.pdns.config "incoming") -}}
+{{- $incomingPort := get $incoming "port" -}}
+{{- if and $incomingPort (ne (toString $incomingPort) (toString .Values.pdns.port)) -}}
+{{- fail "transparentDNS.enabled=true requires pdns.port to match pdns.config.incoming.port when the latter is set" -}}
 {{- end -}}
 {{- if and (not .Values.transparentDNS.customClusterDNSIP) (not .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
 {{- fail "transparentDNS.enabled=true requires either transparentDNS.customClusterDNSIP or transparentDNS.clusterDNS.upstreamService.clusterIP to be set" -}}
@@ -343,11 +351,17 @@ containers:
         {{- end }}
 
         add_ip() {
-          ip addr add {{ .Values.transparentDNS.localIP }}/32 dev lo 2>/dev/null || true
+          if ip addr show dev lo | grep -q " {{ .Values.transparentDNS.localIP }}/32 "; then
+            return 0
+          fi
+          ip addr add {{ .Values.transparentDNS.localIP }}/32 dev lo
         }
 
         del_ip() {
-          ip addr del {{ .Values.transparentDNS.localIP }}/32 dev lo 2>/dev/null || true
+          if ! ip addr show dev lo | grep -q " {{ .Values.transparentDNS.localIP }}/32 "; then
+            return 0
+          fi
+          ip addr del {{ .Values.transparentDNS.localIP }}/32 dev lo
         }
 
         add_rule() {
