@@ -197,7 +197,7 @@ tests:
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: "iptables -t nat -I"
+          pattern: "REDIRECT --to-ports"
         template: templates/daemonset.yaml
       - notMatchRegex:
           path: spec.template.spec.containers[1].args[0]
@@ -205,11 +205,11 @@ tests:
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: "ip -o addr show dev lo to 169\\.254\\.20\\.25/32"
+          pattern: "CHAIN=\"PDNSDNS-"
         template: templates/daemonset.yaml
       - notMatchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: "ip addr add .*\\|\\| true|ip addr del .*\\|\\| true"
+          pattern: "ip addr add|ip addr del|DNAT --to-destination"
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.volumes[1].hostPath.path
@@ -303,7 +303,7 @@ tests:
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
       pdns.config.incoming.listen:
-        - 169.254.20.25
+        - 0.0.0.0
     asserts:
       - isKind:
           of: DaemonSet

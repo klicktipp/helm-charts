@@ -112,14 +112,11 @@ Validate cross-field settings.
 {{- if not .Values.transparentDNS.clusterDomain -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDomain to be set" -}}
 {{- end -}}
-{{- if not .Values.transparentDNS.localIP -}}
-{{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be set" -}}
-{{- end -}}
 {{- $incoming := default (dict) (get .Values.pdns.config "incoming") -}}
 {{- $incomingPort := get $incoming "port" -}}
 {{- $incomingListen := default (list) (get $incoming "listen") -}}
-{{- if and $incomingListen (not (or (has "0.0.0.0" $incomingListen) (has .Values.transparentDNS.localIP $incomingListen))) -}}
-{{- fail "transparentDNS.enabled=true requires pdns.config.incoming.listen to include 0.0.0.0 or transparentDNS.localIP when the listen list is set" -}}
+{{- if and $incomingListen (not (has "0.0.0.0" $incomingListen)) -}}
+{{- fail "transparentDNS.enabled=true requires pdns.config.incoming.listen to include 0.0.0.0 when the listen list is set" -}}
 {{- end -}}
 {{- if and $incomingPort (ne (toString $incomingPort) (toString .Values.pdns.port)) -}}
 {{- fail "transparentDNS.enabled=true requires pdns.port to match pdns.config.incoming.port when the latter is set" -}}
@@ -203,6 +200,13 @@ Effective CoreDNS upstream IP for transparent DNS forwarding.
 {{- else -}}
 {{- .Values.transparentDNS.clusterDNS.upstreamService.clusterIP -}}
 {{- end -}}
+{{- end }}
+
+{{/*
+Dedicated iptables chain name for transparent DNS interception.
+*/}}
+{{- define "pdns.transparentDNSChainName" -}}
+{{- printf "PDNSDNS-%s" (sha256sum (include "pdns.fullname" .) | trunc 8) -}}
 {{- end }}
 
 {{/*
@@ -379,43 +383,56 @@ containers:
         # Runtime package installation is disabled; the interceptor image must already contain iptables and iproute2/ip.
         {{- end }}
 
-        add_ip() {
-          if ip -o addr show dev lo to {{ .Values.transparentDNS.localIP }}/32 >/dev/null 2>&1; then
-            return 0
+        CHAIN="{{ include "pdns.transparentDNSChainName" . }}"
+        PDNS_PORT="{{ .Values.pdns.port }}"
+        PDNS_PORT_HEX="$(printf '%04X' "${PDNS_PORT}")"
+
+        is_recursor_ready() {
+          grep -qiE "^[[:space:]]*[0-9]+:[[:space:]][0-9A-F]{8,32}:${PDNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/tcp6 /proc/net/udp /proc/net/udp6 2>/dev/null
+        }
+
+        ensure_chain() {
+          iptables -t nat -N "${CHAIN}" 2>/dev/null || true
+          iptables -t nat -F "${CHAIN}"
+          iptables -t nat -A "${CHAIN}" -p udp --dport 53 -j REDIRECT --to-ports "${PDNS_PORT}"
+          iptables -t nat -A "${CHAIN}" -p tcp --dport 53 -j REDIRECT --to-ports "${PDNS_PORT}"
+        }
+
+        ensure_jump() {
+          iptables -t nat -C "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j "${CHAIN}" 2>/dev/null \
+            || iptables -t nat -I "$1" 1 -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j "${CHAIN}"
+        }
+
+        remove_jump() {
+          while iptables -t nat -C "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j "${CHAIN}" 2>/dev/null; do
+            iptables -t nat -D "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j "${CHAIN}" || true
+          done
+        }
+
+        install_rules() {
+          ensure_chain
+          ensure_jump PREROUTING udp
+          ensure_jump PREROUTING tcp
+          if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
+            ensure_jump OUTPUT udp
+            ensure_jump OUTPUT tcp
           fi
-          ip addr add {{ .Values.transparentDNS.localIP }}/32 dev lo
         }
 
-        del_ip() {
-          if ! ip -o addr show dev lo to {{ .Values.transparentDNS.localIP }}/32 >/dev/null 2>&1; then
-            return 0
+        remove_rules() {
+          remove_jump PREROUTING udp
+          remove_jump PREROUTING tcp
+          if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
+            remove_jump OUTPUT udp
+            remove_jump OUTPUT tcp
           fi
-          ip addr del {{ .Values.transparentDNS.localIP }}/32 dev lo
-        }
-
-        add_rule() {
-          iptables -t nat -C "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }} 2>/dev/null \
-            || iptables -t nat -I "$1" 1 -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }}
-        }
-
-        del_rule() {
-          iptables -t nat -D "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j DNAT --to-destination {{ .Values.transparentDNS.localIP }}:{{ .Values.pdns.port }} 2>/dev/null || true
+          iptables -t nat -F "${CHAIN}" 2>/dev/null || true
+          iptables -t nat -X "${CHAIN}" 2>/dev/null || true
         }
 
         cleanup() {
-          if [ "{{ .Values.transparentDNS.skipTeardown }}" = "true" ]; then
-            exit 0
-          fi
           if [ "{{ .Values.transparentDNS.setupIptables }}" = "true" ]; then
-            del_rule PREROUTING udp
-            del_rule PREROUTING tcp
-            if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-              del_rule OUTPUT udp
-              del_rule OUTPUT tcp
-            fi
-          fi
-          if [ "{{ .Values.transparentDNS.setupInterface }}" = "true" ]; then
-            del_ip
+            remove_rules
           fi
         }
 
@@ -427,20 +444,21 @@ containers:
         trap signal_handler TERM INT
         trap cleanup EXIT
 
-        if [ "{{ .Values.transparentDNS.setupInterface }}" = "true" ]; then
-          add_ip
-        fi
-
-        if [ "{{ .Values.transparentDNS.setupIptables }}" = "true" ]; then
-          add_rule PREROUTING udp
-          add_rule PREROUTING tcp
-          if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            add_rule OUTPUT udp
-            add_rule OUTPUT tcp
+        rules_active=0
+        while true; do
+          if [ "{{ .Values.transparentDNS.setupIptables }}" = "true" ] && is_recursor_ready; then
+            if [ "${rules_active}" -eq 0 ]; then
+              install_rules
+              rules_active=1
+            fi
+          else
+            if [ "${rules_active}" -eq 1 ]; then
+              remove_rules
+              rules_active=0
+            fi
           fi
-        fi
-
-        while true; do sleep 3600; done
+          sleep 2
+        done
     resources:
       {{- toYaml .Values.transparentDNS.resources | nindent 6 }}
     volumeMounts:

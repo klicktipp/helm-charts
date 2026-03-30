@@ -30,8 +30,6 @@ workload:
 transparentDNS:
   # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation.
   enabled: false
-  # -- Link-local IP bound on each node and used as the local DNAT target. Required when transparentDNS.enabled=true.
-  localIP: 169.254.20.25
   # -- Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true.
   clusterDomain: cluster.local
   clusterDNS:
@@ -65,14 +63,10 @@ transparentDNS:
     enableRuntimeInstall: true
     # -- Package installation command executed before adding IPs and iptables rules. Ignored when interceptor.enableRuntimeInstall=false.
     installPackagesCommand: apk add --no-cache iptables iproute2
-  # -- Configure the network interface alias used by the interceptor.
-  setupInterface: true
   # -- Configure iptables rules that transparently capture pod DNS traffic to clusterDNS.serviceIP.
   setupIptables: true
   # -- Also capture node-local processes hitting the cluster DNS Service IP via the OUTPUT chain.
   captureOutput: true
-  # -- Leave IP alias and iptables rules behind when the pod exits.
-  skipTeardown: false
   securityContext:
     # -- Run the interceptor as root so it can manipulate networking.
     runAsUser: 0
