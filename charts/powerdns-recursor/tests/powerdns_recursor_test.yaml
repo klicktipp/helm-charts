@@ -205,7 +205,7 @@ tests:
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: "CHAIN=\"PDNSDNS-"
+          pattern: 'CHAIN="PDNSDNS-'
         template: templates/daemonset.yaml
       - notMatchRegex:
           path: spec.template.spec.containers[1].args[0]
