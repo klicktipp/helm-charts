@@ -21,14 +21,14 @@ workload:
       rollingUpdate:
         # -- Keep the existing pod on a node until a surged replacement is ready.
         maxUnavailable: 0
-        # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps.
-        maxSurge: 1
+        # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps. Defaults to 1, or 0 when transparentDNS.enabled=true. Set explicitly to override the dynamic default.
+        maxSurge: ""
     # -- Time a new DaemonSet pod must stay ready before it is considered available.
     minReadySeconds: 5
 
 # -- Optional transparent DNS takeover mode. Experimental. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings.
 transparentDNS:
-  # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet and workload.daemonSet.updateStrategy.rollingUpdate.maxSurge=0.
+  # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation.
   enabled: false
   # -- Link-local IP bound on each node and used as the local DNAT target. Required when transparentDNS.enabled=true.
   localIP: 169.254.20.25
