@@ -10,7 +10,7 @@ spec:
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   minReadySeconds: {{ default 0 .Values.workload.daemonSet.minReadySeconds }}
   updateStrategy:
-    {{- toYaml .Values.workload.daemonSet.updateStrategy | nindent 4 }}
+    {{- include "pdns.daemonSetUpdateStrategy" . | nindent 4 }}
   selector:
     matchLabels:
       {{- include "pdns.selectorLabels" . | nindent 6 }}

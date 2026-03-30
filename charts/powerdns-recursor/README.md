@@ -1,6 +1,6 @@
 # powerdns-recursor
 
-![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
+![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
 
 Helm chart for deploying PowerDNS Recursor on Kubernetes
 
@@ -18,13 +18,37 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 |-----|------|---------|-------------|
 | replicaCount | int | `1` | Number of pod replicas. Ignored in DaemonSet mode. |
 | revisionHistoryLimit | int | `10` | Number of old ReplicaSets to retain. Used by both Deployment and DaemonSet histories. |
-| workload | object | `{"daemonSet":{"minReadySeconds":5,"updateStrategy":{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}},"type":"Deployment"}` | Workload configuration. |
+| workload | object | `{"daemonSet":{"minReadySeconds":5,"updateStrategy":{"rollingUpdate":{"maxSurge":"","maxUnavailable":0},"type":"RollingUpdate"}},"type":"Deployment"}` | Workload configuration. |
 | workload.type | string | `"Deployment"` | Workload kind. Supported values: Deployment, DaemonSet. |
-| workload.daemonSet.updateStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}` | DaemonSet-only settings. Ignored when workload.type=Deployment. |
+| workload.daemonSet.updateStrategy | object | `{"rollingUpdate":{"maxSurge":"","maxUnavailable":0},"type":"RollingUpdate"}` | DaemonSet-only settings. Ignored when workload.type=Deployment. |
 | workload.daemonSet.updateStrategy.type | string | `"RollingUpdate"` | DaemonSet update strategy type. |
-| workload.daemonSet.updateStrategy.rollingUpdate.maxUnavailable | int | `0` | Keep the existing pod on a node until a surged replacement is ready. |
-| workload.daemonSet.updateStrategy.rollingUpdate.maxSurge | int | `1` | Allow one extra pod per node during rolling updates to avoid local DNS gaps. |
+| workload.daemonSet.updateStrategy.rollingUpdate.maxUnavailable | int | `0` | Keep the existing pod on a node until a surged replacement is ready. Defaults to 0, or 1 when transparentDNS.enabled=true. Set explicitly to override the dynamic default. |
+| workload.daemonSet.updateStrategy.rollingUpdate.maxSurge | string | `""` | Allow one extra pod per node during rolling updates to avoid local DNS gaps. Defaults to 1, or 0 when transparentDNS.enabled=true. Set explicitly to override the dynamic default. |
 | workload.daemonSet.minReadySeconds | int | `5` | Time a new DaemonSet pod must stay ready before it is considered available. |
+| transparentDNS | object | `{"captureOutput":true,"clusterDNS":{"namespace":"kube-system","selector":{"k8s-app":"kube-dns"},"serviceIP":"","upstreamService":{"annotations":{},"clusterIP":"","create":true,"name":""}},"clusterDomain":"cluster.local","customClusterDNSIP":"","enabled":false,"interceptor":{"enableRuntimeInstall":true,"image":{"pullPolicy":"IfNotPresent","repository":"alpine","tag":"3.23"},"installPackagesCommand":"apk add --no-cache iptables iproute2"},"localIP":"169.254.20.25","resources":{"limits":{"memory":"128Mi"},"requests":{"cpu":"25m","memory":"128Mi"}},"securityContext":{"capabilities":{"add":["NET_ADMIN"]},"runAsGroup":0,"runAsUser":0},"setupInterface":true,"setupIptables":true,"skipTeardown":false,"tolerations":[{"key":"CriticalAddonsOnly","operator":"Exists"},{"effect":"NoExecute","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"}]}` | Optional transparent DNS takeover mode. Experimental. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings. |
+| transparentDNS.enabled | bool | `false` | Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. |
+| transparentDNS.localIP | string | `"169.254.20.25"` | Link-local IP bound on each node and used as the local DNAT target. Required when transparentDNS.enabled=true. |
+| transparentDNS.clusterDomain | string | `"cluster.local"` | Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true. |
+| transparentDNS.clusterDNS.namespace | string | `"kube-system"` | Namespace where the cluster DNS pods live. Required when transparentDNS.enabled=true. |
+| transparentDNS.clusterDNS.serviceIP | string | `""` | ClusterIP of the kube-dns/CoreDNS Service that pods already use today. Required when transparentDNS.enabled=true. |
+| transparentDNS.clusterDNS.upstreamService.create | bool | `true` | Create an auxiliary Service with its own fixed ClusterIP in front of the CoreDNS pods to avoid recursion through the intercepted clusterDNS.serviceIP. |
+| transparentDNS.clusterDNS.upstreamService.name | string | `""` | Override the generated upstream Service name. |
+| transparentDNS.clusterDNS.upstreamService.clusterIP | string | `""` | Fixed ClusterIP of the auxiliary CoreDNS upstream Service. Required when transparentDNS.enabled=true, customClusterDNSIP is empty, and upstreamService.create=true. |
+| transparentDNS.clusterDNS.upstreamService.annotations | object | `{}` | Service annotations for the auxiliary CoreDNS upstream Service. |
+| transparentDNS.clusterDNS.selector | object | `{"k8s-app":"kube-dns"}` | Pod selector for the auxiliary CoreDNS upstream Service. Required when transparentDNS.enabled=true, customClusterDNSIP is empty, and upstreamService.create=true. |
+| transparentDNS.customClusterDNSIP | string | `""` | Use a pre-existing auxiliary CoreDNS upstream Service IP instead of creating one. Required when transparentDNS.enabled=true and upstreamService.create=false. |
+| transparentDNS.interceptor.image.repository | string | `"alpine"` | Helper image used to add the local IP and program iptables. Provide an image that already contains `ip` and `iptables` to avoid runtime package installation. |
+| transparentDNS.interceptor.image.tag | string | `"3.23"` | Image tag of the interceptor helper image. |
+| transparentDNS.interceptor.image.pullPolicy | string | `"IfNotPresent"` | Pull policy for the interceptor helper image. |
+| transparentDNS.interceptor.enableRuntimeInstall | bool | `true` | Enable runtime package installation before adding IPs and iptables rules. Disable this when the interceptor image already contains the required tooling. |
+| transparentDNS.interceptor.installPackagesCommand | string | `"apk add --no-cache iptables iproute2"` | Package installation command executed before adding IPs and iptables rules. Ignored when interceptor.enableRuntimeInstall=false. |
+| transparentDNS.setupInterface | bool | `true` | Configure the network interface alias used by the interceptor. |
+| transparentDNS.setupIptables | bool | `true` | Configure iptables rules that transparently capture pod DNS traffic to clusterDNS.serviceIP. |
+| transparentDNS.captureOutput | bool | `true` | Also capture node-local processes hitting the cluster DNS Service IP via the OUTPUT chain. |
+| transparentDNS.skipTeardown | bool | `false` | Leave IP alias and iptables rules behind when the pod exits. |
+| transparentDNS.securityContext.runAsUser | int | `0` | Run the interceptor as root so it can manipulate networking. |
+| transparentDNS.securityContext.runAsGroup | int | `0` | Run the interceptor with the root group. |
+| transparentDNS.tolerations | list | `[{"key":"CriticalAddonsOnly","operator":"Exists"},{"effect":"NoExecute","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"}]` | Default tolerations used only when transparentDNS.enabled=true and tolerations is empty. |
 | imagePullSecrets | list | `[]` | Image pull secrets. |
 | nameOverride | string | `""` | Partially override generated resource names. |
 | fullnameOverride | string | `""` | Fully override generated resource names. |
@@ -41,7 +65,7 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | securityContext | object | `{"runAsGroup":953,"runAsUser":953}` | Container-level security context. |
 | securityContext.runAsUser | int | `953` | Unix user id. |
 | securityContext.runAsGroup | int | `953` | Unix group id. |
-| priorityClassName | string | `""` | Optional priority class for pods. |
+| priorityClassName | string | `""` | Optional priority class for pods. When transparentDNS.enabled=true and this value is empty, the chart defaults to "system-node-critical". |
 | podAntiAffinity | object | `{"topologyKey":"kubernetes.io/hostname","type":"soft"}` | Pod anti-affinity shortcut (used when affinity is empty). |
 | podAntiAffinity.type | string | `"soft"` | "soft", "hard" or "disabled". Ignored in DaemonSet mode. |
 | podAntiAffinity.topologyKey | string | `"kubernetes.io/hostname"` | Topology key used by anti-affinity. |

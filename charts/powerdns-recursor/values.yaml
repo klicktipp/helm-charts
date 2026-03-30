@@ -19,12 +19,82 @@ workload:
       # -- DaemonSet update strategy type.
       type: RollingUpdate
       rollingUpdate:
-        # -- Keep the existing pod on a node until a surged replacement is ready.
+        # -- Keep the existing pod on a node until a surged replacement is ready. Defaults to 0, or 1 when transparentDNS.enabled=true. Set explicitly to override the dynamic default.
         maxUnavailable: 0
-        # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps.
-        maxSurge: 1
+        # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps. Defaults to 1, or 0 when transparentDNS.enabled=true. Set explicitly to override the dynamic default.
+        maxSurge: ""
     # -- Time a new DaemonSet pod must stay ready before it is considered available.
     minReadySeconds: 5
+
+# -- Optional transparent DNS takeover mode. Experimental. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings.
+transparentDNS:
+  # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation.
+  enabled: false
+  # -- Link-local IP bound on each node and used as the local DNAT target. Required when transparentDNS.enabled=true.
+  localIP: 169.254.20.25
+  # -- Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true.
+  clusterDomain: cluster.local
+  clusterDNS:
+    # -- Namespace where the cluster DNS pods live. Required when transparentDNS.enabled=true.
+    namespace: kube-system
+    # -- ClusterIP of the kube-dns/CoreDNS Service that pods already use today. Required when transparentDNS.enabled=true.
+    serviceIP: ""
+    upstreamService:
+      # -- Create an auxiliary Service with its own fixed ClusterIP in front of the CoreDNS pods to avoid recursion through the intercepted clusterDNS.serviceIP.
+      create: true
+      # -- Override the generated upstream Service name.
+      name: ""
+      # -- Fixed ClusterIP of the auxiliary CoreDNS upstream Service. Required when transparentDNS.enabled=true, customClusterDNSIP is empty, and upstreamService.create=true.
+      clusterIP: ""
+      # -- Service annotations for the auxiliary CoreDNS upstream Service.
+      annotations: {}
+    # -- Pod selector for the auxiliary CoreDNS upstream Service. Required when transparentDNS.enabled=true, customClusterDNSIP is empty, and upstreamService.create=true.
+    selector:
+      k8s-app: kube-dns
+  # -- Use a pre-existing auxiliary CoreDNS upstream Service IP instead of creating one. Required when transparentDNS.enabled=true and upstreamService.create=false.
+  customClusterDNSIP: ""
+  interceptor:
+    image:
+      # -- Helper image used to add the local IP and program iptables. Provide an image that already contains `ip` and `iptables` to avoid runtime package installation.
+      repository: alpine
+      # -- Image tag of the interceptor helper image.
+      tag: "3.23"
+      # -- Pull policy for the interceptor helper image.
+      pullPolicy: IfNotPresent
+    # -- Enable runtime package installation before adding IPs and iptables rules. Disable this when the interceptor image already contains the required tooling.
+    enableRuntimeInstall: true
+    # -- Package installation command executed before adding IPs and iptables rules. Ignored when interceptor.enableRuntimeInstall=false.
+    installPackagesCommand: apk add --no-cache iptables iproute2
+  # -- Configure the network interface alias used by the interceptor.
+  setupInterface: true
+  # -- Configure iptables rules that transparently capture pod DNS traffic to clusterDNS.serviceIP.
+  setupIptables: true
+  # -- Also capture node-local processes hitting the cluster DNS Service IP via the OUTPUT chain.
+  captureOutput: true
+  # -- Leave IP alias and iptables rules behind when the pod exits.
+  skipTeardown: false
+  securityContext:
+    # -- Run the interceptor as root so it can manipulate networking.
+    runAsUser: 0
+    # -- Run the interceptor with the root group.
+    runAsGroup: 0
+    capabilities:
+      add:
+        - NET_ADMIN
+  resources:
+    requests:
+      cpu: 25m
+      memory: 128Mi
+    limits:
+      memory: 128Mi
+  # -- Default tolerations used only when transparentDNS.enabled=true and tolerations is empty.
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    - effect: NoExecute
+      operator: Exists
+    - effect: NoSchedule
+      operator: Exists
 
 # -- Image pull secrets.
 imagePullSecrets: []
@@ -66,7 +136,7 @@ securityContext:
   # -- Unix group id.
   runAsGroup: 953
 
-# -- Optional priority class for pods.
+# -- Optional priority class for pods. When transparentDNS.enabled=true and this value is empty, the chart defaults to "system-node-critical".
 priorityClassName: ""
 
 # -- Pod anti-affinity shortcut (used when affinity is empty).
