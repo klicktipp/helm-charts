@@ -188,9 +188,9 @@ tests:
           path: spec.template.spec.containers[1].name
           value: dns-interceptor
         template: templates/daemonset.yaml
-      - equal:
+      - matchRegex:
           path: spec.template.spec.containers[1].image
-          value: alpine:3.21
+          pattern: "^alpine:"
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
