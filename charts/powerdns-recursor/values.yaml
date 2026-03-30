@@ -19,9 +19,9 @@ workload:
       # -- DaemonSet update strategy type.
       type: RollingUpdate
       rollingUpdate:
-        # -- Keep the existing pod on a node until a surged replacement is ready. Defaults to 0, or 1 when transparentDNS.enabled=true. Set explicitly to override the dynamic default.
+        # -- Keep the existing pod on a node until a surged replacement is ready. Defaults to 0. When transparentDNS.enabled=true, a configured value of 0 (including the default) is treated as 1 to keep the DaemonSet strategy valid; other explicit non-zero values are preserved.
         maxUnavailable: 0
-        # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps. Defaults to 1, or 0 when transparentDNS.enabled=true. Set explicitly to override the dynamic default.
+        # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps. Defaults to 1. When transparentDNS.enabled=true, the empty/default value becomes 0 and any explicit non-zero value will fail validation.
         maxSurge: ""
     # -- Time a new DaemonSet pod must stay ready before it is considered available.
     minReadySeconds: 5
@@ -53,15 +53,15 @@ transparentDNS:
   customClusterDNSIP: ""
   interceptor:
     image:
-      # -- Helper image used to add the local IP and program iptables. Provide an image that already contains `ip` and `iptables` to avoid runtime package installation.
+      # -- Helper image used to program iptables for transparent DNS interception. Provide an image that already contains `ip` and `iptables` to avoid runtime package installation.
       repository: alpine
       # -- Image tag of the interceptor helper image.
       tag: "3.23"
       # -- Pull policy for the interceptor helper image.
       pullPolicy: IfNotPresent
-    # -- Enable runtime package installation before adding IPs and iptables rules. Disable this when the interceptor image already contains the required tooling.
+    # -- Enable runtime package installation before configuring iptables rules. Disable this when the interceptor image already contains the required tooling.
     enableRuntimeInstall: true
-    # -- Package installation command executed before adding IPs and iptables rules. Ignored when interceptor.enableRuntimeInstall=false.
+    # -- Package installation command executed before configuring iptables rules. Ignored when interceptor.enableRuntimeInstall=false.
     installPackagesCommand: apk add --no-cache iptables iproute2
   # -- Configure iptables rules that transparently capture pod DNS traffic to clusterDNS.serviceIP.
   setupIptables: true
