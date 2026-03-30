@@ -151,6 +151,22 @@ Validate cross-field settings.
 {{- end }}
 
 {{/*
+Effective DaemonSet update strategy with transparent DNS-aware maxSurge default.
+*/}}
+{{- define "pdns.daemonSetUpdateStrategy" -}}
+{{- $strategy := deepCopy (default (dict) .Values.workload.daemonSet.updateStrategy) -}}
+{{- $rollingUpdate := default (dict) (get $strategy "rollingUpdate") -}}
+{{- $maxSurge := get $rollingUpdate "maxSurge" -}}
+{{- if and .Values.transparentDNS.enabled (eq (toString $maxSurge) "") -}}
+{{- $_ := set $rollingUpdate "maxSurge" 0 -}}
+{{- else if eq (toString $maxSurge) "" -}}
+{{- $_ := set $rollingUpdate "maxSurge" 1 -}}
+{{- end -}}
+{{- $_ := set $strategy "rollingUpdate" $rollingUpdate -}}
+{{- toYaml $strategy -}}
+{{- end }}
+
+{{/*
 Internal traffic policy with DaemonSet-aware default.
 */}}
 {{- define "pdns.internalTrafficPolicy" -}}
