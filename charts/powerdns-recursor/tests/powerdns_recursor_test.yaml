@@ -168,6 +168,10 @@ tests:
           value: 0
         template: templates/daemonset.yaml
       - equal:
+          path: spec.updateStrategy.rollingUpdate.maxUnavailable
+          value: 1
+        template: templates/daemonset.yaml
+      - equal:
           path: spec.template.spec.hostNetwork
           value: true
         template: templates/daemonset.yaml
@@ -317,4 +321,8 @@ tests:
       - equal:
           path: spec.updateStrategy.rollingUpdate.maxSurge
           value: 0
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.updateStrategy.rollingUpdate.maxUnavailable
+          value: 1
         template: templates/daemonset.yaml
