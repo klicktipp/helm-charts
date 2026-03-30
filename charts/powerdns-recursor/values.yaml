@@ -33,12 +33,12 @@ transparentDNS:
   # -- Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true.
   clusterDomain: cluster.local
   clusterDNS:
-    # -- Namespace where the cluster DNS pods live. Required when transparentDNS.enabled=true.
+    # -- Namespace where the cluster DNS pods live and, by default, where the optional auxiliary upstream Service is created. Required when transparentDNS.enabled=true. If this differs from the Helm release namespace, the install/upgrade identity must be allowed to create and manage Services in that namespace.
     namespace: kube-system
     # -- ClusterIP of the kube-dns/CoreDNS Service that pods already use today. Required when transparentDNS.enabled=true.
     serviceIP: ""
     upstreamService:
-      # -- Create an auxiliary Service with its own fixed ClusterIP in front of the CoreDNS pods to avoid recursion through the intercepted clusterDNS.serviceIP.
+      # -- Create an auxiliary Service with its own fixed ClusterIP in front of the CoreDNS pods to avoid recursion through the intercepted clusterDNS.serviceIP. When enabled, the Helm install/upgrade identity must be allowed to create and manage that Service in transparentDNS.clusterDNS.namespace.
       create: true
       # -- Override the generated upstream Service name.
       name: ""

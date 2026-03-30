@@ -155,7 +155,7 @@ tests:
           value: kubernetes.io/os
         template: templates/daemonset.yaml
 
-  - it: should render transparent dns takeover mode with an interceptor sidecar and host networking
+  - it: should render transparent dns takeover mode with an interceptor sidecar, host networking, and redirect-only interception
     set:
       workload.type: DaemonSet
       transparentDNS.enabled: true

@@ -1,3 +1,4 @@
+{{- include "pdns.validate" . }}
 {{- if eq (include "pdns.workloadType" .) "DaemonSet" }}
 ---
 apiVersion: apps/v1
