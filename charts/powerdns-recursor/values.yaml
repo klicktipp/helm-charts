@@ -58,7 +58,7 @@ transparentDNS:
       # -- Helper image used to add the local IP and program iptables. Provide an image that already contains `ip` and `iptables` to avoid runtime package installation.
       repository: alpine
       # -- Image tag of the interceptor helper image.
-      tag: "3.21"
+      tag: "3.23"
       # -- Pull policy for the interceptor helper image.
       pullPolicy: IfNotPresent
     # -- Enable runtime package installation before adding IPs and iptables rules. Disable this when the interceptor image already contains the required tooling.
