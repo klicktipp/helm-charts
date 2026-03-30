@@ -157,10 +157,16 @@ Effective DaemonSet update strategy with transparent DNS-aware maxSurge default.
 {{- $strategy := deepCopy (default (dict) .Values.workload.daemonSet.updateStrategy) -}}
 {{- $rollingUpdate := default (dict) (get $strategy "rollingUpdate") -}}
 {{- $maxSurge := get $rollingUpdate "maxSurge" -}}
+{{- $maxUnavailable := get $rollingUpdate "maxUnavailable" -}}
 {{- if and .Values.transparentDNS.enabled (eq (toString $maxSurge) "") -}}
 {{- $_ := set $rollingUpdate "maxSurge" 0 -}}
 {{- else if eq (toString $maxSurge) "" -}}
 {{- $_ := set $rollingUpdate "maxSurge" 1 -}}
+{{- end -}}
+{{- if and .Values.transparentDNS.enabled (eq (toString $maxUnavailable) "0") -}}
+{{- $_ := set $rollingUpdate "maxUnavailable" 1 -}}
+{{- else if eq (toString $maxUnavailable) "" -}}
+{{- $_ := set $rollingUpdate "maxUnavailable" 0 -}}
 {{- end -}}
 {{- $_ := set $strategy "rollingUpdate" $rollingUpdate -}}
 {{- toYaml $strategy -}}

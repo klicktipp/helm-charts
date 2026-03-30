@@ -19,7 +19,7 @@ workload:
       # -- DaemonSet update strategy type.
       type: RollingUpdate
       rollingUpdate:
-        # -- Keep the existing pod on a node until a surged replacement is ready.
+        # -- Keep the existing pod on a node until a surged replacement is ready. Defaults to 0, or 1 when transparentDNS.enabled=true. Set explicitly to override the dynamic default.
         maxUnavailable: 0
         # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps. Defaults to 1, or 0 when transparentDNS.enabled=true. Set explicitly to override the dynamic default.
         maxSurge: ""
