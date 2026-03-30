@@ -30,28 +30,28 @@ workload:
 transparentDNS:
   # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet and workload.daemonSet.updateStrategy.rollingUpdate.maxSurge=0.
   enabled: false
-  # -- Link-local IP bound on each node and used as the local DNAT target.
+  # -- Link-local IP bound on each node and used as the local DNAT target. Required when transparentDNS.enabled=true.
   localIP: 169.254.20.25
-  # -- Cluster DNS domain still forwarded to CoreDNS.
+  # -- Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true.
   clusterDomain: cluster.local
   clusterDNS:
-    # -- Namespace where the cluster DNS pods live.
+    # -- Namespace where the cluster DNS pods live. Required when transparentDNS.enabled=true.
     namespace: kube-system
-    # -- ClusterIP of the kube-dns/CoreDNS Service that pods already use today.
+    # -- ClusterIP of the kube-dns/CoreDNS Service that pods already use today. Required when transparentDNS.enabled=true.
     serviceIP: ""
     upstreamService:
       # -- Create an auxiliary Service with its own fixed ClusterIP in front of the CoreDNS pods to avoid recursion through the intercepted clusterDNS.serviceIP.
       create: true
       # -- Override the generated upstream Service name.
       name: ""
-      # -- Fixed ClusterIP of the auxiliary CoreDNS upstream Service. Required when create=true.
+      # -- Fixed ClusterIP of the auxiliary CoreDNS upstream Service. Required when transparentDNS.enabled=true, customClusterDNSIP is empty, and upstreamService.create=true.
       clusterIP: ""
       # -- Service annotations for the auxiliary CoreDNS upstream Service.
       annotations: {}
-    # -- Pod selector for the auxiliary CoreDNS upstream Service.
+    # -- Pod selector for the auxiliary CoreDNS upstream Service. Required when transparentDNS.enabled=true, customClusterDNSIP is empty, and upstreamService.create=true.
     selector:
       k8s-app: kube-dns
-  # -- Use a pre-existing auxiliary CoreDNS upstream Service IP instead of creating one.
+  # -- Use a pre-existing auxiliary CoreDNS upstream Service IP instead of creating one. Required when transparentDNS.enabled=true and upstreamService.create=false.
   customClusterDNSIP: ""
   interceptor:
     image:
