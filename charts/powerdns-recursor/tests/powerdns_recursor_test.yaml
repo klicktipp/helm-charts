@@ -217,7 +217,7 @@ tests:
         template: templates/daemonset.yaml
       - matchRegex:
           path: data["recursor.yml"]
-          pattern: "forward_zones_recurse:[\\s\\S]*zone: cluster\\.local[\\s\\S]*172\\.20\\.0\\.11:53"
+          pattern: "forward_zones:[\\s\\S]*zone: cluster\\.local[\\s\\S]*172\\.20\\.0\\.11:53"
         template: templates/configmaps.yaml
       - isKind:
           of: Service
@@ -248,7 +248,7 @@ tests:
         template: templates/service-cluster-dns-upstream.yaml
       - matchRegex:
           path: data["recursor.yml"]
-          pattern: "forward_zones_recurse:[\\s\\S]*172\\.20\\.0\\.99:53"
+          pattern: "forward_zones:[\\s\\S]*172\\.20\\.0\\.99:53"
         template: templates/configmaps.yaml
 
   - it: should replace existing transparent dns forwarding zones instead of duplicating them
@@ -258,13 +258,11 @@ tests:
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
-      pdns.config.recursor.forward_zones_recurse:
+      pdns.config.recursor.forward_zones:
         - zone: cluster.local
-          recurse: true
           forwarders:
             - 10.0.0.53:53
         - zone: example.org
-          recurse: true
           forwarders:
             - 10.0.0.54:53
     asserts:

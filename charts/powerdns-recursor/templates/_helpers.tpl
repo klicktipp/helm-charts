@@ -238,7 +238,7 @@ Rendered PDNS config with transparent DNS forwarding when enabled.
 {{- $config := deepCopy (default (dict) .Values.pdns.config) -}}
 {{- if .Values.transparentDNS.enabled -}}
 {{- $recursor := default (dict) (get $config "recursor") -}}
-{{- $existing := default (list) (get $recursor "forward_zones_recurse") -}}
+{{- $existing := default (list) (get $recursor "forward_zones") -}}
 {{- $upstreamIP := include "pdns.transparentDNSClusterDNSIP" . -}}
 {{- $transparentZones := list .Values.transparentDNS.clusterDomain "in-addr.arpa" "ip6.arpa" -}}
 {{- $filtered := list -}}
@@ -248,10 +248,10 @@ Rendered PDNS config with transparent DNS forwarding when enabled.
   {{- end -}}
 {{- end -}}
 {{- $zones := list
-    (dict "zone" .Values.transparentDNS.clusterDomain "recurse" true "forwarders" (list (printf "%s:53" $upstreamIP)))
-    (dict "zone" "in-addr.arpa" "recurse" true "forwarders" (list (printf "%s:53" $upstreamIP)))
-    (dict "zone" "ip6.arpa" "recurse" true "forwarders" (list (printf "%s:53" $upstreamIP))) -}}
-{{- $_ := set $recursor "forward_zones_recurse" (concat $filtered $zones) -}}
+    (dict "zone" .Values.transparentDNS.clusterDomain "forwarders" (list (printf "%s:53" $upstreamIP)))
+    (dict "zone" "in-addr.arpa" "forwarders" (list (printf "%s:53" $upstreamIP)))
+    (dict "zone" "ip6.arpa" "forwarders" (list (printf "%s:53" $upstreamIP))) -}}
+{{- $_ := set $recursor "forward_zones" (concat $filtered $zones) -}}
 {{- $_ := set $config "recursor" $recursor -}}
 {{- end -}}
 {{- toYaml $config -}}
