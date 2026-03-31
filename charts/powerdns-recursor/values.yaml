@@ -26,9 +26,9 @@ workload:
     # -- Time a new DaemonSet pod must stay ready before it is considered available.
     minReadySeconds: 5
 
-# -- Optional transparent DNS takeover mode. Experimental. Redirects pod traffic for the existing cluster DNS Service IP to the local Recursor without changing pod DNS settings.
+# -- Optional transparent DNS takeover mode. Experimental. Binds the existing cluster DNS Service IP locally on each node and serves it from the Recursor without changing pod DNS settings.
 transparentDNS:
-  # -- Enable transparent interception of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation.
+  # -- Enable transparent takeover of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart binds transparentDNS.clusterDNS.serviceIP on each node, runs PowerDNS on port 53, and programs NOTRACK/ACCEPT rules instead of NAT redirects.
   enabled: false
   # -- Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true.
   clusterDomain: cluster.local
@@ -61,11 +61,11 @@ transparentDNS:
       pullPolicy: IfNotPresent
     # -- Enable runtime package installation before configuring iptables rules. Disable this when the interceptor image already contains the required tooling.
     enableRuntimeInstall: true
-    # -- Package installation command executed before configuring iptables rules. Ignored when interceptor.enableRuntimeInstall=false.
+    # -- Package installation command executed before configuring the local DNS takeover rules. Ignored when interceptor.enableRuntimeInstall=false.
     installPackagesCommand: apk add --no-cache iptables iproute2
-  # -- Configure iptables rules that transparently capture pod DNS traffic to clusterDNS.serviceIP.
+  # -- Configure the local IP alias plus raw/filter iptables rules required for the transparent DNS takeover.
   setupIptables: true
-  # -- Also capture node-local processes hitting the cluster DNS Service IP via the OUTPUT chain.
+  # -- Also configure raw OUTPUT rules for node-local processes hitting the cluster DNS Service IP.
   captureOutput: true
   securityContext:
     # -- Run the interceptor as root so it can manipulate networking.
@@ -286,7 +286,7 @@ probes:
 
 # -- PowerDNS recursor runtime configuration.
 pdns:
-  # -- Container DNS port.
+  # -- Container DNS port. Transparent DNS mode ignores this value and forces PowerDNS to listen on port 53.
   port: 5353
   # -- API endpoint settings.
   api:
@@ -309,6 +309,7 @@ pdns:
       setuid: pdns
       socket_mode: "660"
     incoming:
+      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to `0.0.0.0`.
       port: 5353
       listen:
         - 0.0.0.0

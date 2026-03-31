@@ -155,7 +155,7 @@ tests:
           value: kubernetes.io/os
         template: templates/daemonset.yaml
 
-  - it: should render transparent dns takeover mode with an interceptor sidecar, host networking, and redirect-only interception
+  - it: should render transparent dns takeover mode with an interceptor sidecar, host networking, and a local service-ip takeover
     set:
       workload.type: DaemonSet
       transparentDNS.enabled: true
@@ -191,25 +191,33 @@ tests:
           path: spec.template.spec.containers[1].name
           value: dns-interceptor
         template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 53
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.tcpSocket.host
+          value: 172.20.0.10
+        template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].image
           pattern: "^alpine:"
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: "REDIRECT --to-ports"
-        template: templates/daemonset.yaml
-      - notMatchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "local chain=|local proto="
+          pattern: "ip addr add.*dev lo"
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: 'CHAIN="PDNSDNS-'
+          pattern: "NOTRACK"
+        template: templates/daemonset.yaml
+      - matchRegex:
+          path: spec.template.spec.containers[1].args[0]
+          pattern: "allow DNS traffic"
         template: templates/daemonset.yaml
       - notMatchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: "ip addr add|ip addr del|DNAT --to-destination"
+          pattern: "REDIRECT --to-ports|DNAT --to-destination"
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.volumes[1].hostPath.path
@@ -301,11 +309,15 @@ tests:
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
       pdns.config.incoming.listen:
-        - 0.0.0.0
+        - 192.0.2.10
     asserts:
       - isKind:
           of: DaemonSet
         template: templates/daemonset.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 0\\.0\\.0\\.0[\\s\\S]*port: 53"
+        template: templates/configmaps.yaml
 
   - it: should allow overriding the transparent dns maxSurge default with an explicit zero
     set:

@@ -112,15 +112,6 @@ Validate cross-field settings.
 {{- if not .Values.transparentDNS.clusterDomain -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDomain to be set" -}}
 {{- end -}}
-{{- $incoming := default (dict) (get .Values.pdns.config "incoming") -}}
-{{- $incomingPort := get $incoming "port" -}}
-{{- $incomingListen := default (list) (get $incoming "listen") -}}
-{{- if and $incomingListen (not (has "0.0.0.0" $incomingListen)) -}}
-{{- fail "transparentDNS.enabled=true requires pdns.config.incoming.listen to include 0.0.0.0 when the listen list is set" -}}
-{{- end -}}
-{{- if and $incomingPort (ne (toString $incomingPort) (toString .Values.pdns.port)) -}}
-{{- fail "transparentDNS.enabled=true requires pdns.port to match pdns.config.incoming.port when the latter is set" -}}
-{{- end -}}
 {{- if and (not .Values.transparentDNS.customClusterDNSIP) (not .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
 {{- fail "transparentDNS.enabled=true requires either transparentDNS.customClusterDNSIP or transparentDNS.clusterDNS.upstreamService.clusterIP to be set" -}}
 {{- end -}}
@@ -203,6 +194,17 @@ Effective CoreDNS upstream IP for transparent DNS forwarding.
 {{- end }}
 
 {{/*
+Effective DNS port exposed by the pod.
+*/}}
+{{- define "pdns.effectiveDNSPort" -}}
+{{- if .Values.transparentDNS.enabled -}}
+53
+{{- else -}}
+{{- .Values.pdns.port -}}
+{{- end -}}
+{{- end }}
+
+{{/*
 Dedicated iptables chain name for transparent DNS interception.
 */}}
 {{- define "pdns.transparentDNSChainName" -}}
@@ -237,6 +239,10 @@ Rendered PDNS config with transparent DNS forwarding when enabled.
 {{- define "pdns.config" -}}
 {{- $config := deepCopy (default (dict) .Values.pdns.config) -}}
 {{- if .Values.transparentDNS.enabled -}}
+{{- $incoming := default (dict) (get $config "incoming") -}}
+{{- $_ := set $incoming "port" 53 -}}
+{{- $_ := set $incoming "listen" (list "0.0.0.0") -}}
+{{- $_ := set $config "incoming" $incoming -}}
 {{- $recursor := default (dict) (get $config "recursor") -}}
 {{- $existing := default (list) (get $recursor "forward_zones") -}}
 {{- $upstreamIP := include "pdns.transparentDNSClusterDNSIP" . -}}
@@ -294,6 +300,23 @@ affinity:
 {{- end }}
 
 {{/*
+Effective container security context.
+*/}}
+{{- define "pdns.containerSecurityContext" -}}
+{{- $securityContext := deepCopy (default (dict) .Values.securityContext) -}}
+{{- if .Values.transparentDNS.enabled -}}
+{{- $capabilities := default (dict) (get $securityContext "capabilities") -}}
+{{- $capAdd := default (list) (get $capabilities "add") -}}
+{{- if not (has "NET_BIND_SERVICE" $capAdd) -}}
+{{- $capAdd = append $capAdd "NET_BIND_SERVICE" -}}
+{{- end -}}
+{{- $_ := set $capabilities "add" $capAdd -}}
+{{- $_ := set $securityContext "capabilities" $capabilities -}}
+{{- end -}}
+{{- toYaml $securityContext -}}
+{{- end }}
+
+{{/*
 Shared pod spec for Deployment and DaemonSet.
 */}}
 {{- define "pdns.podSpec" -}}
@@ -325,13 +348,13 @@ containers:
     image: {{ include "pdns.image" . | quote }}
     imagePullPolicy: {{ default .Values.image.imagePullPolicy .Values.image.pullPolicy }}
     securityContext:
-      {{- toYaml .Values.securityContext | nindent 6 }}
+      {{- include "pdns.containerSecurityContext" . | nindent 6 }}
     ports:
       - name: dns-udp
-        containerPort: {{ .Values.pdns.port }}
+        containerPort: {{ include "pdns.effectiveDNSPort" . | int }}
         protocol: UDP
       - name: dns-tcp
-        containerPort: {{ .Values.pdns.port }}
+        containerPort: {{ include "pdns.effectiveDNSPort" . | int }}
         protocol: TCP
       {{- if or .Values.pdns.api.enabled (include "pdns.podMonitorEnabled" . | trim | eq "true") }}
       - name: api
@@ -340,6 +363,9 @@ containers:
       {{- end }}
     livenessProbe:
       tcpSocket:
+        {{- if .Values.transparentDNS.enabled }}
+        host: {{ .Values.transparentDNS.clusterDNS.serviceIP | quote }}
+        {{- end }}
         port: dns-tcp
       initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
       periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
@@ -347,6 +373,9 @@ containers:
       failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
     readinessProbe:
       tcpSocket:
+        {{- if .Values.transparentDNS.enabled }}
+        host: {{ .Values.transparentDNS.clusterDNS.serviceIP | quote }}
+        {{- end }}
         port: dns-tcp
       initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
       periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
@@ -383,51 +412,96 @@ containers:
         # Runtime package installation is disabled; the interceptor image must already contain iptables and iproute2/ip.
         {{- end }}
 
-        CHAIN="{{ include "pdns.transparentDNSChainName" . }}"
-        PDNS_PORT="{{ .Values.pdns.port }}"
-        PDNS_PORT_HEX="$(printf '%04X' "${PDNS_PORT}")"
+        SERVICE_IP="{{ .Values.transparentDNS.clusterDNS.serviceIP }}"
+        SERVICE_CIDR="${SERVICE_IP}/32"
+        DNS_PORT="53"
+        DNS_PORT_HEX="$(printf '%04X' "${DNS_PORT}")"
+        COMMENT_PREFIX="PowerDNS transparent DNS"
 
         is_recursor_ready() {
-          grep -qiE "^[[:space:]]*[0-9]+:[[:space:]][0-9A-F]{8,32}:${PDNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/tcp6 /proc/net/udp /proc/net/udp6 2>/dev/null
+          grep -qiE "^[[:space:]]*[0-9]+:[[:space:]][0-9A-F]{8,32}:${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/tcp6 /proc/net/udp /proc/net/udp6 2>/dev/null
         }
 
-        ensure_chain() {
-          iptables -t nat -N "${CHAIN}" 2>/dev/null || true
-          iptables -t nat -F "${CHAIN}"
-          iptables -t nat -A "${CHAIN}" -p udp --dport 53 -j REDIRECT --to-ports "${PDNS_PORT}"
-          iptables -t nat -A "${CHAIN}" -p tcp --dport 53 -j REDIRECT --to-ports "${PDNS_PORT}"
+        has_local_service_ip() {
+          ip -o addr show dev lo to "${SERVICE_CIDR}" >/dev/null 2>&1
         }
 
-        ensure_jump() {
-          iptables -t nat -C "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j "${CHAIN}" 2>/dev/null \
-            || iptables -t nat -I "$1" 1 -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j "${CHAIN}"
+        ensure_local_service_ip() {
+          has_local_service_ip || ip addr add "${SERVICE_CIDR}" dev lo
         }
 
-        remove_jump() {
-          while iptables -t nat -C "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j "${CHAIN}" 2>/dev/null; do
-            iptables -t nat -D "$1" -d {{ .Values.transparentDNS.clusterDNS.serviceIP }} -p "$2" --dport 53 -j "${CHAIN}" || true
+        remove_local_service_ip() {
+          has_local_service_ip && ip addr del "${SERVICE_CIDR}" dev lo || true
+        }
+
+        ensure_raw_rule() {
+          table_chain="$1"
+          proto="$2"
+          direction_flag="$3"
+          port_flag="$4"
+          iptables -t raw -C "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK 2>/dev/null \
+            || iptables -t raw -I "${table_chain}" 1 "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+        }
+
+        remove_raw_rule() {
+          table_chain="$1"
+          proto="$2"
+          direction_flag="$3"
+          port_flag="$4"
+          while iptables -t raw -C "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK 2>/dev/null; do
+            iptables -t raw -D "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK || true
+          done
+        }
+
+        ensure_filter_rule() {
+          table_chain="$1"
+          proto="$2"
+          direction_flag="$3"
+          port_flag="$4"
+          iptables -t filter -C "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT 2>/dev/null \
+            || iptables -t filter -I "${table_chain}" 1 "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+        }
+
+        remove_filter_rule() {
+          table_chain="$1"
+          proto="$2"
+          direction_flag="$3"
+          port_flag="$4"
+          while iptables -t filter -C "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT 2>/dev/null; do
+            iptables -t filter -D "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT || true
           done
         }
 
         install_rules() {
-          ensure_chain
-          ensure_jump PREROUTING udp
-          ensure_jump PREROUTING tcp
+          ensure_local_service_ip
+          ensure_raw_rule PREROUTING udp -d dport
+          ensure_raw_rule PREROUTING tcp -d dport
           if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            ensure_jump OUTPUT udp
-            ensure_jump OUTPUT tcp
+            ensure_raw_rule OUTPUT udp -d dport
+            ensure_raw_rule OUTPUT tcp -d dport
+            ensure_raw_rule OUTPUT udp -s sport
+            ensure_raw_rule OUTPUT tcp -s sport
           fi
+          ensure_filter_rule INPUT udp -d dport
+          ensure_filter_rule INPUT tcp -d dport
+          ensure_filter_rule OUTPUT udp -s sport
+          ensure_filter_rule OUTPUT tcp -s sport
         }
 
         remove_rules() {
-          remove_jump PREROUTING udp
-          remove_jump PREROUTING tcp
+          remove_raw_rule PREROUTING udp -d dport
+          remove_raw_rule PREROUTING tcp -d dport
           if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            remove_jump OUTPUT udp
-            remove_jump OUTPUT tcp
+            remove_raw_rule OUTPUT udp -d dport
+            remove_raw_rule OUTPUT tcp -d dport
+            remove_raw_rule OUTPUT udp -s sport
+            remove_raw_rule OUTPUT tcp -s sport
           fi
-          iptables -t nat -F "${CHAIN}" 2>/dev/null || true
-          iptables -t nat -X "${CHAIN}" 2>/dev/null || true
+          remove_filter_rule INPUT udp -d dport
+          remove_filter_rule INPUT tcp -d dport
+          remove_filter_rule OUTPUT udp -s sport
+          remove_filter_rule OUTPUT tcp -s sport
+          remove_local_service_ip
         }
 
         cleanup() {
