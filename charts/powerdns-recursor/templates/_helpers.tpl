@@ -377,9 +377,6 @@ containers:
       {{- end }}
     livenessProbe:
       tcpSocket:
-        {{- if .Values.transparentDNS.enabled }}
-        host: {{ .Values.transparentDNS.clusterDNS.serviceIP | quote }}
-        {{- end }}
         port: dns-tcp
       initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
       periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
@@ -387,7 +384,7 @@ containers:
       failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
     readinessProbe:
       tcpSocket:
-        {{- if .Values.transparentDNS.enabled }}
+        {{- if and .Values.transparentDNS.enabled (eq (printf "%v" .Values.transparentDNS.bindPort) "53") }}
         host: {{ .Values.transparentDNS.clusterDNS.serviceIP | quote }}
         {{- end }}
         port: dns-tcp
@@ -474,21 +471,21 @@ containers:
         ensure_raw_chain() {
           ipt -t raw -N "${RAW_CHAIN}" 2>/dev/null || true
           ipt -t raw -F "${RAW_CHAIN}"
-          ipt -t raw -A "${RAW_CHAIN}" -d "${SERVICE_IP}" -p udp --dport 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
-          ipt -t raw -A "${RAW_CHAIN}" -d "${SERVICE_IP}" -p tcp --dport 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+          ipt -t raw -A "${RAW_CHAIN}" -d "${SERVICE_IP}" -p udp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+          ipt -t raw -A "${RAW_CHAIN}" -d "${SERVICE_IP}" -p tcp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
           if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            ipt -t raw -A "${RAW_CHAIN}" -s "${SERVICE_IP}" -p udp --sport 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
-            ipt -t raw -A "${RAW_CHAIN}" -s "${SERVICE_IP}" -p tcp --sport 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+            ipt -t raw -A "${RAW_CHAIN}" -s "${SERVICE_IP}" -p udp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+            ipt -t raw -A "${RAW_CHAIN}" -s "${SERVICE_IP}" -p tcp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
           fi
         }
 
         ensure_filter_chain() {
           ipt -t filter -N "${FILTER_CHAIN}" 2>/dev/null || true
           ipt -t filter -F "${FILTER_CHAIN}"
-          ipt -t filter -A "${FILTER_CHAIN}" -d "${SERVICE_IP}" -p udp --dport 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
-          ipt -t filter -A "${FILTER_CHAIN}" -d "${SERVICE_IP}" -p tcp --dport 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
-          ipt -t filter -A "${FILTER_CHAIN}" -s "${SERVICE_IP}" -p udp --sport 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
-          ipt -t filter -A "${FILTER_CHAIN}" -s "${SERVICE_IP}" -p tcp --sport 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -d "${SERVICE_IP}" -p udp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -d "${SERVICE_IP}" -p tcp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -s "${SERVICE_IP}" -p udp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -s "${SERVICE_IP}" -p tcp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
         }
 
         ensure_jump() {
@@ -499,10 +496,10 @@ containers:
           match_direction="$5"
           case "${match_direction}" in
             destination)
-              shift_args="-d ${SERVICE_IP} --dport 53"
+              shift_args="-d ${SERVICE_IP} --dport ${DNS_PORT}"
               ;;
             source)
-              shift_args="-s ${SERVICE_IP} --sport 53"
+              shift_args="-s ${SERVICE_IP} --sport ${DNS_PORT}"
               ;;
             *)
               echo "unsupported jump match direction: ${match_direction}" >&2
@@ -522,10 +519,10 @@ containers:
           match_direction="$5"
           case "${match_direction}" in
             destination)
-              shift_args="-d ${SERVICE_IP} --dport 53"
+              shift_args="-d ${SERVICE_IP} --dport ${DNS_PORT}"
               ;;
             source)
-              shift_args="-s ${SERVICE_IP} --sport 53"
+              shift_args="-s ${SERVICE_IP} --sport ${DNS_PORT}"
               ;;
             *)
               echo "unsupported jump match direction: ${match_direction}" >&2

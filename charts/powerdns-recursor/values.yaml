@@ -290,7 +290,7 @@ probes:
 
 # -- PowerDNS recursor runtime configuration.
 pdns:
-  # -- Container DNS port. Transparent DNS mode ignores this value and forces PowerDNS to listen on port 53.
+  # -- Container DNS port. Transparent DNS mode ignores this value and forces PowerDNS to listen on transparentDNS.bindPort.
   port: 5353
   # -- API endpoint settings.
   api:
