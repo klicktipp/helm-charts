@@ -70,7 +70,8 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | nodeSelector | object | `{}` | Node selector for scheduling. |
 | tolerations | list | `[]` | Tolerations for scheduling. |
 | podDisruptionBudget | object | `{}` | PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 }. Ignored in DaemonSet mode. |
-| service | object | `{"annotations":{},"clusterIP":"","headless":{"annotations":{},"enabled":false,"includeDnsPorts":true,"publishNotReadyAddresses":false},"internalTrafficPolicy":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"}` | Service configuration. |
+| service | object | `{"annotations":{},"clusterIP":"","enabled":true,"headless":{"annotations":{},"enabled":false,"includeDnsPorts":true,"publishNotReadyAddresses":false},"internalTrafficPolicy":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"}` | Service configuration. |
+| service.enabled | bool | `true` | Create the primary cluster-wide Service. Disable this in transparent DNS setups when you do not want an additional global ClusterIP for PowerDNS. |
 | service.type | string | `"ClusterIP"` | Service type. |
 | service.clusterIP | string | `""` | Optional fixed ClusterIP for the primary Service. |
 | service.internalTrafficPolicy | string | `""` | Service internal traffic policy. When empty, DaemonSet mode defaults to "Local". |

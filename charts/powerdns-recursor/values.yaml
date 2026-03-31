@@ -154,6 +154,8 @@ podDisruptionBudget: {}
 
 # -- Service configuration.
 service:
+  # -- Create the primary cluster-wide Service. Disable this in transparent DNS setups when you do not want an additional global ClusterIP for PowerDNS.
+  enabled: true
   # -- Service type.
   type: ClusterIP
   # -- Optional fixed ClusterIP for the primary Service.
