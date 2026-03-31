@@ -132,7 +132,9 @@ Validate cross-field settings.
 {{- $updateStrategy := default (dict) (get $daemonSet "updateStrategy") -}}
 {{- $rollingUpdate := default (dict) (get $updateStrategy "rollingUpdate") -}}
 {{- $maxSurge := get $rollingUpdate "maxSurge" -}}
-{{- if and $maxSurge (ne (toString $maxSurge) "0") -}}
+{{- $maxSurgeStr := toString $maxSurge -}}
+{{- $maxSurgeNormalized := trimSuffix "%" $maxSurgeStr -}}
+{{- if and $maxSurge (ne $maxSurgeNormalized "0") -}}
 {{- fail "transparentDNS.enabled=true requires workload.daemonSet.updateStrategy.rollingUpdate.maxSurge=0 to avoid hostNetwork DaemonSet surge rollouts" -}}
 {{- end -}}
 {{- end -}}
