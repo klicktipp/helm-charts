@@ -212,6 +212,20 @@ Dedicated iptables chain name for transparent DNS interception.
 {{- end }}
 
 {{/*
+Dedicated raw table chain name for transparent DNS interception.
+*/}}
+{{- define "pdns.transparentDNSRawChainName" -}}
+{{- printf "%s-R" (include "pdns.transparentDNSChainName" .) -}}
+{{- end }}
+
+{{/*
+Dedicated filter table chain name for transparent DNS interception.
+*/}}
+{{- define "pdns.transparentDNSFilterChainName" -}}
+{{- printf "%s-F" (include "pdns.transparentDNSChainName" .) -}}
+{{- end }}
+
+{{/*
 Priority class with transparent DNS-aware default.
 */}}
 {{- define "pdns.priorityClassName" -}}
@@ -417,9 +431,32 @@ containers:
         DNS_PORT="53"
         DNS_PORT_HEX="$(printf '%04X' "${DNS_PORT}")"
         COMMENT_PREFIX="PowerDNS transparent DNS"
+        RAW_CHAIN="{{ include "pdns.transparentDNSRawChainName" . }}"
+        FILTER_CHAIN="{{ include "pdns.transparentDNSFilterChainName" . }}"
+        IPTABLES_WAIT_SECONDS="5"
+        SERVICE_IP_HEX=""
+
+        ipt() {
+          iptables -w "${IPTABLES_WAIT_SECONDS}" "$@"
+        }
+
+        case "${SERVICE_IP}" in
+          *.*)
+            IFS=.
+            set -- ${SERVICE_IP}
+            unset IFS
+            if [ "$#" -eq 4 ]; then
+              SERVICE_IP_HEX="$(printf '%02X%02X%02X%02X' "$4" "$3" "$2" "$1")"
+            fi
+            ;;
+        esac
 
         is_recursor_ready() {
-          grep -qiE "^[[:space:]]*[0-9]+:[[:space:]][0-9A-F]{8,32}:${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/tcp6 /proc/net/udp /proc/net/udp6 2>/dev/null
+          if [ -n "${SERVICE_IP_HEX}" ]; then
+            grep -qiE "^[[:space:]]*[0-9]+:[[:space:]]*${SERVICE_IP_HEX}:${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/udp 2>/dev/null
+          else
+            grep -qiE "^[[:space:]]*[0-9]+:[[:space:]][0-9A-F]{8,32}:${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/tcp6 /proc/net/udp /proc/net/udp6 2>/dev/null
+          fi
         }
 
         has_local_service_ip() {
@@ -434,73 +471,76 @@ containers:
           has_local_service_ip && ip addr del "${SERVICE_CIDR}" dev lo || true
         }
 
-        ensure_raw_rule() {
-          table_chain="$1"
-          proto="$2"
-          direction_flag="$3"
-          port_flag="$4"
-          iptables -t raw -C "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK 2>/dev/null \
-            || iptables -t raw -I "${table_chain}" 1 "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+        ensure_raw_chain() {
+          ipt -t raw -N "${RAW_CHAIN}" 2>/dev/null || true
+          ipt -t raw -F "${RAW_CHAIN}"
+          ipt -t raw -A "${RAW_CHAIN}" -d "${SERVICE_IP}" -p udp --dport 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+          ipt -t raw -A "${RAW_CHAIN}" -d "${SERVICE_IP}" -p tcp --dport 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+          if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
+            ipt -t raw -A "${RAW_CHAIN}" -s "${SERVICE_IP}" -p udp --sport 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+            ipt -t raw -A "${RAW_CHAIN}" -s "${SERVICE_IP}" -p tcp --sport 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+          fi
         }
 
-        remove_raw_rule() {
-          table_chain="$1"
-          proto="$2"
-          direction_flag="$3"
-          port_flag="$4"
-          while iptables -t raw -C "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK 2>/dev/null; do
-            iptables -t raw -D "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK || true
-          done
+        ensure_filter_chain() {
+          ipt -t filter -N "${FILTER_CHAIN}" 2>/dev/null || true
+          ipt -t filter -F "${FILTER_CHAIN}"
+          ipt -t filter -A "${FILTER_CHAIN}" -d "${SERVICE_IP}" -p udp --dport 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -d "${SERVICE_IP}" -p tcp --dport 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -s "${SERVICE_IP}" -p udp --sport 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -s "${SERVICE_IP}" -p tcp --sport 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
         }
 
-        ensure_filter_rule() {
-          table_chain="$1"
+        ensure_jump() {
+          table_name="$1"
           proto="$2"
-          direction_flag="$3"
-          port_flag="$4"
-          iptables -t filter -C "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT 2>/dev/null \
-            || iptables -t filter -I "${table_chain}" 1 "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          table_chain="$3"
+          target_chain="$4"
+          ipt -t "${table_name}" -C "${table_chain}" -p "${proto}" -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}" 2>/dev/null \
+            || ipt -t "${table_name}" -I "${table_chain}" 1 -p "${proto}" -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}"
         }
 
-        remove_filter_rule() {
-          table_chain="$1"
+        remove_jump() {
+          table_name="$1"
           proto="$2"
-          direction_flag="$3"
-          port_flag="$4"
-          while iptables -t filter -C "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT 2>/dev/null; do
-            iptables -t filter -D "${table_chain}" "${direction_flag}" "${SERVICE_IP}" -p "${proto}" --"${port_flag}" 53 -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT || true
+          table_chain="$3"
+          target_chain="$4"
+          while ipt -t "${table_name}" -C "${table_chain}" -p "${proto}" -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}" 2>/dev/null; do
+            ipt -t "${table_name}" -D "${table_chain}" -p "${proto}" -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}" || true
           done
         }
 
         install_rules() {
           ensure_local_service_ip
-          ensure_raw_rule PREROUTING udp -d dport
-          ensure_raw_rule PREROUTING tcp -d dport
+          ensure_raw_chain
+          ensure_filter_chain
+          ensure_jump raw udp PREROUTING "${RAW_CHAIN}"
+          ensure_jump raw tcp PREROUTING "${RAW_CHAIN}"
           if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            ensure_raw_rule OUTPUT udp -d dport
-            ensure_raw_rule OUTPUT tcp -d dport
-            ensure_raw_rule OUTPUT udp -s sport
-            ensure_raw_rule OUTPUT tcp -s sport
+            ensure_jump raw udp OUTPUT "${RAW_CHAIN}"
+            ensure_jump raw tcp OUTPUT "${RAW_CHAIN}"
           fi
-          ensure_filter_rule INPUT udp -d dport
-          ensure_filter_rule INPUT tcp -d dport
-          ensure_filter_rule OUTPUT udp -s sport
-          ensure_filter_rule OUTPUT tcp -s sport
+          ensure_jump filter udp INPUT "${FILTER_CHAIN}"
+          ensure_jump filter tcp INPUT "${FILTER_CHAIN}"
+          ensure_jump filter udp OUTPUT "${FILTER_CHAIN}"
+          ensure_jump filter tcp OUTPUT "${FILTER_CHAIN}"
         }
 
         remove_rules() {
-          remove_raw_rule PREROUTING udp -d dport
-          remove_raw_rule PREROUTING tcp -d dport
+          remove_jump raw udp PREROUTING "${RAW_CHAIN}"
+          remove_jump raw tcp PREROUTING "${RAW_CHAIN}"
           if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            remove_raw_rule OUTPUT udp -d dport
-            remove_raw_rule OUTPUT tcp -d dport
-            remove_raw_rule OUTPUT udp -s sport
-            remove_raw_rule OUTPUT tcp -s sport
+            remove_jump raw udp OUTPUT "${RAW_CHAIN}"
+            remove_jump raw tcp OUTPUT "${RAW_CHAIN}"
           fi
-          remove_filter_rule INPUT udp -d dport
-          remove_filter_rule INPUT tcp -d dport
-          remove_filter_rule OUTPUT udp -s sport
-          remove_filter_rule OUTPUT tcp -s sport
+          remove_jump filter udp INPUT "${FILTER_CHAIN}"
+          remove_jump filter tcp INPUT "${FILTER_CHAIN}"
+          remove_jump filter udp OUTPUT "${FILTER_CHAIN}"
+          remove_jump filter tcp OUTPUT "${FILTER_CHAIN}"
+          ipt -t raw -F "${RAW_CHAIN}" 2>/dev/null || true
+          ipt -t raw -X "${RAW_CHAIN}" 2>/dev/null || true
+          ipt -t filter -F "${FILTER_CHAIN}" 2>/dev/null || true
+          ipt -t filter -X "${FILTER_CHAIN}" 2>/dev/null || true
           remove_local_service_ip
         }
 

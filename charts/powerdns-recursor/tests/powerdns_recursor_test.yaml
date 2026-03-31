@@ -307,7 +307,11 @@ tests:
         template: templates/configmaps.yaml
       - matchRegex:
           path: data["recursor.yml"]
-          pattern: "10\\.0\\.0\\.54:53[\\s\\S]*zone: example\\.org"
+          pattern: "zone: example\\.org"
+        template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "10\\.0\\.0\\.54:53"
         template: templates/configmaps.yaml
 
   - it: should allow disabling runtime package installation in the dns interceptor
