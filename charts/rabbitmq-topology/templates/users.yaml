@@ -16,10 +16,7 @@ metadata:
   annotations:
     checksum/user: {{ $user.existingSecret | default (printf "%s-%s" $userName $user.password) | sha256sum }}
 spec:
-  tags:
-  {{- range $t := $tags }}
-    - {{ $t | quote }}
-  {{- end }}
+  tags: {{ $tags | toJson }}
   rabbitmqClusterReference:
     name: {{ $clusterRef | quote }}
   importCredentialsSecret:
