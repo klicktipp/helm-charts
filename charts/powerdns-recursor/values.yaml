@@ -303,7 +303,7 @@ pdns:
     # -- Lua script content written to /etc/powerdns/recursor.lua.
     script: |
       zoneToCache(".", "url", "https://www.internic.net/domain/root.zone", { refreshPeriod = 86400 })
-  # -- Rendered directly into recursor.yml.
+  # -- Base configuration passed into the `pdns.config` helper to render recursor.yml. Transparent DNS mode may adjust parts of this structure automatically.
   config:
     recursor:
       config_dir: /etc/powerdns
@@ -311,7 +311,7 @@ pdns:
       setuid: pdns
       socket_mode: "660"
     incoming:
-      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to `0.0.0.0`.
+      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to `0.0.0.0` via the `pdns.config` helper.
       port: 5353
       listen:
         - 0.0.0.0

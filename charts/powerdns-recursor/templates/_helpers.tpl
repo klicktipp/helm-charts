@@ -208,7 +208,7 @@ Effective DNS port exposed by the pod.
 Dedicated iptables chain name for transparent DNS interception.
 */}}
 {{- define "pdns.transparentDNSChainName" -}}
-{{- printf "PDNSDNS-%s" (sha256sum (include "pdns.fullname" .) | trunc 8) -}}
+{{- printf "PDNSDNS-%s" (sha256sum (printf "%s-%s" (include "pdns.fullname" .) .Release.Namespace) | trunc 8) -}}
 {{- end }}
 
 {{/*
@@ -453,7 +453,7 @@ containers:
 
         is_recursor_ready() {
           if [ -n "${SERVICE_IP_HEX}" ]; then
-            grep -qiE "^[[:space:]]*[0-9]+:[[:space:]]*${SERVICE_IP_HEX}:${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/udp 2>/dev/null
+            grep -qiE "^[[:space:]]*[0-9]+:[[:space:]]*(00000000|${SERVICE_IP_HEX}):${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/udp 2>/dev/null
           else
             grep -qiE "^[[:space:]]*[0-9]+:[[:space:]][0-9A-F]{8,32}:${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/tcp6 /proc/net/udp /proc/net/udp6 2>/dev/null
           fi
@@ -496,8 +496,22 @@ containers:
           proto="$2"
           table_chain="$3"
           target_chain="$4"
-          ipt -t "${table_name}" -C "${table_chain}" -p "${proto}" -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}" 2>/dev/null \
-            || ipt -t "${table_name}" -I "${table_chain}" 1 -p "${proto}" -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}"
+          match_direction="$5"
+          case "${match_direction}" in
+            destination)
+              shift_args="-d ${SERVICE_IP} --dport 53"
+              ;;
+            source)
+              shift_args="-s ${SERVICE_IP} --sport 53"
+              ;;
+            *)
+              echo "unsupported jump match direction: ${match_direction}" >&2
+              exit 1
+              ;;
+          esac
+          # shellcheck disable=SC2086
+          ipt -t "${table_name}" -C "${table_chain}" -p "${proto}" ${shift_args} -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}" 2>/dev/null \
+            || ipt -t "${table_name}" -I "${table_chain}" 1 -p "${proto}" ${shift_args} -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}"
         }
 
         remove_jump() {
@@ -505,8 +519,22 @@ containers:
           proto="$2"
           table_chain="$3"
           target_chain="$4"
-          while ipt -t "${table_name}" -C "${table_chain}" -p "${proto}" -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}" 2>/dev/null; do
-            ipt -t "${table_name}" -D "${table_chain}" -p "${proto}" -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}" || true
+          match_direction="$5"
+          case "${match_direction}" in
+            destination)
+              shift_args="-d ${SERVICE_IP} --dport 53"
+              ;;
+            source)
+              shift_args="-s ${SERVICE_IP} --sport 53"
+              ;;
+            *)
+              echo "unsupported jump match direction: ${match_direction}" >&2
+              exit 1
+              ;;
+          esac
+          # shellcheck disable=SC2086
+          while ipt -t "${table_name}" -C "${table_chain}" -p "${proto}" ${shift_args} -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}" 2>/dev/null; do
+            ipt -t "${table_name}" -D "${table_chain}" -p "${proto}" ${shift_args} -m comment --comment "${COMMENT_PREFIX}: jump" -j "${target_chain}" || true
           done
         }
 
@@ -514,29 +542,33 @@ containers:
           ensure_local_service_ip
           ensure_raw_chain
           ensure_filter_chain
-          ensure_jump raw udp PREROUTING "${RAW_CHAIN}"
-          ensure_jump raw tcp PREROUTING "${RAW_CHAIN}"
+          ensure_jump raw udp PREROUTING "${RAW_CHAIN}" destination
+          ensure_jump raw tcp PREROUTING "${RAW_CHAIN}" destination
           if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            ensure_jump raw udp OUTPUT "${RAW_CHAIN}"
-            ensure_jump raw tcp OUTPUT "${RAW_CHAIN}"
+            ensure_jump raw udp OUTPUT "${RAW_CHAIN}" destination
+            ensure_jump raw tcp OUTPUT "${RAW_CHAIN}" destination
           fi
-          ensure_jump filter udp INPUT "${FILTER_CHAIN}"
-          ensure_jump filter tcp INPUT "${FILTER_CHAIN}"
-          ensure_jump filter udp OUTPUT "${FILTER_CHAIN}"
-          ensure_jump filter tcp OUTPUT "${FILTER_CHAIN}"
+          ensure_jump raw udp OUTPUT "${RAW_CHAIN}" source
+          ensure_jump raw tcp OUTPUT "${RAW_CHAIN}" source
+          ensure_jump filter udp INPUT "${FILTER_CHAIN}" destination
+          ensure_jump filter tcp INPUT "${FILTER_CHAIN}" destination
+          ensure_jump filter udp OUTPUT "${FILTER_CHAIN}" source
+          ensure_jump filter tcp OUTPUT "${FILTER_CHAIN}" source
         }
 
         remove_rules() {
-          remove_jump raw udp PREROUTING "${RAW_CHAIN}"
-          remove_jump raw tcp PREROUTING "${RAW_CHAIN}"
+          remove_jump raw udp PREROUTING "${RAW_CHAIN}" destination
+          remove_jump raw tcp PREROUTING "${RAW_CHAIN}" destination
           if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            remove_jump raw udp OUTPUT "${RAW_CHAIN}"
-            remove_jump raw tcp OUTPUT "${RAW_CHAIN}"
+            remove_jump raw udp OUTPUT "${RAW_CHAIN}" destination
+            remove_jump raw tcp OUTPUT "${RAW_CHAIN}" destination
           fi
-          remove_jump filter udp INPUT "${FILTER_CHAIN}"
-          remove_jump filter tcp INPUT "${FILTER_CHAIN}"
-          remove_jump filter udp OUTPUT "${FILTER_CHAIN}"
-          remove_jump filter tcp OUTPUT "${FILTER_CHAIN}"
+          remove_jump raw udp OUTPUT "${RAW_CHAIN}" source
+          remove_jump raw tcp OUTPUT "${RAW_CHAIN}" source
+          remove_jump filter udp INPUT "${FILTER_CHAIN}" destination
+          remove_jump filter tcp INPUT "${FILTER_CHAIN}" destination
+          remove_jump filter udp OUTPUT "${FILTER_CHAIN}" source
+          remove_jump filter tcp OUTPUT "${FILTER_CHAIN}" source
           ipt -t raw -F "${RAW_CHAIN}" 2>/dev/null || true
           ipt -t raw -X "${RAW_CHAIN}" 2>/dev/null || true
           ipt -t filter -F "${FILTER_CHAIN}" 2>/dev/null || true
