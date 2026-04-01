@@ -577,20 +577,10 @@ containers:
         }
 
         install_rules() {
-          service_ip_active=0
-          ensure_local_ip "${LOCAL_IP}"
+          service_ip_active="$1"
           ensure_raw_chain
           ensure_filter_chain
           add_ip_rules "${LOCAL_IP}"
-          if [ "${TAKEOVER_CLUSTER_IP}" = "true" ]; then
-            if ensure_local_ip "${SERVICE_IP}"; then
-              service_ip_active=1
-              log "cluster DNS Service IP takeover active on ${SERVICE_IP}"
-              add_ip_rules "${SERVICE_IP}"
-            else
-              echo "warning: failed to bind cluster DNS Service IP ${SERVICE_IP} on lo, continuing with localIP ${LOCAL_IP} only" >&2
-            fi
-          fi
           ensure_jump raw udp PREROUTING "${RAW_CHAIN}" destination "${LOCAL_IP}"
           ensure_jump raw tcp PREROUTING "${RAW_CHAIN}" destination "${LOCAL_IP}"
           if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
@@ -671,12 +661,23 @@ containers:
         trap signal_handler TERM INT
         trap cleanup EXIT
 
+        service_ip_active=0
+        ensure_local_ip "${LOCAL_IP}"
+        if [ "${TAKEOVER_CLUSTER_IP}" = "true" ]; then
+          if ensure_local_ip "${SERVICE_IP}"; then
+            service_ip_active=1
+            log "cluster DNS Service IP takeover active on ${SERVICE_IP}"
+          else
+            echo "warning: failed to bind cluster DNS Service IP ${SERVICE_IP} on lo, continuing with localIP ${LOCAL_IP} only" >&2
+          fi
+        fi
+
         rules_active=0
         while true; do
           if [ "{{ .Values.transparentDNS.setupIptables }}" = "true" ] && is_recursor_ready; then
             if [ "${rules_active}" -eq 0 ]; then
               log "recursor listener detected on port ${DNS_PORT}, installing takeover rules"
-              install_rules
+              install_rules "${service_ip_active}"
               rules_active=1
             fi
           else
