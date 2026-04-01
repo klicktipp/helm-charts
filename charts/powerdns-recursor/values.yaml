@@ -26,16 +26,20 @@ workload:
     # -- Time a new DaemonSet pod must stay ready before it is considered available.
     minReadySeconds: 5
 
-# -- Optional transparent DNS takeover mode. Experimental. Binds the existing cluster DNS Service IP locally on each node and serves it from the Recursor without changing pod DNS settings.
+# -- Optional transparent DNS takeover mode. Experimental. Binds a dedicated node-local DNS IP on each node and can optionally also take over the existing cluster DNS Service IP.
 transparentDNS:
-  # -- Enable transparent takeover of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart binds transparentDNS.clusterDNS.serviceIP on each node, runs PowerDNS on port 53, and programs NOTRACK/ACCEPT rules instead of NAT redirects.
+  # -- Enable node-local DNS takeover mode. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart always binds transparentDNS.localIP on each node, runs PowerDNS on port 53, and programs NOTRACK/ACCEPT rules. It can additionally try to take over transparentDNS.clusterDNS.serviceIP when transparentDNS.takeoverClusterIP=true.
   enabled: false
+  # -- Dedicated node-local DNS IP to bind on each node. Uses the same IP on every node. Adjust this if 169.254.20.10 is already in use in your cluster, for example by an existing node-local-dns deployment.
+  localIP: 169.254.20.10
+  # -- Also try to bind and intercept the existing kube-dns/CoreDNS Service IP on each node. Disable this on environments where the ClusterIP cannot be bound locally, for example some IPVS-based or otherwise restricted setups.
+  takeoverClusterIP: true
   # -- Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true.
   clusterDomain: cluster.local
   clusterDNS:
     # -- Namespace where the cluster DNS pods live and, by default, where the optional auxiliary upstream Service is created. Required when transparentDNS.enabled=true. If this differs from the Helm release namespace, the install/upgrade identity must be allowed to create and manage Services in that namespace.
     namespace: kube-system
-    # -- ClusterIP of the kube-dns/CoreDNS Service that pods already use today. Required when transparentDNS.enabled=true.
+    # -- ClusterIP of the kube-dns/CoreDNS Service that pods already use today. Required when transparentDNS.enabled=true and transparentDNS.takeoverClusterIP=true.
     serviceIP: ""
     upstreamService:
       # -- Create an auxiliary Service with its own fixed ClusterIP in front of the CoreDNS pods to avoid recursion through the intercepted clusterDNS.serviceIP. When enabled, the Helm install/upgrade identity must be allowed to create and manage that Service in transparentDNS.clusterDNS.namespace.
@@ -63,9 +67,9 @@ transparentDNS:
     enableRuntimeInstall: true
     # -- Package installation command executed before configuring the local DNS takeover rules. Ignored when interceptor.enableRuntimeInstall=false.
     installPackagesCommand: apk add --no-cache iptables iproute2
-  # -- Configure the local IP alias plus raw/filter iptables rules required for the transparent DNS takeover.
+  # -- Configure the local IP aliases plus raw/filter iptables rules required for the transparent DNS mode.
   setupIptables: true
-  # -- Also configure raw OUTPUT rules for node-local processes hitting the cluster DNS Service IP.
+  # -- Also configure raw OUTPUT rules for node-local processes hitting the node-local DNS IP and, when enabled, the cluster DNS Service IP.
   captureOutput: true
   securityContext:
     # -- Run the interceptor as root so it can manipulate networking.

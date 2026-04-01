@@ -123,6 +123,7 @@ tests:
       workload.type: DaemonSet
       service.enabled: false
       transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
@@ -186,6 +187,7 @@ tests:
     set:
       workload.type: DaemonSet
       transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
@@ -242,7 +244,11 @@ tests:
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: "ip addr add.*dev lo"
+          pattern: "LOCAL_IP=\\\"169\\.254\\.20\\.10\\\""
+        template: templates/daemonset.yaml
+      - matchRegex:
+          path: spec.template.spec.containers[1].args[0]
+          pattern: "TAKEOVER_CLUSTER_IP=\\\"true\\\""
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
@@ -284,6 +290,7 @@ tests:
     set:
       workload.type: DaemonSet
       transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.customClusterDNSIP: 172.20.0.99
@@ -300,6 +307,7 @@ tests:
     set:
       workload.type: DaemonSet
       transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
@@ -328,6 +336,7 @@ tests:
     set:
       workload.type: DaemonSet
       transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
@@ -346,6 +355,7 @@ tests:
     set:
       workload.type: DaemonSet
       transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
@@ -365,6 +375,7 @@ tests:
       workload.type: DaemonSet
       workload.daemonSet.updateStrategy.rollingUpdate.maxSurge: 0
       transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
@@ -383,6 +394,7 @@ tests:
       workload.type: DaemonSet
       workload.daemonSet.updateStrategy.rollingUpdate.maxSurge: "0%"
       transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
       transparentDNS.clusterDNS.namespace: kube-system
       transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
@@ -394,4 +406,21 @@ tests:
       - equal:
           path: spec.updateStrategy.rollingUpdate.maxUnavailable
           value: 1
+        template: templates/daemonset.yaml
+
+  - it: should support local ip mode without taking over the cluster dns service ip
+    set:
+      workload.type: DaemonSet
+      transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
+      transparentDNS.takeoverClusterIP: false
+      transparentDNS.clusterDNS.namespace: kube-system
+      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
+    asserts:
+      - isKind:
+          of: DaemonSet
+        template: templates/daemonset.yaml
+      - matchRegex:
+          path: spec.template.spec.containers[1].args[0]
+          pattern: "TAKEOVER_CLUSTER_IP=\\\"false\\\""
         template: templates/daemonset.yaml

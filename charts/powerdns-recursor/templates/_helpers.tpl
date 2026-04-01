@@ -100,8 +100,11 @@ Validate cross-field settings.
 {{- if ne (include "pdns.workloadType" .) "DaemonSet" -}}
 {{- fail "transparentDNS.enabled=true requires workload.type=DaemonSet" -}}
 {{- end -}}
-{{- if not .Values.transparentDNS.clusterDNS.serviceIP -}}
-{{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.serviceIP to be set to the kube-dns/CoreDNS Service IP" -}}
+{{- if not .Values.transparentDNS.localIP -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be set to a dedicated node-local DNS IP" -}}
+{{- end -}}
+{{- if and .Values.transparentDNS.takeoverClusterIP (not .Values.transparentDNS.clusterDNS.serviceIP) -}}
+{{- fail "transparentDNS.enabled=true with transparentDNS.takeoverClusterIP=true requires transparentDNS.clusterDNS.serviceIP to be set to the kube-dns/CoreDNS Service IP" -}}
 {{- end -}}
 {{- if not .Values.transparentDNS.clusterDNS.namespace -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.namespace to be set" -}}
@@ -115,11 +118,20 @@ Validate cross-field settings.
 {{- if and (not .Values.transparentDNS.customClusterDNSIP) (not .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
 {{- fail "transparentDNS.enabled=true requires either transparentDNS.customClusterDNSIP or transparentDNS.clusterDNS.upstreamService.clusterIP to be set" -}}
 {{- end -}}
-{{- if eq .Values.transparentDNS.customClusterDNSIP .Values.transparentDNS.clusterDNS.serviceIP -}}
+{{- if and .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.transparentDNS.localIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be different from transparentDNS.clusterDNS.serviceIP" -}}
+{{- end -}}
+{{- if and .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.transparentDNS.customClusterDNSIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.customClusterDNSIP to be different from transparentDNS.clusterDNS.serviceIP to avoid DNS recursion loops" -}}
 {{- end -}}
 {{- if and .Values.transparentDNS.clusterDNS.upstreamService.clusterIP (eq .Values.transparentDNS.clusterDNS.upstreamService.clusterIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.upstreamService.clusterIP to be different from transparentDNS.clusterDNS.serviceIP to avoid DNS recursion loops" -}}
+{{- end -}}
+{{- if eq .Values.transparentDNS.localIP .Values.transparentDNS.customClusterDNSIP -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be different from transparentDNS.customClusterDNSIP to avoid DNS recursion loops" -}}
+{{- end -}}
+{{- if and .Values.transparentDNS.clusterDNS.upstreamService.clusterIP (eq .Values.transparentDNS.localIP .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be different from transparentDNS.clusterDNS.upstreamService.clusterIP to avoid DNS recursion loops" -}}
 {{- end -}}
 {{- if and (not .Values.transparentDNS.customClusterDNSIP) .Values.transparentDNS.clusterDNS.upstreamService.create (not .Values.transparentDNS.clusterDNS.upstreamService.clusterIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.upstreamService.clusterIP when transparentDNS.clusterDNS.upstreamService.create=true" -}}
@@ -427,69 +439,79 @@ containers:
         # Runtime package installation is disabled; the interceptor image must already contain iptables and iproute2/ip.
         {{- end }}
 
+        LOCAL_IP="{{ .Values.transparentDNS.localIP }}"
+        LOCAL_CIDR="${LOCAL_IP}/32"
         SERVICE_IP="{{ .Values.transparentDNS.clusterDNS.serviceIP }}"
         SERVICE_CIDR="${SERVICE_IP}/32"
+        TAKEOVER_CLUSTER_IP="{{ .Values.transparentDNS.takeoverClusterIP }}"
         DNS_PORT="53"
         DNS_PORT_HEX="$(printf '%04X' "${DNS_PORT}")"
         COMMENT_PREFIX="PowerDNS transparent DNS"
         RAW_CHAIN="{{ include "pdns.transparentDNSRawChainName" . }}"
         FILTER_CHAIN="{{ include "pdns.transparentDNSFilterChainName" . }}"
         IPTABLES_WAIT_SECONDS="5"
-        SERVICE_IP_HEX=""
+        LOCAL_IP_HEX=""
 
         ipt() {
           iptables -w "${IPTABLES_WAIT_SECONDS}" "$@"
         }
 
-        case "${SERVICE_IP}" in
+        case "${LOCAL_IP}" in
           *.*)
             IFS=.
-            set -- ${SERVICE_IP}
+            set -- ${LOCAL_IP}
             unset IFS
             if [ "$#" -eq 4 ]; then
-              SERVICE_IP_HEX="$(printf '%02X%02X%02X%02X' "$4" "$3" "$2" "$1")"
+              LOCAL_IP_HEX="$(printf '%02X%02X%02X%02X' "$4" "$3" "$2" "$1")"
             fi
             ;;
         esac
 
         is_recursor_ready() {
-          if [ -n "${SERVICE_IP_HEX}" ]; then
-            grep -qiE "^[[:space:]]*[0-9]+:[[:space:]]*(00000000|${SERVICE_IP_HEX}):${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/udp 2>/dev/null
+          if [ -n "${LOCAL_IP_HEX}" ]; then
+            grep -qiE "^[[:space:]]*[0-9]+:[[:space:]]*(00000000|${LOCAL_IP_HEX}):${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/udp 2>/dev/null
           else
             grep -qiE "^[[:space:]]*[0-9]+:[[:space:]][0-9A-F]{8,32}:${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/tcp6 /proc/net/udp /proc/net/udp6 2>/dev/null
           fi
         }
 
-        has_local_service_ip() {
-          ip -o addr show dev lo to "${SERVICE_CIDR}" >/dev/null 2>&1
+        has_local_ip() {
+          ip_addr="$1"
+          ip -o addr show dev lo to "${ip_addr}/32" >/dev/null 2>&1
         }
 
-        ensure_local_service_ip() {
-          has_local_service_ip || ip addr add "${SERVICE_CIDR}" dev lo
+        ensure_local_ip() {
+          ip_addr="$1"
+          has_local_ip "${ip_addr}" || ip addr add "${ip_addr}/32" dev lo
         }
 
-        remove_local_service_ip() {
-          has_local_service_ip && ip addr del "${SERVICE_CIDR}" dev lo || true
+        remove_local_ip() {
+          ip_addr="$1"
+          has_local_ip "${ip_addr}" && ip addr del "${ip_addr}/32" dev lo || true
         }
 
         ensure_raw_chain() {
           ipt -t raw -N "${RAW_CHAIN}" 2>/dev/null || true
           ipt -t raw -F "${RAW_CHAIN}"
-          ipt -t raw -A "${RAW_CHAIN}" -d "${SERVICE_IP}" -p udp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
-          ipt -t raw -A "${RAW_CHAIN}" -d "${SERVICE_IP}" -p tcp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
-          if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            ipt -t raw -A "${RAW_CHAIN}" -s "${SERVICE_IP}" -p udp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
-            ipt -t raw -A "${RAW_CHAIN}" -s "${SERVICE_IP}" -p tcp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
-          fi
         }
 
         ensure_filter_chain() {
           ipt -t filter -N "${FILTER_CHAIN}" 2>/dev/null || true
           ipt -t filter -F "${FILTER_CHAIN}"
-          ipt -t filter -A "${FILTER_CHAIN}" -d "${SERVICE_IP}" -p udp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
-          ipt -t filter -A "${FILTER_CHAIN}" -d "${SERVICE_IP}" -p tcp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
-          ipt -t filter -A "${FILTER_CHAIN}" -s "${SERVICE_IP}" -p udp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
-          ipt -t filter -A "${FILTER_CHAIN}" -s "${SERVICE_IP}" -p tcp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+        }
+
+        add_ip_rules() {
+          target_ip="$1"
+          ipt -t raw -A "${RAW_CHAIN}" -d "${target_ip}" -p udp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+          ipt -t raw -A "${RAW_CHAIN}" -d "${target_ip}" -p tcp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+          if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
+            ipt -t raw -A "${RAW_CHAIN}" -s "${target_ip}" -p udp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+            ipt -t raw -A "${RAW_CHAIN}" -s "${target_ip}" -p tcp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: skip conntrack" -j NOTRACK
+          fi
+          ipt -t filter -A "${FILTER_CHAIN}" -d "${target_ip}" -p udp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -d "${target_ip}" -p tcp --dport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -s "${target_ip}" -p udp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
+          ipt -t filter -A "${FILTER_CHAIN}" -s "${target_ip}" -p tcp --sport "${DNS_PORT}" -m comment --comment "${COMMENT_PREFIX}: allow DNS traffic" -j ACCEPT
         }
 
         ensure_jump() {
@@ -498,12 +520,13 @@ containers:
           table_chain="$3"
           target_chain="$4"
           match_direction="$5"
+          match_ip="$6"
           case "${match_direction}" in
             destination)
-              shift_args="-d ${SERVICE_IP} --dport ${DNS_PORT}"
+              shift_args="-d ${match_ip} --dport ${DNS_PORT}"
               ;;
             source)
-              shift_args="-s ${SERVICE_IP} --sport ${DNS_PORT}"
+              shift_args="-s ${match_ip} --sport ${DNS_PORT}"
               ;;
             *)
               echo "unsupported jump match direction: ${match_direction}" >&2
@@ -521,12 +544,13 @@ containers:
           table_chain="$3"
           target_chain="$4"
           match_direction="$5"
+          match_ip="$6"
           case "${match_direction}" in
             destination)
-              shift_args="-d ${SERVICE_IP} --dport ${DNS_PORT}"
+              shift_args="-d ${match_ip} --dport ${DNS_PORT}"
               ;;
             source)
-              shift_args="-s ${SERVICE_IP} --sport ${DNS_PORT}"
+              shift_args="-s ${match_ip} --sport ${DNS_PORT}"
               ;;
             *)
               echo "unsupported jump match direction: ${match_direction}" >&2
@@ -540,41 +564,82 @@ containers:
         }
 
         install_rules() {
-          ensure_local_service_ip
+          service_ip_active=0
+          ensure_local_ip "${LOCAL_IP}"
           ensure_raw_chain
           ensure_filter_chain
-          ensure_jump raw udp PREROUTING "${RAW_CHAIN}" destination
-          ensure_jump raw tcp PREROUTING "${RAW_CHAIN}" destination
-          if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            ensure_jump raw udp OUTPUT "${RAW_CHAIN}" destination
-            ensure_jump raw tcp OUTPUT "${RAW_CHAIN}" destination
+          add_ip_rules "${LOCAL_IP}"
+          if [ "${TAKEOVER_CLUSTER_IP}" = "true" ]; then
+            if ensure_local_ip "${SERVICE_IP}"; then
+              service_ip_active=1
+              add_ip_rules "${SERVICE_IP}"
+            else
+              echo "warning: failed to bind cluster DNS Service IP ${SERVICE_IP} on lo, continuing with localIP ${LOCAL_IP} only" >&2
+            fi
           fi
-          ensure_jump raw udp OUTPUT "${RAW_CHAIN}" source
-          ensure_jump raw tcp OUTPUT "${RAW_CHAIN}" source
-          ensure_jump filter udp INPUT "${FILTER_CHAIN}" destination
-          ensure_jump filter tcp INPUT "${FILTER_CHAIN}" destination
-          ensure_jump filter udp OUTPUT "${FILTER_CHAIN}" source
-          ensure_jump filter tcp OUTPUT "${FILTER_CHAIN}" source
+          ensure_jump raw udp PREROUTING "${RAW_CHAIN}" destination "${LOCAL_IP}"
+          ensure_jump raw tcp PREROUTING "${RAW_CHAIN}" destination "${LOCAL_IP}"
+          if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
+            ensure_jump raw udp OUTPUT "${RAW_CHAIN}" destination "${LOCAL_IP}"
+            ensure_jump raw tcp OUTPUT "${RAW_CHAIN}" destination "${LOCAL_IP}"
+          fi
+          ensure_jump raw udp OUTPUT "${RAW_CHAIN}" source "${LOCAL_IP}"
+          ensure_jump raw tcp OUTPUT "${RAW_CHAIN}" source "${LOCAL_IP}"
+          ensure_jump filter udp INPUT "${FILTER_CHAIN}" destination "${LOCAL_IP}"
+          ensure_jump filter tcp INPUT "${FILTER_CHAIN}" destination "${LOCAL_IP}"
+          ensure_jump filter udp OUTPUT "${FILTER_CHAIN}" source "${LOCAL_IP}"
+          ensure_jump filter tcp OUTPUT "${FILTER_CHAIN}" source "${LOCAL_IP}"
+          if [ "${service_ip_active}" -eq 1 ]; then
+            ensure_jump raw udp PREROUTING "${RAW_CHAIN}" destination "${SERVICE_IP}"
+            ensure_jump raw tcp PREROUTING "${RAW_CHAIN}" destination "${SERVICE_IP}"
+            if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
+              ensure_jump raw udp OUTPUT "${RAW_CHAIN}" destination "${SERVICE_IP}"
+              ensure_jump raw tcp OUTPUT "${RAW_CHAIN}" destination "${SERVICE_IP}"
+            fi
+            ensure_jump raw udp OUTPUT "${RAW_CHAIN}" source "${SERVICE_IP}"
+            ensure_jump raw tcp OUTPUT "${RAW_CHAIN}" source "${SERVICE_IP}"
+            ensure_jump filter udp INPUT "${FILTER_CHAIN}" destination "${SERVICE_IP}"
+            ensure_jump filter tcp INPUT "${FILTER_CHAIN}" destination "${SERVICE_IP}"
+            ensure_jump filter udp OUTPUT "${FILTER_CHAIN}" source "${SERVICE_IP}"
+            ensure_jump filter tcp OUTPUT "${FILTER_CHAIN}" source "${SERVICE_IP}"
+          fi
         }
 
         remove_rules() {
-          remove_jump raw udp PREROUTING "${RAW_CHAIN}" destination
-          remove_jump raw tcp PREROUTING "${RAW_CHAIN}" destination
+          remove_jump raw udp PREROUTING "${RAW_CHAIN}" destination "${LOCAL_IP}"
+          remove_jump raw tcp PREROUTING "${RAW_CHAIN}" destination "${LOCAL_IP}"
           if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
-            remove_jump raw udp OUTPUT "${RAW_CHAIN}" destination
-            remove_jump raw tcp OUTPUT "${RAW_CHAIN}" destination
+            remove_jump raw udp OUTPUT "${RAW_CHAIN}" destination "${LOCAL_IP}"
+            remove_jump raw tcp OUTPUT "${RAW_CHAIN}" destination "${LOCAL_IP}"
           fi
-          remove_jump raw udp OUTPUT "${RAW_CHAIN}" source
-          remove_jump raw tcp OUTPUT "${RAW_CHAIN}" source
-          remove_jump filter udp INPUT "${FILTER_CHAIN}" destination
-          remove_jump filter tcp INPUT "${FILTER_CHAIN}" destination
-          remove_jump filter udp OUTPUT "${FILTER_CHAIN}" source
-          remove_jump filter tcp OUTPUT "${FILTER_CHAIN}" source
+          remove_jump raw udp OUTPUT "${RAW_CHAIN}" source "${LOCAL_IP}"
+          remove_jump raw tcp OUTPUT "${RAW_CHAIN}" source "${LOCAL_IP}"
+          remove_jump filter udp INPUT "${FILTER_CHAIN}" destination "${LOCAL_IP}"
+          remove_jump filter tcp INPUT "${FILTER_CHAIN}" destination "${LOCAL_IP}"
+          remove_jump filter udp OUTPUT "${FILTER_CHAIN}" source "${LOCAL_IP}"
+          remove_jump filter tcp OUTPUT "${FILTER_CHAIN}" source "${LOCAL_IP}"
+          if [ "${TAKEOVER_CLUSTER_IP}" = "true" ] && [ -n "${SERVICE_IP}" ]; then
+            remove_jump raw udp PREROUTING "${RAW_CHAIN}" destination "${SERVICE_IP}"
+            remove_jump raw tcp PREROUTING "${RAW_CHAIN}" destination "${SERVICE_IP}"
+            if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
+              remove_jump raw udp OUTPUT "${RAW_CHAIN}" destination "${SERVICE_IP}"
+              remove_jump raw tcp OUTPUT "${RAW_CHAIN}" destination "${SERVICE_IP}"
+            fi
+            remove_jump raw udp OUTPUT "${RAW_CHAIN}" source "${SERVICE_IP}"
+            remove_jump raw tcp OUTPUT "${RAW_CHAIN}" source "${SERVICE_IP}"
+            remove_jump filter udp INPUT "${FILTER_CHAIN}" destination "${SERVICE_IP}"
+            remove_jump filter tcp INPUT "${FILTER_CHAIN}" destination "${SERVICE_IP}"
+            remove_jump filter udp OUTPUT "${FILTER_CHAIN}" source "${SERVICE_IP}"
+            remove_jump filter tcp OUTPUT "${FILTER_CHAIN}" source "${SERVICE_IP}"
+          fi
           ipt -t raw -F "${RAW_CHAIN}" 2>/dev/null || true
           ipt -t raw -X "${RAW_CHAIN}" 2>/dev/null || true
           ipt -t filter -F "${FILTER_CHAIN}" 2>/dev/null || true
           ipt -t filter -X "${FILTER_CHAIN}" 2>/dev/null || true
-          remove_local_service_ip
+          remove_local_ip "${LOCAL_IP}"
+          if [ "${TAKEOVER_CLUSTER_IP}" = "true" ] && [ -n "${SERVICE_IP}" ]; then
+            remove_local_ip "${SERVICE_IP}"
+          fi
         }
 
         cleanup() {
