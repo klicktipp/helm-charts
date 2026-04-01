@@ -375,6 +375,22 @@ tests:
         template: templates/configmaps.yaml
       - matchRegex:
           path: data["recursor.yml"]
+          pattern: "zone: 10\\.in-addr\\.arpa[\\s\\S]*172\\.20\\.0\\.11:53"
+        template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "zone: 168\\.192\\.in-addr\\.arpa[\\s\\S]*172\\.20\\.0\\.11:53"
+        template: templates/configmaps.yaml
+      - notMatchRegex:
+          path: data["recursor.yml"]
+          pattern: "zone: in-addr\\.arpa"
+        template: templates/configmaps.yaml
+      - notMatchRegex:
+          path: data["recursor.yml"]
+          pattern: "zone: ip6\\.arpa"
+        template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
           pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*- 10\\.43\\.0\\.53[\\s\\S]*- 10\\.43\\.0\\.54[\\s\\S]*port: 53"
         template: templates/configmaps.yaml
       - isKind:
@@ -433,6 +449,10 @@ tests:
       - notMatchRegex:
           path: data["recursor.yml"]
           pattern: "10\\.0\\.0\\.53:53"
+        template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "zone: 10\\.in-addr\\.arpa"
         template: templates/configmaps.yaml
       - matchRegex:
           path: data["recursor.yml"]

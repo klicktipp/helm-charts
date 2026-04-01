@@ -312,6 +312,34 @@ Effective tolerations.
 {{- end }}
 
 {{/*
+Private reverse lookup zones forwarded to CoreDNS in transparent DNS mode.
+*/}}
+{{- define "pdns.transparentDNSPrivateReverseZones" -}}
+{{- $zones := list
+    "10.in-addr.arpa"
+    "16.172.in-addr.arpa"
+    "17.172.in-addr.arpa"
+    "18.172.in-addr.arpa"
+    "19.172.in-addr.arpa"
+    "20.172.in-addr.arpa"
+    "21.172.in-addr.arpa"
+    "22.172.in-addr.arpa"
+    "23.172.in-addr.arpa"
+    "24.172.in-addr.arpa"
+    "25.172.in-addr.arpa"
+    "26.172.in-addr.arpa"
+    "27.172.in-addr.arpa"
+    "28.172.in-addr.arpa"
+    "29.172.in-addr.arpa"
+    "30.172.in-addr.arpa"
+    "31.172.in-addr.arpa"
+    "168.192.in-addr.arpa"
+    "c.f.ip6.arpa"
+    "d.f.ip6.arpa" -}}
+{{- toYaml $zones -}}
+{{- end }}
+
+{{/*
 Rendered PDNS config with transparent DNS forwarding when enabled.
 */}}
 {{- define "pdns.config" -}}
@@ -324,17 +352,18 @@ Rendered PDNS config with transparent DNS forwarding when enabled.
 {{- $recursor := default (dict) (get $config "recursor") -}}
 {{- $existing := default (list) (get $recursor "forward_zones") -}}
 {{- $upstreamIP := include "pdns.transparentDNSClusterDNSIP" . -}}
-{{- $transparentZones := list .Values.transparentDNS.clusterDomain "in-addr.arpa" "ip6.arpa" -}}
+{{- $privateReverseZones := fromYamlArray (include "pdns.transparentDNSPrivateReverseZones" .) -}}
+{{- $transparentZones := concat (list .Values.transparentDNS.clusterDomain) $privateReverseZones -}}
 {{- $filtered := list -}}
 {{- range $entry := $existing -}}
   {{- if not (and (kindIs "map" $entry) (has (get $entry "zone") $transparentZones)) -}}
     {{- $filtered = append $filtered $entry -}}
   {{- end -}}
 {{- end -}}
-{{- $zones := list
-    (dict "zone" .Values.transparentDNS.clusterDomain "forwarders" (list (printf "%s:53" $upstreamIP)))
-    (dict "zone" "in-addr.arpa" "forwarders" (list (printf "%s:53" $upstreamIP)))
-    (dict "zone" "ip6.arpa" "forwarders" (list (printf "%s:53" $upstreamIP))) -}}
+{{- $zones := list (dict "zone" .Values.transparentDNS.clusterDomain "forwarders" (list (printf "%s:53" $upstreamIP))) -}}
+{{- range $zone := $privateReverseZones -}}
+{{- $zones = append $zones (dict "zone" $zone "forwarders" (list (printf "%s:53" $upstreamIP))) -}}
+{{- end -}}
 {{- $_ := set $recursor "forward_zones" (concat $filtered $zones) -}}
 {{- $_ := set $config "recursor" $recursor -}}
 {{- end -}}
