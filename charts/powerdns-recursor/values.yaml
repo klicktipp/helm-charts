@@ -19,12 +19,76 @@ workload:
       # -- DaemonSet update strategy type.
       type: RollingUpdate
       rollingUpdate:
-        # -- Keep the existing pod on a node until a surged replacement is ready.
+        # -- Keep the existing pod on a node until a surged replacement is ready. Defaults to 0. When transparentDNS.enabled=true, a configured value of 0 (including the default) is treated as 1 to keep the DaemonSet strategy valid; other explicit non-zero values are preserved.
         maxUnavailable: 0
-        # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps.
-        maxSurge: 1
+        # -- Allow one extra pod per node during rolling updates to avoid local DNS gaps. Defaults to 1. When transparentDNS.enabled=true, the empty/default value becomes 0 and any explicit non-zero value will fail validation.
+        maxSurge: ""
     # -- Time a new DaemonSet pod must stay ready before it is considered available.
     minReadySeconds: 5
+
+# -- Optional transparent DNS takeover mode. Experimental. Binds a dedicated node-local DNS IP on each node and can optionally also take over the existing cluster DNS Service IP.
+transparentDNS:
+  # -- Enable node-local DNS takeover mode. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart always binds transparentDNS.localIP on each node, runs PowerDNS on port 53, and programs NOTRACK/ACCEPT rules. It can additionally try to take over transparentDNS.clusterDNS.serviceIP when transparentDNS.takeoverClusterIP=true. If service.enabled=true and service.clusterIP is set, that primary Service IP is also added as a listen/bind address so direct queries to the PowerDNS Service keep working.
+  enabled: false
+  # -- Dedicated node-local DNS IP to bind on each node. Uses the same IP on every node. Adjust this if 169.254.20.10 is already in use in your cluster, for example by an existing node-local-dns deployment.
+  localIP: 169.254.20.10
+  # -- Also try to bind and intercept the existing kube-dns/CoreDNS Service IP on each node. Disable this on environments where the ClusterIP cannot be bound locally, for example some IPVS-based or otherwise restricted setups.
+  takeoverClusterIP: true
+  # -- Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true.
+  clusterDomain: cluster.local
+  clusterDNS:
+    # -- Namespace where the cluster DNS pods live and, by default, where the optional auxiliary upstream Service is created. Required when transparentDNS.enabled=true. If this differs from the Helm release namespace, the install/upgrade identity must be allowed to create and manage Services in that namespace.
+    namespace: kube-system
+    # -- ClusterIP of the kube-dns/CoreDNS Service that pods already use today. Required when transparentDNS.enabled=true and transparentDNS.takeoverClusterIP=true.
+    serviceIP: ""
+    upstreamService:
+      # -- Create an auxiliary Service with its own fixed ClusterIP in front of the CoreDNS pods to avoid recursion through the intercepted clusterDNS.serviceIP. When enabled, the Helm install/upgrade identity must be allowed to create and manage that Service in transparentDNS.clusterDNS.namespace.
+      create: true
+      # -- Override the generated upstream Service name.
+      name: ""
+      # -- Fixed ClusterIP of the auxiliary CoreDNS upstream Service. Required when transparentDNS.enabled=true, customClusterDNSIP is empty, and upstreamService.create=true.
+      clusterIP: ""
+      # -- Service annotations for the auxiliary CoreDNS upstream Service.
+      annotations: {}
+    # -- Pod selector for the auxiliary CoreDNS upstream Service. Required when transparentDNS.enabled=true, customClusterDNSIP is empty, and upstreamService.create=true.
+    selector:
+      k8s-app: kube-dns
+  # -- Use a pre-existing auxiliary CoreDNS upstream Service IP instead of creating one. Required when transparentDNS.enabled=true and upstreamService.create=false.
+  customClusterDNSIP: ""
+  interceptor:
+    image:
+      # -- Image used for the transparent DNS init/interceptor containers.
+      repository: ghcr.io/klicktipp/pdns-transparent-dns
+      # -- Image tag of the transparent DNS init/interceptor image.
+      tag: 0.1.1
+      # -- Pull policy for the interceptor helper image.
+      pullPolicy: IfNotPresent
+  # -- Configure the local IP aliases plus raw/filter iptables rules required for the transparent DNS mode.
+  setupIptables: true
+  # -- Also configure raw OUTPUT rules for node-local processes hitting the node-local DNS IP and, when enabled, the cluster DNS Service IP.
+  captureOutput: true
+  securityContext:
+    # -- Run the interceptor as root so it can manipulate networking.
+    runAsUser: 0
+    # -- Run the interceptor with the root group.
+    runAsGroup: 0
+    capabilities:
+      add:
+        - NET_ADMIN
+  resources:
+    requests:
+      cpu: 25m
+      memory: 128Mi
+    limits:
+      memory: 128Mi
+  # -- Default tolerations used only when transparentDNS.enabled=true and tolerations is empty.
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+    - effect: NoExecute
+      operator: Exists
+    - effect: NoSchedule
+      operator: Exists
 
 # -- Image pull secrets.
 imagePullSecrets: []
@@ -61,12 +125,12 @@ podSecurityContext:
 
 # -- Container-level security context.
 securityContext:
-  # -- Unix user id.
+  # -- Unix user id. Transparent DNS mode overrides this to root so PowerDNS can bind port 53 before dropping privileges internally via recursor setuid/setgid.
   runAsUser: 953
-  # -- Unix group id.
+  # -- Unix group id. Transparent DNS mode overrides this to root.
   runAsGroup: 953
 
-# -- Optional priority class for pods.
+# -- Optional priority class for pods. When transparentDNS.enabled=true and this value is empty, the chart defaults to "system-node-critical".
 priorityClassName: ""
 
 # -- Pod anti-affinity shortcut (used when affinity is empty).
@@ -90,6 +154,8 @@ podDisruptionBudget: {}
 
 # -- Service configuration.
 service:
+  # -- Create the primary cluster-wide Service. Disable this in transparent DNS setups when you do not want an additional global ClusterIP for PowerDNS.
+  enabled: true
   # -- Service type.
   type: ClusterIP
   # -- Optional fixed ClusterIP for the primary Service.
@@ -199,6 +265,15 @@ resources: {}
 
 # -- Probe configuration.
 probes:
+  startup:
+    # -- Initial delay before the startup probe begins. Used for transparent DNS mode to avoid early restarts while takeover IPs are prepared.
+    initialDelaySeconds: 0
+    # -- Probe period for the startup probe.
+    periodSeconds: 2
+    # -- Probe timeout for the startup probe.
+    timeoutSeconds: 3
+    # -- Failure threshold for the startup probe.
+    failureThreshold: 30
   # -- Liveness probe settings.
   liveness:
     # -- Initial delay before probing.
@@ -222,7 +297,7 @@ probes:
 
 # -- PowerDNS recursor runtime configuration.
 pdns:
-  # -- Container DNS port.
+  # -- Container DNS port. Transparent DNS mode ignores this value and forces PowerDNS to listen on port 53.
   port: 5353
   # -- API endpoint settings.
   api:
@@ -237,7 +312,7 @@ pdns:
     # -- Lua script content written to /etc/powerdns/recursor.lua.
     script: |
       zoneToCache(".", "url", "https://www.internic.net/domain/root.zone", { refreshPeriod = 86400 })
-  # -- Rendered directly into recursor.yml.
+  # -- Base configuration passed into the `pdns.config` helper to render recursor.yml. Transparent DNS mode may adjust parts of this structure automatically.
   config:
     recursor:
       config_dir: /etc/powerdns
@@ -245,6 +320,7 @@ pdns:
       setuid: pdns
       socket_mode: "660"
     incoming:
+      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to transparentDNS.localIP plus, optionally, transparentDNS.clusterDNS.serviceIP and service.clusterIP via the `pdns.config` helper.
       port: 5353
       listen:
         - 0.0.0.0

@@ -20,7 +20,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+        checksum/config: {{ include "pdns.config" . | sha256sum }}
+        {{- if or .Values.pdns.lua.enabled .Values.pdns.config.recursor.lua_config_file }}
+        checksum/lua: {{ .Values.pdns.lua.script | sha256sum }}
+        {{- end }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
