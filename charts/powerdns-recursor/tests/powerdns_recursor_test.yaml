@@ -217,6 +217,22 @@ tests:
           value: CriticalAddonsOnly
         template: templates/daemonset.yaml
       - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: dns-interceptor-init
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].command[0]
+          value: /usr/local/bin/init.sh
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].env[0].name
+          value: LOCAL_IP
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].env[0].value
+          value: 169.254.20.10
+        template: templates/daemonset.yaml
+      - equal:
           path: spec.template.spec.containers[1].name
           value: dns-interceptor
         template: templates/daemonset.yaml
@@ -254,27 +270,27 @@ tests:
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].image
-          pattern: "^alpine:"
+          pattern: "^ghcr\\.io/klicktipp/pdns-transparent-dns:"
         template: templates/daemonset.yaml
-      - matchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "LOCAL_IP=\\\"169\\.254\\.20\\.10\\\""
+      - equal:
+          path: spec.template.spec.containers[1].command[0]
+          value: /usr/local/bin/interceptor.sh
         template: templates/daemonset.yaml
-      - matchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "TAKEOVER_CLUSTER_IP=\\\"true\\\""
+      - equal:
+          path: spec.template.spec.containers[1].env[0].name
+          value: LOCAL_IP
         template: templates/daemonset.yaml
-      - matchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "NOTRACK"
+      - equal:
+          path: spec.template.spec.containers[1].env[0].value
+          value: 169.254.20.10
         template: templates/daemonset.yaml
-      - matchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "allow DNS traffic"
+      - equal:
+          path: spec.template.spec.containers[1].env[2].name
+          value: TAKEOVER_CLUSTER_IP
         template: templates/daemonset.yaml
-      - notMatchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "REDIRECT --to-ports|DNAT --to-destination"
+      - equal:
+          path: spec.template.spec.containers[1].env[2].value
+          value: "true"
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.volumes[1].hostPath.path
@@ -354,25 +370,6 @@ tests:
           pattern: "10\\.0\\.0\\.54:53"
         template: templates/configmaps.yaml
 
-  - it: should allow disabling runtime package installation in the dns interceptor
-    set:
-      workload.type: DaemonSet
-      transparentDNS.enabled: true
-      transparentDNS.localIP: 169.254.20.10
-      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
-      transparentDNS.clusterDNS.namespace: kube-system
-      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
-      transparentDNS.interceptor.enableRuntimeInstall: false
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "runtime package installation is disabled"
-        template: templates/daemonset.yaml
-      - notMatchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "apk add --no-cache iptables iproute2"
-        template: templates/daemonset.yaml
-
   - it: should keep transparent dns target reachable when incoming listen is explicitly set
     set:
       workload.type: DaemonSet
@@ -442,9 +439,9 @@ tests:
       - isKind:
           of: DaemonSet
         template: templates/daemonset.yaml
-      - matchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "TAKEOVER_CLUSTER_IP=\\\"false\\\""
+      - equal:
+          path: spec.template.spec.containers[1].env[2].value
+          value: "false"
         template: templates/daemonset.yaml
       - matchRegex:
           path: data["recursor.yml"]

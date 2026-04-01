@@ -57,16 +57,12 @@ transparentDNS:
   customClusterDNSIP: ""
   interceptor:
     image:
-      # -- Helper image used to program iptables for transparent DNS interception. Provide an image that already contains `ip` and `iptables` to avoid runtime package installation.
-      repository: alpine
-      # -- Image tag of the interceptor helper image.
-      tag: "3.23"
+      # -- Image used for the transparent DNS init/interceptor containers.
+      repository: ghcr.io/klicktipp/pdns-transparent-dns
+      # -- Image tag of the transparent DNS init/interceptor image.
+      tag: 0.1.0
       # -- Pull policy for the interceptor helper image.
       pullPolicy: IfNotPresent
-    # -- Enable runtime package installation before configuring iptables rules. Disable this when the interceptor image already contains the required tooling.
-    enableRuntimeInstall: true
-    # -- Package installation command executed before configuring the local DNS takeover rules. Ignored when interceptor.enableRuntimeInstall=false.
-    installPackagesCommand: apk add --no-cache iptables iproute2
   # -- Configure the local IP aliases plus raw/filter iptables rules required for the transparent DNS mode.
   setupIptables: true
   # -- Also configure raw OUTPUT rules for node-local processes hitting the node-local DNS IP and, when enabled, the cluster DNS Service IP.
