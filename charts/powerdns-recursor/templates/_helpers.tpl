@@ -450,29 +450,12 @@ containers:
         RAW_CHAIN="{{ include "pdns.transparentDNSRawChainName" . }}"
         FILTER_CHAIN="{{ include "pdns.transparentDNSFilterChainName" . }}"
         IPTABLES_WAIT_SECONDS="5"
-        LOCAL_IP_HEX=""
-
         ipt() {
           iptables -w "${IPTABLES_WAIT_SECONDS}" "$@"
         }
 
-        case "${LOCAL_IP}" in
-          *.*)
-            IFS=.
-            set -- ${LOCAL_IP}
-            unset IFS
-            if [ "$#" -eq 4 ]; then
-              LOCAL_IP_HEX="$(printf '%02X%02X%02X%02X' "$4" "$3" "$2" "$1")"
-            fi
-            ;;
-        esac
-
         is_recursor_ready() {
-          if [ -n "${LOCAL_IP_HEX}" ]; then
-            grep -qiE "^[[:space:]]*[0-9]+:[[:space:]]*(00000000|${LOCAL_IP_HEX}):${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/udp 2>/dev/null
-          else
-            grep -qiE "^[[:space:]]*[0-9]+:[[:space:]][0-9A-F]{8,32}:${DNS_PORT_HEX}[[:space:]]" /proc/net/tcp /proc/net/tcp6 /proc/net/udp /proc/net/udp6 2>/dev/null
-          fi
+          ss -H -ltnu "( sport = :${DNS_PORT} )" 2>/dev/null | grep -q .
         }
 
         has_local_ip() {
