@@ -186,6 +186,7 @@ tests:
   - it: should render transparent dns takeover mode with an interceptor sidecar, host networking, and a local service-ip takeover
     set:
       workload.type: DaemonSet
+      service.clusterIP: 10.43.0.53
       transparentDNS.enabled: true
       transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
@@ -231,6 +232,14 @@ tests:
       - equal:
           path: spec.template.spec.initContainers[0].env[0].value
           value: 169.254.20.10
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].env[2].name
+          value: PRIMARY_SERVICE_IP
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].env[2].value
+          value: 10.43.0.53
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.containers[1].name
@@ -286,10 +295,18 @@ tests:
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.containers[1].env[2].name
-          value: TAKEOVER_CLUSTER_IP
+          value: PRIMARY_SERVICE_IP
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.containers[1].env[2].value
+          value: 10.43.0.53
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[1].env[3].name
+          value: TAKEOVER_CLUSTER_IP
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[1].env[3].value
           value: "true"
         template: templates/daemonset.yaml
       - equal:
@@ -302,7 +319,7 @@ tests:
         template: templates/configmaps.yaml
       - matchRegex:
           path: data["recursor.yml"]
-          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*port: 53"
+          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*- 10\\.43\\.0\\.53[\\s\\S]*port: 53"
         template: templates/configmaps.yaml
       - isKind:
           of: Service
@@ -440,7 +457,7 @@ tests:
           of: DaemonSet
         template: templates/daemonset.yaml
       - equal:
-          path: spec.template.spec.containers[1].env[2].value
+          path: spec.template.spec.containers[1].env[3].value
           value: "false"
         template: templates/daemonset.yaml
       - matchRegex:

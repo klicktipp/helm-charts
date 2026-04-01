@@ -28,7 +28,7 @@ workload:
 
 # -- Optional transparent DNS takeover mode. Experimental. Binds a dedicated node-local DNS IP on each node and can optionally also take over the existing cluster DNS Service IP.
 transparentDNS:
-  # -- Enable node-local DNS takeover mode. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart always binds transparentDNS.localIP on each node, runs PowerDNS on port 53, and programs NOTRACK/ACCEPT rules. It can additionally try to take over transparentDNS.clusterDNS.serviceIP when transparentDNS.takeoverClusterIP=true.
+  # -- Enable node-local DNS takeover mode. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart always binds transparentDNS.localIP on each node, runs PowerDNS on port 53, and programs NOTRACK/ACCEPT rules. It can additionally try to take over transparentDNS.clusterDNS.serviceIP when transparentDNS.takeoverClusterIP=true. If service.enabled=true and service.clusterIP is set, that primary Service IP is also added as a listen/bind address so direct queries to the PowerDNS Service keep working.
   enabled: false
   # -- Dedicated node-local DNS IP to bind on each node. Uses the same IP on every node. Adjust this if 169.254.20.10 is already in use in your cluster, for example by an existing node-local-dns deployment.
   localIP: 169.254.20.10
@@ -60,7 +60,7 @@ transparentDNS:
       # -- Image used for the transparent DNS init/interceptor containers.
       repository: ghcr.io/klicktipp/pdns-transparent-dns
       # -- Image tag of the transparent DNS init/interceptor image.
-      tag: 0.1.0
+      tag: 0.1.1
       # -- Pull policy for the interceptor helper image.
       pullPolicy: IfNotPresent
   # -- Configure the local IP aliases plus raw/filter iptables rules required for the transparent DNS mode.
@@ -320,7 +320,7 @@ pdns:
       setuid: pdns
       socket_mode: "660"
     incoming:
-      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to transparentDNS.localIP plus, optionally, transparentDNS.clusterDNS.serviceIP via the `pdns.config` helper.
+      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to transparentDNS.localIP plus, optionally, transparentDNS.clusterDNS.serviceIP and service.clusterIP via the `pdns.config` helper.
       port: 5353
       listen:
         - 0.0.0.0
