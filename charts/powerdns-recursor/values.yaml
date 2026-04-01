@@ -28,7 +28,7 @@ workload:
 
 # -- Optional transparent DNS takeover mode. Experimental. Binds a dedicated node-local DNS IP on each node and can optionally also take over the existing cluster DNS Service IP.
 transparentDNS:
-  # -- Enable node-local DNS takeover mode. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart always binds transparentDNS.localIP on each node, runs PowerDNS on port 53, and programs NOTRACK/ACCEPT rules. It can additionally try to take over transparentDNS.clusterDNS.serviceIP when transparentDNS.takeoverClusterIP=true. If service.enabled=true and service.clusterIP is set, that primary Service IP is also added as a listen/bind address so direct queries to the PowerDNS Service keep working.
+  # -- Enable node-local DNS takeover mode. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart always binds transparentDNS.localIP on each node, runs PowerDNS on port 53, and programs NOTRACK/ACCEPT rules. It can additionally try to take over transparentDNS.clusterDNS.serviceIP when transparentDNS.takeoverClusterIP=true. If service.local.enabled=true and service.local.clusterIP is set, that local-only Service IP is also added as a listen/bind address so direct queries to the local Service keep working.
   enabled: false
   # -- Dedicated node-local DNS IP to bind on each node. Uses the same IP on every node. Adjust this if 169.254.20.10 is already in use in your cluster, for example by an existing node-local-dns deployment.
   localIP: 169.254.20.10
@@ -160,8 +160,6 @@ service:
   type: ClusterIP
   # -- Optional fixed ClusterIP for the primary Service.
   clusterIP: ""
-  # -- Service internal traffic policy. When empty, DaemonSet mode defaults to "Local".
-  internalTrafficPolicy: ""
   # -- DNS service port (TCP/UDP).
   port: 53
   # -- Service annotations.
@@ -170,6 +168,14 @@ service:
   loadBalancerIP: ""
   # -- Optional source ranges for LoadBalancer services.
   loadBalancerSourceRanges: []
+  # -- Optional DaemonSet-local Service for node-local DNS traffic.
+  local:
+    # -- Create an additional DaemonSet-local ClusterIP Service with internalTrafficPolicy=Local. Requires workload.type=DaemonSet and an explicit service.local.clusterIP so the transparent DNS helper can bind and intercept that IP deterministically.
+    enabled: false
+    # -- Fixed ClusterIP for the local-only Service. Required when service.local.enabled=true.
+    clusterIP: ""
+    # -- Annotations for the local-only Service.
+    annotations: {}
   # -- Optional headless Service for direct pod DNS records.
   headless:
     # -- Enable creation of an additional headless Service (<fullname>-headless).
@@ -320,7 +326,7 @@ pdns:
       setuid: pdns
       socket_mode: "660"
     incoming:
-      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to transparentDNS.localIP plus, optionally, transparentDNS.clusterDNS.serviceIP and service.clusterIP via the `pdns.config` helper.
+      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to transparentDNS.localIP plus, optionally, transparentDNS.clusterDNS.serviceIP and service.local.clusterIP via the `pdns.config` helper.
       port: 5353
       listen:
         - 0.0.0.0

@@ -6,6 +6,7 @@ templates:
   - templates/deployment.yaml
   - templates/daemonset.yaml
   - templates/service.yaml
+  - templates/service-local.yaml
   - templates/service-cluster-dns-upstream.yaml
   - templates/poddisruptionbudget.yaml
 
@@ -81,23 +82,20 @@ tests:
           value: 5
         template: templates/daemonset.yaml
 
-  - it: should default service internal traffic policy to local for daemonsets
+  - it: should leave the primary service internal traffic policy unset by default for daemonsets
     set:
       workload.type: DaemonSet
     asserts:
-      - equal:
+      - notExists:
           path: spec.internalTrafficPolicy
-          value: Local
         template: templates/service.yaml
 
-  - it: should allow overriding service internal traffic policy for daemonsets
+  - it: should fail when the primary service internal traffic policy is configured
     set:
-      workload.type: DaemonSet
       service.internalTrafficPolicy: Cluster
     asserts:
-      - equal:
-          path: spec.internalTrafficPolicy
-          value: Cluster
+      - failedTemplate:
+          errorMessage: service.internalTrafficPolicy is not supported on the primary service; use service.local.enabled=true with service.local.clusterIP for node-local routing
         template: templates/service.yaml
 
   - it: should keep the configured clusterIP on the primary service in daemonset mode
@@ -116,6 +114,46 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+        template: templates/service.yaml
+
+  - it: should render an additional local-only service for daemonsets when enabled
+    set:
+      workload.type: DaemonSet
+      service.local.enabled: true
+      service.local.clusterIP: 10.43.0.54
+    asserts:
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-powerdns-recursor-local
+        template: templates/service-local.yaml
+      - equal:
+          path: spec.type
+          value: ClusterIP
+        template: templates/service-local.yaml
+      - equal:
+          path: spec.clusterIP
+          value: 10.43.0.54
+        template: templates/service-local.yaml
+      - equal:
+          path: spec.internalTrafficPolicy
+          value: Local
+        template: templates/service-local.yaml
+
+  - it: should fail when the local-only service is enabled outside daemonset mode
+    set:
+      service.local.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: service.local.enabled=true requires workload.type=DaemonSet
+        template: templates/service.yaml
+
+  - it: should fail when the local-only service is enabled without a fixed clusterIP
+    set:
+      workload.type: DaemonSet
+      service.local.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: service.local.enabled=true requires service.local.clusterIP to be set
         template: templates/service.yaml
 
   - it: should allow disabling the primary service in transparent daemonset mode
@@ -186,7 +224,8 @@ tests:
   - it: should render transparent dns takeover mode with an interceptor sidecar, host networking, and a local service-ip takeover
     set:
       workload.type: DaemonSet
-      service.clusterIP: 10.43.0.53
+      service.local.enabled: true
+      service.local.clusterIP: 10.43.0.54
       transparentDNS.enabled: true
       transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
@@ -239,7 +278,7 @@ tests:
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.initContainers[0].env[2].value
-          value: 10.43.0.53
+          value: 10.43.0.54
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.containers[1].name
@@ -299,7 +338,7 @@ tests:
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.containers[1].env[2].value
-          value: 10.43.0.53
+          value: 10.43.0.54
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.containers[1].env[3].name
@@ -319,7 +358,7 @@ tests:
         template: templates/configmaps.yaml
       - matchRegex:
           path: data["recursor.yml"]
-          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*- 10\\.43\\.0\\.53[\\s\\S]*port: 53"
+          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*- 10\\.43\\.0\\.54[\\s\\S]*port: 53"
         template: templates/configmaps.yaml
       - isKind:
           of: Service
