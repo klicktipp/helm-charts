@@ -391,9 +391,6 @@ containers:
       failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
     readinessProbe:
       tcpSocket:
-        {{- if and .Values.transparentDNS.enabled (eq (printf "%v" .Values.transparentDNS.bindPort) "53") }}
-        host: {{ .Values.transparentDNS.clusterDNS.serviceIP | quote }}
-        {{- end }}
         port: dns-tcp
       initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
       periodSeconds: {{ .Values.probes.readiness.periodSeconds }}

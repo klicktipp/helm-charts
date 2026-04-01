@@ -230,12 +230,11 @@ tests:
           path: spec.template.spec.containers[0].securityContext.runAsGroup
           value: 0
         template: templates/daemonset.yaml
-      - equal:
-          path: spec.template.spec.containers[0].readinessProbe.tcpSocket.host
-          value: 172.20.0.10
-        template: templates/daemonset.yaml
       - notExists:
           path: spec.template.spec.containers[0].livenessProbe.tcpSocket.host
+        template: templates/daemonset.yaml
+      - notExists:
+          path: spec.template.spec.containers[0].readinessProbe.tcpSocket.host
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].image
@@ -419,10 +418,10 @@ tests:
           value: 953
         template: templates/daemonset.yaml
       - notExists:
-          path: spec.template.spec.containers[0].readinessProbe.tcpSocket.host
+          path: spec.template.spec.containers[0].livenessProbe.tcpSocket.host
         template: templates/daemonset.yaml
       - notExists:
-          path: spec.template.spec.containers[0].livenessProbe.tcpSocket.host
+          path: spec.template.spec.containers[0].readinessProbe.tcpSocket.host
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
