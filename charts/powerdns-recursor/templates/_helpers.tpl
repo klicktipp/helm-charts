@@ -610,6 +610,7 @@ containers:
           ensure_jump filter udp OUTPUT "${FILTER_CHAIN}" source "${LOCAL_IP}"
           ensure_jump filter tcp OUTPUT "${FILTER_CHAIN}" source "${LOCAL_IP}"
           if [ "${service_ip_active}" -eq 1 ]; then
+            add_ip_rules "${SERVICE_IP}"
             ensure_jump raw udp PREROUTING "${RAW_CHAIN}" destination "${SERVICE_IP}"
             ensure_jump raw tcp PREROUTING "${RAW_CHAIN}" destination "${SERVICE_IP}"
             if [ "{{ .Values.transparentDNS.captureOutput }}" = "true" ]; then
