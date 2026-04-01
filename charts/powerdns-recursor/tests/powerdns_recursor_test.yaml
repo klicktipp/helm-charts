@@ -395,39 +395,3 @@ tests:
           path: spec.updateStrategy.rollingUpdate.maxUnavailable
           value: 1
         template: templates/daemonset.yaml
-
-  - it: should allow overriding the transparent dns bind port for local debugging
-    set:
-      workload.type: DaemonSet
-      transparentDNS.enabled: true
-      transparentDNS.bindPort: 5353
-      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
-      transparentDNS.clusterDNS.namespace: kube-system
-      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
-    asserts:
-      - equal:
-          path: spec.template.spec.containers[0].ports[0].containerPort
-          value: 5353
-        template: templates/daemonset.yaml
-      - equal:
-          path: spec.template.spec.containers[0].securityContext.runAsUser
-          value: 953
-        template: templates/daemonset.yaml
-      - equal:
-          path: spec.template.spec.containers[0].securityContext.runAsGroup
-          value: 953
-        template: templates/daemonset.yaml
-      - notExists:
-          path: spec.template.spec.containers[0].livenessProbe.tcpSocket.host
-        template: templates/daemonset.yaml
-      - notExists:
-          path: spec.template.spec.containers[0].readinessProbe.tcpSocket.host
-        template: templates/daemonset.yaml
-      - matchRegex:
-          path: spec.template.spec.containers[1].args[0]
-          pattern: "DNS_PORT=\\\"5353\\\""
-        template: templates/daemonset.yaml
-      - matchRegex:
-          path: data["recursor.yml"]
-          pattern: "incoming:[\\s\\S]*port: 5353"
-        template: templates/configmaps.yaml

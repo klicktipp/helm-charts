@@ -28,10 +28,8 @@ workload:
 
 # -- Optional transparent DNS takeover mode. Experimental. Binds the existing cluster DNS Service IP locally on each node and serves it from the Recursor without changing pod DNS settings.
 transparentDNS:
-  # -- Enable transparent takeover of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart binds transparentDNS.clusterDNS.serviceIP on each node, runs PowerDNS on transparentDNS.bindPort, and programs NOTRACK/ACCEPT rules instead of NAT redirects.
+  # -- Enable transparent takeover of pod DNS traffic via the kube-dns/CoreDNS Service IP. Experimental. Requires workload.type=DaemonSet. This mode defaults workload.daemonSet.updateStrategy.rollingUpdate.maxSurge to 0; any explicit non-zero value will fail validation. The chart binds transparentDNS.clusterDNS.serviceIP on each node, runs PowerDNS on port 53, and programs NOTRACK/ACCEPT rules instead of NAT redirects.
   enabled: false
-  # -- Local listen/takeover port used in transparent DNS mode. Keep this at 53 for real transparent takeover. Any other value is only suitable for local debugging because pod DNS traffic to port 53 will not be transparently intercepted.
-  bindPort: 53
   # -- Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true.
   clusterDomain: cluster.local
   clusterDNS:
@@ -127,9 +125,9 @@ podSecurityContext:
 
 # -- Container-level security context.
 securityContext:
-  # -- Unix user id. Transparent DNS mode overrides this to root when transparentDNS.bindPort is below 1024 so PowerDNS can bind the privileged port before dropping privileges internally via recursor setuid/setgid.
+  # -- Unix user id. Transparent DNS mode overrides this to root so PowerDNS can bind port 53 before dropping privileges internally via recursor setuid/setgid.
   runAsUser: 953
-  # -- Unix group id. Transparent DNS mode overrides this to root when transparentDNS.bindPort is below 1024.
+  # -- Unix group id. Transparent DNS mode overrides this to root.
   runAsGroup: 953
 
 # -- Optional priority class for pods. When transparentDNS.enabled=true and this value is empty, the chart defaults to "system-node-critical".
@@ -290,7 +288,7 @@ probes:
 
 # -- PowerDNS recursor runtime configuration.
 pdns:
-  # -- Container DNS port. Transparent DNS mode ignores this value and forces PowerDNS to listen on transparentDNS.bindPort.
+  # -- Container DNS port. Transparent DNS mode ignores this value and forces PowerDNS to listen on port 53.
   port: 5353
   # -- API endpoint settings.
   api:
@@ -313,7 +311,7 @@ pdns:
       setuid: pdns
       socket_mode: "660"
     incoming:
-      # -- Transparent DNS mode overrides the incoming port to transparentDNS.bindPort and the listen addresses to `0.0.0.0` via the `pdns.config` helper.
+      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to `0.0.0.0` via the `pdns.config` helper.
       port: 5353
       listen:
         - 0.0.0.0

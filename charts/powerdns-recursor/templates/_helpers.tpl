@@ -200,7 +200,7 @@ Effective DNS port exposed by the pod.
 */}}
 {{- define "pdns.effectiveDNSPort" -}}
 {{- if .Values.transparentDNS.enabled -}}
-{{- .Values.transparentDNS.bindPort -}}
+53
 {{- else -}}
 {{- .Values.pdns.port -}}
 {{- end -}}
@@ -256,7 +256,7 @@ Rendered PDNS config with transparent DNS forwarding when enabled.
 {{- $config := deepCopy (default (dict) .Values.pdns.config) -}}
 {{- if .Values.transparentDNS.enabled -}}
 {{- $incoming := default (dict) (get $config "incoming") -}}
-{{- $_ := set $incoming "port" (.Values.transparentDNS.bindPort | int) -}}
+{{- $_ := set $incoming "port" 53 -}}
 {{- $_ := set $incoming "listen" (list "0.0.0.0") -}}
 {{- $_ := set $config "incoming" $incoming -}}
 {{- $recursor := default (dict) (get $config "recursor") -}}
@@ -320,7 +320,7 @@ Effective container security context.
 */}}
 {{- define "pdns.containerSecurityContext" -}}
 {{- $securityContext := deepCopy (default (dict) .Values.securityContext) -}}
-{{- if and .Values.transparentDNS.enabled (lt (.Values.transparentDNS.bindPort | int) 1024) -}}
+{{- if .Values.transparentDNS.enabled -}}
 {{- $_ := set $securityContext "runAsUser" 0 -}}
 {{- $_ := set $securityContext "runAsGroup" 0 -}}
 {{- if hasKey $securityContext "runAsNonRoot" -}}
@@ -429,7 +429,7 @@ containers:
 
         SERVICE_IP="{{ .Values.transparentDNS.clusterDNS.serviceIP }}"
         SERVICE_CIDR="${SERVICE_IP}/32"
-        DNS_PORT="{{ include "pdns.effectiveDNSPort" . | trim }}"
+        DNS_PORT="53"
         DNS_PORT_HEX="$(printf '%04X' "${DNS_PORT}")"
         COMMENT_PREFIX="PowerDNS transparent DNS"
         RAW_CHAIN="{{ include "pdns.transparentDNSRawChainName" . }}"
