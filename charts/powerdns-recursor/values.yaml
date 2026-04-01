@@ -60,7 +60,7 @@ transparentDNS:
       # -- Image used for the transparent DNS init/interceptor containers.
       repository: ghcr.io/klicktipp/pdns-transparent-dns
       # -- Image tag of the transparent DNS init/interceptor image.
-      tag: 0.1.1
+      tag: 0.1.2
       # -- Pull policy for the interceptor helper image.
       pullPolicy: IfNotPresent
   # -- Configure the local IP aliases plus raw/filter iptables rules required for the transparent DNS mode.
