@@ -1,6 +1,6 @@
 # powerdns-recursor
 
-![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
+![Version: 0.4.1](https://img.shields.io/badge/Version-0.4.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
 
 Helm chart for deploying PowerDNS Recursor on Kubernetes
 
@@ -70,16 +70,19 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | nodeSelector | object | `{}` | Node selector for scheduling. |
 | tolerations | list | `[]` | Tolerations for scheduling. |
 | podDisruptionBudget | object | `{}` | PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 }. Ignored in DaemonSet mode. |
-| service | object | `{"annotations":{},"clusterIP":"","enabled":true,"headless":{"annotations":{},"enabled":false,"includeDnsPorts":true,"publishNotReadyAddresses":false},"internalTrafficPolicy":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"port":53,"type":"ClusterIP"}` | Service configuration. |
+| service | object | `{"annotations":{},"clusterIP":"","enabled":true,"headless":{"annotations":{},"enabled":false,"includeDnsPorts":true,"publishNotReadyAddresses":false},"internalTrafficPolicy":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"local":{"annotations":{},"clusterIP":"","enabled":false},"port":53,"type":"ClusterIP"}` | Service configuration. |
 | service.enabled | bool | `true` | Create the primary cluster-wide Service. Disable this in transparent DNS setups when you do not want an additional global ClusterIP for PowerDNS. |
 | service.type | string | `"ClusterIP"` | Service type. |
 | service.clusterIP | string | `""` | Optional fixed ClusterIP for the primary Service. |
-| service.internalTrafficPolicy | string | `""` | Service internal traffic policy. When empty, DaemonSet mode defaults to "Local". |
+| service.internalTrafficPolicy | string | `""` | Service internal traffic policy for the primary cluster-wide Service. Leave empty for the Kubernetes default. |
 | service.port | int | `53` | DNS service port (TCP/UDP). |
 | service.annotations | object | `{}` | Service annotations. |
 | service.loadBalancerIP | string | `""` | Optional fixed LoadBalancer IP. |
 | service.loadBalancerSourceRanges | list | `[]` | Optional source ranges for LoadBalancer services. |
-| service.headless | object | `{"annotations":{},"enabled":false,"includeDnsPorts":true,"publishNotReadyAddresses":false}` | Optional headless Service for direct pod DNS records. |
+| service.local | object | `{"annotations":{},"clusterIP":"","enabled":false}` | Optional headless Service for direct pod DNS records. |
+| service.local.enabled | bool | `false` | Create an additional DaemonSet-local ClusterIP Service with internalTrafficPolicy=Local. Requires workload.type=DaemonSet. |
+| service.local.clusterIP | string | `""` | Optional fixed ClusterIP for the local-only Service. |
+| service.local.annotations | object | `{}` | Annotations for the local-only Service. |
 | service.headless.enabled | bool | `false` | Enable creation of an additional headless Service (<fullname>-headless). |
 | service.headless.annotations | object | `{}` | Headless Service annotations. |
 | service.headless.includeDnsPorts | bool | `true` | Include DNS TCP/UDP ports on the headless Service. |

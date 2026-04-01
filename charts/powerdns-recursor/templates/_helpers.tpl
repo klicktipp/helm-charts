@@ -156,6 +156,9 @@ Validate cross-field settings.
 {{- fail "transparentDNS.enabled=true requires workload.daemonSet.updateStrategy.rollingUpdate.maxSurge=0 to avoid hostNetwork DaemonSet surge rollouts" -}}
 {{- end -}}
 {{- end -}}
+{{- if and .Values.service.local.enabled (ne (include "pdns.workloadType" .) "DaemonSet") -}}
+{{- fail "service.local.enabled=true requires workload.type=DaemonSet" -}}
+{{- end -}}
 {{- end }}
 
 {{/*
@@ -181,13 +184,11 @@ Effective DaemonSet update strategy with transparent DNS-aware maxSurge default.
 {{- end }}
 
 {{/*
-Internal traffic policy with DaemonSet-aware default.
+Internal traffic policy for the primary Service.
 */}}
 {{- define "pdns.internalTrafficPolicy" -}}
 {{- if .Values.service.internalTrafficPolicy -}}
 {{- .Values.service.internalTrafficPolicy -}}
-{{- else if eq (include "pdns.workloadType" .) "DaemonSet" -}}
-{{- "Local" -}}
 {{- end -}}
 {{- end }}
 

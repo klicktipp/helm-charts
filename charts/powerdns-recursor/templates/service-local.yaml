@@ -1,0 +1,39 @@
+{{- if .Values.service.local.enabled }}
+{{- if ne (include "pdns.workloadType" .) "DaemonSet" }}
+{{- fail "service.local.enabled=true requires workload.type=DaemonSet" }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pdns.fullname" . }}-local
+  labels:
+    {{- include "pdns.labels" . | nindent 4 }}
+  {{- with .Values.service.local.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  {{- with .Values.service.local.clusterIP }}
+  clusterIP: {{ . | quote }}
+  {{- end }}
+  internalTrafficPolicy: Local
+  ports:
+    - name: dns-udp
+      protocol: UDP
+      port: {{ .Values.service.port }}
+      targetPort: dns-udp
+    - name: dns-tcp
+      protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: dns-tcp
+    {{- if .Values.pdns.api.enabled }}
+    - name: api
+      protocol: TCP
+      port: {{ .Values.pdns.api.port }}
+      targetPort: api
+    {{- end }}
+  selector:
+    {{- include "pdns.selectorLabels" . | nindent 4 }}
+{{- end }}

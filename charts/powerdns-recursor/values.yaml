@@ -160,7 +160,7 @@ service:
   type: ClusterIP
   # -- Optional fixed ClusterIP for the primary Service.
   clusterIP: ""
-  # -- Service internal traffic policy. When empty, DaemonSet mode defaults to "Local".
+  # -- Service internal traffic policy for the primary cluster-wide Service. Leave empty for the Kubernetes default.
   internalTrafficPolicy: ""
   # -- DNS service port (TCP/UDP).
   port: 53
@@ -171,6 +171,13 @@ service:
   # -- Optional source ranges for LoadBalancer services.
   loadBalancerSourceRanges: []
   # -- Optional headless Service for direct pod DNS records.
+  local:
+    # -- Create an additional DaemonSet-local ClusterIP Service with internalTrafficPolicy=Local. Requires workload.type=DaemonSet.
+    enabled: false
+    # -- Optional fixed ClusterIP for the local-only Service.
+    clusterIP: ""
+    # -- Annotations for the local-only Service.
+    annotations: {}
   headless:
     # -- Enable creation of an additional headless Service (<fullname>-headless).
     enabled: false
