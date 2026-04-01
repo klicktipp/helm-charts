@@ -465,7 +465,7 @@ containers:
 
         has_local_ip() {
           ip_addr="$1"
-          ip -o addr show dev lo to "${ip_addr}/32" >/dev/null 2>&1
+          ip -o -4 addr show dev lo 2>/dev/null | grep -Eq "[[:space:]]${ip_addr}/32([[:space:]]|$)"
         }
 
         ensure_local_ip() {
@@ -478,6 +478,7 @@ containers:
           ip addr add "${ip_addr}/32" dev lo
           if ! has_local_ip "${ip_addr}"; then
             echo "failed to bind ${ip_addr}/32 on lo" >&2
+            ip -o addr show dev lo >&2 || true
             return 1
           fi
           log "ip ${ip_addr}/32 added to lo"
