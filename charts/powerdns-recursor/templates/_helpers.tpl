@@ -208,6 +208,17 @@ Effective CoreDNS upstream IP for transparent DNS forwarding.
 {{- end }}
 
 {{/*
+Explicit listen addresses for transparent DNS mode.
+*/}}
+{{- define "pdns.transparentDNSListenAddresses" -}}
+{{- $listen := list .Values.transparentDNS.localIP -}}
+{{- if and .Values.transparentDNS.takeoverClusterIP .Values.transparentDNS.clusterDNS.serviceIP -}}
+{{- $listen = append $listen .Values.transparentDNS.clusterDNS.serviceIP -}}
+{{- end -}}
+{{- toYaml $listen -}}
+{{- end }}
+
+{{/*
 Effective DNS port exposed by the pod.
 */}}
 {{- define "pdns.effectiveDNSPort" -}}
@@ -269,7 +280,7 @@ Rendered PDNS config with transparent DNS forwarding when enabled.
 {{- if .Values.transparentDNS.enabled -}}
 {{- $incoming := default (dict) (get $config "incoming") -}}
 {{- $_ := set $incoming "port" 53 -}}
-{{- $_ := set $incoming "listen" (list "0.0.0.0") -}}
+{{- $_ := set $incoming "listen" (fromYamlArray (include "pdns.transparentDNSListenAddresses" .)) -}}
 {{- $_ := set $config "incoming" $incoming -}}
 {{- $recursor := default (dict) (get $config "recursor") -}}
 {{- $existing := default (list) (get $recursor "forward_zones") -}}

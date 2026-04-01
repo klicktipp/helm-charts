@@ -136,6 +136,6 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | pdns.lua.enabled | bool | `false` | Create additional Lua ConfigMap and mount recursor.lua. |
 | pdns.lua.script | string | `"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"` | Lua script content written to /etc/powerdns/recursor.lua. |
 | pdns.config | object | `{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"port":5353},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recordcache":{"refresh_on_ttl_perc":10},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":false}}` | Base configuration passed into the `pdns.config` helper to render recursor.yml. Transparent DNS mode may adjust parts of this structure automatically. |
-| pdns.config.incoming.port | int | `5353` | Transparent DNS mode overrides the incoming port to 53 and the listen addresses to `0.0.0.0` via the `pdns.config` helper. |
+| pdns.config.incoming.port | int | `5353` | Transparent DNS mode overrides the incoming port to 53 and the listen addresses to transparentDNS.localIP plus, optionally, transparentDNS.clusterDNS.serviceIP via the `pdns.config` helper. |
 | pdns.config.recordcache.refresh_on_ttl_perc | int | `10` | Refresh cache entries shortly before TTL expiry to reduce miss spikes. |
 | pdns.metrics | object | `{"enabled":false}` | Legacy compatibility block. |

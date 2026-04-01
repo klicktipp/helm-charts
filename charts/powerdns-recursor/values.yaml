@@ -315,7 +315,7 @@ pdns:
       setuid: pdns
       socket_mode: "660"
     incoming:
-      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to `0.0.0.0` via the `pdns.config` helper.
+      # -- Transparent DNS mode overrides the incoming port to 53 and the listen addresses to transparentDNS.localIP plus, optionally, transparentDNS.clusterDNS.serviceIP via the `pdns.config` helper.
       port: 5353
       listen:
         - 0.0.0.0

@@ -270,6 +270,10 @@ tests:
           path: data["recursor.yml"]
           pattern: "forward_zones:[\\s\\S]*zone: cluster\\.local[\\s\\S]*172\\.20\\.0\\.11:53"
         template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*port: 53"
+        template: templates/configmaps.yaml
       - isKind:
           of: Service
         template: templates/service-cluster-dns-upstream.yaml
@@ -301,6 +305,10 @@ tests:
       - matchRegex:
           path: data["recursor.yml"]
           pattern: "forward_zones:[\\s\\S]*172\\.20\\.0\\.99:53"
+        template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*port: 53"
         template: templates/configmaps.yaml
 
   - it: should replace existing transparent dns forwarding zones instead of duplicating them
@@ -367,7 +375,7 @@ tests:
         template: templates/daemonset.yaml
       - matchRegex:
           path: data["recursor.yml"]
-          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 0\\.0\\.0\\.0[\\s\\S]*port: 53"
+          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*port: 53"
         template: templates/configmaps.yaml
 
   - it: should allow overriding the transparent dns maxSurge default with an explicit zero
@@ -424,3 +432,11 @@ tests:
           path: spec.template.spec.containers[1].args[0]
           pattern: "TAKEOVER_CLUSTER_IP=\\\"false\\\""
         template: templates/daemonset.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*port: 53"
+        template: templates/configmaps.yaml
+      - notMatchRegex:
+          path: data["recursor.yml"]
+          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*172\\.20\\.0\\.10"
+        template: templates/configmaps.yaml
