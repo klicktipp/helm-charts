@@ -78,10 +78,11 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | service.annotations | object | `{}` | Service annotations. |
 | service.loadBalancerIP | string | `""` | Optional fixed LoadBalancer IP. |
 | service.loadBalancerSourceRanges | list | `[]` | Optional source ranges for LoadBalancer services. |
-| service.local | object | `{"annotations":{},"clusterIP":"","enabled":false}` | Optional headless Service for direct pod DNS records. |
+| service.local | object | `{"annotations":{},"clusterIP":"","enabled":false}` | Optional DaemonSet-local Service for node-local DNS traffic. |
 | service.local.enabled | bool | `false` | Create an additional DaemonSet-local ClusterIP Service with internalTrafficPolicy=Local. Requires workload.type=DaemonSet and an explicit service.local.clusterIP so the transparent DNS helper can bind and intercept that IP deterministically. |
 | service.local.clusterIP | string | `""` | Fixed ClusterIP for the local-only Service. Required when service.local.enabled=true. |
 | service.local.annotations | object | `{}` | Annotations for the local-only Service. |
+| service.headless | object | `{"annotations":{},"enabled":false,"includeDnsPorts":true,"publishNotReadyAddresses":false}` | Optional headless Service for direct pod DNS records. |
 | service.headless.enabled | bool | `false` | Enable creation of an additional headless Service (<fullname>-headless). |
 | service.headless.annotations | object | `{}` | Headless Service annotations. |
 | service.headless.includeDnsPorts | bool | `true` | Include DNS TCP/UDP ports on the headless Service. |

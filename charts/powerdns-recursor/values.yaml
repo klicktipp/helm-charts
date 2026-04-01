@@ -168,7 +168,7 @@ service:
   loadBalancerIP: ""
   # -- Optional source ranges for LoadBalancer services.
   loadBalancerSourceRanges: []
-  # -- Optional headless Service for direct pod DNS records.
+  # -- Optional DaemonSet-local Service for node-local DNS traffic.
   local:
     # -- Create an additional DaemonSet-local ClusterIP Service with internalTrafficPolicy=Local. Requires workload.type=DaemonSet and an explicit service.local.clusterIP so the transparent DNS helper can bind and intercept that IP deterministically.
     enabled: false
@@ -176,6 +176,7 @@ service:
     clusterIP: ""
     # -- Annotations for the local-only Service.
     annotations: {}
+  # -- Optional headless Service for direct pod DNS records.
   headless:
     # -- Enable creation of an additional headless Service (<fullname>-headless).
     enabled: false
