@@ -2,6 +2,9 @@
 {{- if ne (include "pdns.workloadType" .) "DaemonSet" }}
 {{- fail "service.local.enabled=true requires workload.type=DaemonSet" }}
 {{- end }}
+{{- if not .Values.service.local.clusterIP }}
+{{- fail "service.local.enabled=true requires service.local.clusterIP to be set" }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service

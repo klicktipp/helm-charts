@@ -149,6 +149,15 @@ tests:
           errorMessage: service.local.enabled=true requires workload.type=DaemonSet
         template: templates/service-local.yaml
 
+  - it: should fail when the local-only service is enabled without a fixed clusterIP
+    set:
+      workload.type: DaemonSet
+      service.local.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: service.local.enabled=true requires service.local.clusterIP to be set
+        template: templates/service-local.yaml
+
   - it: should allow disabling the primary service in transparent daemonset mode
     set:
       workload.type: DaemonSet
@@ -217,7 +226,8 @@ tests:
   - it: should render transparent dns takeover mode with an interceptor sidecar, host networking, and a local service-ip takeover
     set:
       workload.type: DaemonSet
-      service.clusterIP: 10.43.0.53
+      service.local.enabled: true
+      service.local.clusterIP: 10.43.0.54
       transparentDNS.enabled: true
       transparentDNS.localIP: 169.254.20.10
       transparentDNS.clusterDNS.serviceIP: 172.20.0.10
@@ -270,7 +280,7 @@ tests:
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.initContainers[0].env[2].value
-          value: 10.43.0.53
+          value: 10.43.0.54
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.containers[1].name
@@ -330,7 +340,7 @@ tests:
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.containers[1].env[2].value
-          value: 10.43.0.53
+          value: 10.43.0.54
         template: templates/daemonset.yaml
       - equal:
           path: spec.template.spec.containers[1].env[3].name
@@ -350,7 +360,7 @@ tests:
         template: templates/configmaps.yaml
       - matchRegex:
           path: data["recursor.yml"]
-          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*- 10\\.43\\.0\\.53[\\s\\S]*port: 53"
+          pattern: "incoming:[\\s\\S]*listen:[\\s\\S]*- 169\\.254\\.20\\.10[\\s\\S]*- 172\\.20\\.0\\.10[\\s\\S]*- 10\\.43\\.0\\.54[\\s\\S]*port: 53"
         template: templates/configmaps.yaml
       - isKind:
           of: Service

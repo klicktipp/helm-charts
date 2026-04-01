@@ -121,14 +121,14 @@ Validate cross-field settings.
 {{- if and .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.transparentDNS.localIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be different from transparentDNS.clusterDNS.serviceIP" -}}
 {{- end -}}
-{{- if and .Values.service.enabled .Values.service.clusterIP (eq .Values.transparentDNS.localIP .Values.service.clusterIP) -}}
-{{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be different from service.clusterIP" -}}
+{{- if and .Values.service.local.enabled .Values.service.local.clusterIP (eq .Values.transparentDNS.localIP .Values.service.local.clusterIP) -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be different from service.local.clusterIP" -}}
 {{- end -}}
 {{- if and .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.transparentDNS.customClusterDNSIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.customClusterDNSIP to be different from transparentDNS.clusterDNS.serviceIP to avoid DNS recursion loops" -}}
 {{- end -}}
-{{- if and .Values.service.enabled .Values.service.clusterIP .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.service.clusterIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
-{{- fail "transparentDNS.enabled=true requires service.clusterIP to be different from transparentDNS.clusterDNS.serviceIP" -}}
+{{- if and .Values.service.local.enabled .Values.service.local.clusterIP .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.service.local.clusterIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
+{{- fail "transparentDNS.enabled=true requires service.local.clusterIP to be different from transparentDNS.clusterDNS.serviceIP" -}}
 {{- end -}}
 {{- if and .Values.transparentDNS.clusterDNS.upstreamService.clusterIP (eq .Values.transparentDNS.clusterDNS.upstreamService.clusterIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.upstreamService.clusterIP to be different from transparentDNS.clusterDNS.serviceIP to avoid DNS recursion loops" -}}
@@ -158,6 +158,9 @@ Validate cross-field settings.
 {{- end -}}
 {{- if and .Values.service.local.enabled (ne (include "pdns.workloadType" .) "DaemonSet") -}}
 {{- fail "service.local.enabled=true requires workload.type=DaemonSet" -}}
+{{- end -}}
+{{- if and .Values.service.local.enabled (not .Values.service.local.clusterIP) -}}
+{{- fail "service.local.enabled=true requires service.local.clusterIP to be set" -}}
 {{- end -}}
 {{- end }}
 
@@ -215,11 +218,11 @@ Effective CoreDNS upstream IP for transparent DNS forwarding.
 {{- end }}
 
 {{/*
-Optional primary PowerDNS Service ClusterIP to keep directly reachable in transparent DNS mode.
+Optional local-only PowerDNS Service ClusterIP to keep directly reachable in transparent DNS mode.
 */}}
 {{- define "pdns.transparentDNSPrimaryServiceIP" -}}
-{{- if and .Values.service.enabled .Values.service.clusterIP -}}
-{{- .Values.service.clusterIP -}}
+{{- if and .Values.service.local.enabled .Values.service.local.clusterIP -}}
+{{- .Values.service.local.clusterIP -}}
 {{- end -}}
 {{- end }}
 
