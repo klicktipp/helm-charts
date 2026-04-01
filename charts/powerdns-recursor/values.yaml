@@ -269,6 +269,15 @@ resources: {}
 
 # -- Probe configuration.
 probes:
+  startup:
+    # -- Initial delay before the startup probe begins. Used for transparent DNS mode to avoid early restarts while takeover IPs are prepared.
+    initialDelaySeconds: 0
+    # -- Probe period for the startup probe.
+    periodSeconds: 2
+    # -- Probe timeout for the startup probe.
+    timeoutSeconds: 3
+    # -- Failure threshold for the startup probe.
+    failureThreshold: 30
   # -- Liveness probe settings.
   liveness:
     # -- Initial delay before probing.

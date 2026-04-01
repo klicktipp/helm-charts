@@ -225,6 +225,18 @@ tests:
           value: 53
         template: templates/daemonset.yaml
       - equal:
+          path: spec.template.spec.containers[0].startupProbe.tcpSocket.port
+          value: dns-tcp
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.tcpSocket.host
+          value: 169.254.20.10
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.failureThreshold
+          value: 30
+        template: templates/daemonset.yaml
+      - equal:
           path: spec.template.spec.containers[0].securityContext.runAsUser
           value: 0
         template: templates/daemonset.yaml
@@ -232,11 +244,13 @@ tests:
           path: spec.template.spec.containers[0].securityContext.runAsGroup
           value: 0
         template: templates/daemonset.yaml
-      - notExists:
+      - equal:
           path: spec.template.spec.containers[0].livenessProbe.tcpSocket.host
+          value: 169.254.20.10
         template: templates/daemonset.yaml
-      - notExists:
+      - equal:
           path: spec.template.spec.containers[0].readinessProbe.tcpSocket.host
+          value: 169.254.20.10
         template: templates/daemonset.yaml
       - matchRegex:
           path: spec.template.spec.containers[1].image

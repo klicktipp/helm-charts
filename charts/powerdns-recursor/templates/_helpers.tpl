@@ -405,8 +405,21 @@ containers:
         containerPort: {{ .Values.pdns.api.port }}
         protocol: TCP
       {{- end }}
+    {{- if .Values.transparentDNS.enabled }}
+    startupProbe:
+      tcpSocket:
+        host: {{ .Values.transparentDNS.localIP | quote }}
+        port: dns-tcp
+      initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds }}
+      periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+      timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
+      failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+    {{- end }}
     livenessProbe:
       tcpSocket:
+        {{- if .Values.transparentDNS.enabled }}
+        host: {{ .Values.transparentDNS.localIP | quote }}
+        {{- end }}
         port: dns-tcp
       initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
       periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
@@ -414,6 +427,9 @@ containers:
       failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
     readinessProbe:
       tcpSocket:
+        {{- if .Values.transparentDNS.enabled }}
+        host: {{ .Values.transparentDNS.localIP | quote }}
+        {{- end }}
         port: dns-tcp
       initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
       periodSeconds: {{ .Values.probes.readiness.periodSeconds }}

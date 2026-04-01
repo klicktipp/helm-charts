@@ -116,7 +116,11 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy (preferred key). |
 | image.imagePullPolicy | string | `""` | Deprecated compatibility key. Leave empty to use image.pullPolicy. |
 | resources | object | `{}` | Resource requests and limits. |
-| probes | object | `{"liveness":{"failureThreshold":3,"initialDelaySeconds":5,"periodSeconds":5,"timeoutSeconds":3},"readiness":{"failureThreshold":3,"initialDelaySeconds":5,"periodSeconds":5,"timeoutSeconds":3}}` | Probe configuration. |
+| probes | object | `{"liveness":{"failureThreshold":3,"initialDelaySeconds":5,"periodSeconds":5,"timeoutSeconds":3},"readiness":{"failureThreshold":3,"initialDelaySeconds":5,"periodSeconds":5,"timeoutSeconds":3},"startup":{"failureThreshold":30,"initialDelaySeconds":0,"periodSeconds":2,"timeoutSeconds":3}}` | Probe configuration. |
+| probes.startup.initialDelaySeconds | int | `0` | Initial delay before the startup probe begins. Used for transparent DNS mode to avoid early restarts while takeover IPs are prepared. |
+| probes.startup.periodSeconds | int | `2` | Probe period for the startup probe. |
+| probes.startup.timeoutSeconds | int | `3` | Probe timeout for the startup probe. |
+| probes.startup.failureThreshold | int | `30` | Failure threshold for the startup probe. |
 | probes.liveness | object | `{"failureThreshold":3,"initialDelaySeconds":5,"periodSeconds":5,"timeoutSeconds":3}` | Liveness probe settings. |
 | probes.liveness.initialDelaySeconds | int | `5` | Initial delay before probing. |
 | probes.liveness.periodSeconds | int | `5` | Probe period. |
