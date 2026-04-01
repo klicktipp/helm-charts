@@ -344,7 +344,7 @@ tests:
     asserts:
       - matchRegex:
           path: spec.template.spec.containers[1].args[0]
-          pattern: "Runtime package installation is disabled"
+          pattern: "runtime package installation is disabled"
         template: templates/daemonset.yaml
       - notMatchRegex:
           path: spec.template.spec.containers[1].args[0]

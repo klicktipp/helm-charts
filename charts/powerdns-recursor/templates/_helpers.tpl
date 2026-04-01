@@ -433,10 +433,15 @@ containers:
         set -eu
         # Enable pipefail when the selected shell supports it.
         (set -o pipefail) 2>/dev/null || true
+
+        log() {
+          echo "dns-interceptor: $*"
+        }
         {{- if and .Values.transparentDNS.interceptor.enableRuntimeInstall .Values.transparentDNS.interceptor.installPackagesCommand }}
-        {{ .Values.transparentDNS.interceptor.installPackagesCommand }}
+        log "installing runtime networking tools"
+        {{ .Values.transparentDNS.interceptor.installPackagesCommand }} >/dev/null
         {{- else }}
-        # Runtime package installation is disabled; the interceptor image must already contain iptables and iproute2/ip.
+        log "runtime package installation is disabled; expecting iptables and iproute2/ip in the image"
         {{- end }}
 
         LOCAL_IP="{{ .Values.transparentDNS.localIP }}"
@@ -455,7 +460,7 @@ containers:
         }
 
         is_recursor_ready() {
-          ss -H -ltnu "( sport = :${DNS_PORT} )" 2>/dev/null | grep -q .
+          ss -H -ltnu 2>/dev/null | grep -Eq "(^udp|^tcp).*:${DNS_PORT}[[:space:]]"
         }
 
         has_local_ip() {
@@ -465,12 +470,25 @@ containers:
 
         ensure_local_ip() {
           ip_addr="$1"
-          has_local_ip "${ip_addr}" || ip addr add "${ip_addr}/32" dev lo
+          if has_local_ip "${ip_addr}"; then
+            log "ip ${ip_addr}/32 already present on lo"
+            return 0
+          fi
+          log "adding ip ${ip_addr}/32 to lo"
+          ip addr add "${ip_addr}/32" dev lo
+          if ! has_local_ip "${ip_addr}"; then
+            echo "failed to bind ${ip_addr}/32 on lo" >&2
+            return 1
+          fi
+          log "ip ${ip_addr}/32 added to lo"
         }
 
         remove_local_ip() {
           ip_addr="$1"
-          has_local_ip "${ip_addr}" && ip addr del "${ip_addr}/32" dev lo || true
+          if has_local_ip "${ip_addr}"; then
+            log "removing ip ${ip_addr}/32 from lo"
+            ip addr del "${ip_addr}/32" dev lo || true
+          fi
         }
 
         ensure_raw_chain() {
@@ -555,6 +573,7 @@ containers:
           if [ "${TAKEOVER_CLUSTER_IP}" = "true" ]; then
             if ensure_local_ip "${SERVICE_IP}"; then
               service_ip_active=1
+              log "cluster DNS Service IP takeover active on ${SERVICE_IP}"
               add_ip_rules "${SERVICE_IP}"
             else
               echo "warning: failed to bind cluster DNS Service IP ${SERVICE_IP} on lo, continuing with localIP ${LOCAL_IP} only" >&2
@@ -627,6 +646,7 @@ containers:
 
         cleanup() {
           if [ "{{ .Values.transparentDNS.setupIptables }}" = "true" ]; then
+            log "cleaning up local dns takeover rules"
             remove_rules
           fi
         }
@@ -643,11 +663,13 @@ containers:
         while true; do
           if [ "{{ .Values.transparentDNS.setupIptables }}" = "true" ] && is_recursor_ready; then
             if [ "${rules_active}" -eq 0 ]; then
+              log "recursor listener detected on port ${DNS_PORT}, installing takeover rules"
               install_rules
               rules_active=1
             fi
           else
             if [ "${rules_active}" -eq 1 ]; then
+              log "recursor listener no longer detected on port ${DNS_PORT}, removing takeover rules"
               remove_rules
               rules_active=0
             fi
