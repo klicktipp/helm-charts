@@ -121,14 +121,23 @@ Validate cross-field settings.
 {{- if and .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.transparentDNS.localIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be different from transparentDNS.clusterDNS.serviceIP" -}}
 {{- end -}}
+{{- if and .Values.service.enabled .Values.service.clusterIP (eq .Values.transparentDNS.localIP .Values.service.clusterIP) -}}
+{{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be different from service.clusterIP" -}}
+{{- end -}}
 {{- if and .Values.service.local.enabled .Values.service.local.clusterIP (eq .Values.transparentDNS.localIP .Values.service.local.clusterIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.localIP to be different from service.local.clusterIP" -}}
 {{- end -}}
 {{- if and .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.transparentDNS.customClusterDNSIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.customClusterDNSIP to be different from transparentDNS.clusterDNS.serviceIP to avoid DNS recursion loops" -}}
 {{- end -}}
+{{- if and .Values.service.enabled .Values.service.clusterIP .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.service.clusterIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
+{{- fail "transparentDNS.enabled=true requires service.clusterIP to be different from transparentDNS.clusterDNS.serviceIP" -}}
+{{- end -}}
 {{- if and .Values.service.local.enabled .Values.service.local.clusterIP .Values.transparentDNS.clusterDNS.serviceIP (eq .Values.service.local.clusterIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
 {{- fail "transparentDNS.enabled=true requires service.local.clusterIP to be different from transparentDNS.clusterDNS.serviceIP" -}}
+{{- end -}}
+{{- if and .Values.service.enabled .Values.service.clusterIP .Values.service.local.enabled .Values.service.local.clusterIP (eq .Values.service.clusterIP .Values.service.local.clusterIP) -}}
+{{- fail "transparentDNS.enabled=true requires service.clusterIP to be different from service.local.clusterIP" -}}
 {{- end -}}
 {{- if and .Values.transparentDNS.clusterDNS.upstreamService.clusterIP (eq .Values.transparentDNS.clusterDNS.upstreamService.clusterIP .Values.transparentDNS.clusterDNS.serviceIP) -}}
 {{- fail "transparentDNS.enabled=true requires transparentDNS.clusterDNS.upstreamService.clusterIP to be different from transparentDNS.clusterDNS.serviceIP to avoid DNS recursion loops" -}}
@@ -212,9 +221,18 @@ Effective CoreDNS upstream IP for transparent DNS forwarding.
 {{- end }}
 
 {{/*
-Optional local-only PowerDNS Service ClusterIP to keep directly reachable in transparent DNS mode.
+Optional primary PowerDNS Service ClusterIP to keep directly reachable in transparent DNS mode.
 */}}
 {{- define "pdns.transparentDNSPrimaryServiceIP" -}}
+{{- if and .Values.service.enabled .Values.service.clusterIP -}}
+{{- .Values.service.clusterIP -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Optional local-only PowerDNS Service ClusterIP to keep directly reachable in transparent DNS mode.
+*/}}
+{{- define "pdns.transparentDNSSecondaryServiceIP" -}}
 {{- if and .Values.service.local.enabled .Values.service.local.clusterIP -}}
 {{- .Values.service.local.clusterIP -}}
 {{- end -}}
@@ -231,6 +249,10 @@ Explicit listen addresses for transparent DNS mode.
 {{- $primaryServiceIP := include "pdns.transparentDNSPrimaryServiceIP" . | trim -}}
 {{- if and $primaryServiceIP (not (has $primaryServiceIP $listen)) -}}
 {{- $listen = append $listen $primaryServiceIP -}}
+{{- end -}}
+{{- $secondaryServiceIP := include "pdns.transparentDNSSecondaryServiceIP" . | trim -}}
+{{- if and $secondaryServiceIP (not (has $secondaryServiceIP $listen)) -}}
+{{- $listen = append $listen $secondaryServiceIP -}}
 {{- end -}}
 {{- toYaml $listen -}}
 {{- end }}
@@ -420,6 +442,8 @@ initContainers:
         value: {{ .Values.transparentDNS.clusterDNS.serviceIP | quote }}
       - name: PRIMARY_SERVICE_IP
         value: {{ include "pdns.transparentDNSPrimaryServiceIP" . | trim | quote }}
+      - name: ADDITIONAL_SERVICE_IP
+        value: {{ include "pdns.transparentDNSSecondaryServiceIP" . | trim | quote }}
       - name: TAKEOVER_CLUSTER_IP
         value: {{ ternary "true" "false" .Values.transparentDNS.takeoverClusterIP | quote }}
 {{- end }}
@@ -497,6 +521,8 @@ containers:
         value: {{ .Values.transparentDNS.clusterDNS.serviceIP | quote }}
       - name: PRIMARY_SERVICE_IP
         value: {{ include "pdns.transparentDNSPrimaryServiceIP" . | trim | quote }}
+      - name: ADDITIONAL_SERVICE_IP
+        value: {{ include "pdns.transparentDNSSecondaryServiceIP" . | trim | quote }}
       - name: TAKEOVER_CLUSTER_IP
         value: {{ ternary "true" "false" .Values.transparentDNS.takeoverClusterIP | quote }}
       - name: DNS_PORT
