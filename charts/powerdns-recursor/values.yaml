@@ -127,9 +127,9 @@ podSecurityContext:
 
 # -- Container-level security context.
 securityContext:
-  # -- Unix user id.
+  # -- Unix user id. Transparent DNS mode overrides this to root when transparentDNS.bindPort is below 1024 so PowerDNS can bind the privileged port before dropping privileges internally via recursor setuid/setgid.
   runAsUser: 953
-  # -- Unix group id.
+  # -- Unix group id. Transparent DNS mode overrides this to root when transparentDNS.bindPort is below 1024.
   runAsGroup: 953
 
 # -- Optional priority class for pods. When transparentDNS.enabled=true and this value is empty, the chart defaults to "system-node-critical".

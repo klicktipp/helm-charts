@@ -61,8 +61,8 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | podSecurityContext.runAsUser | int | `953` | Unix user id. |
 | podSecurityContext.runAsGroup | int | `953` | Unix group id. |
 | securityContext | object | `{"runAsGroup":953,"runAsUser":953}` | Container-level security context. |
-| securityContext.runAsUser | int | `953` | Unix user id. |
-| securityContext.runAsGroup | int | `953` | Unix group id. |
+| securityContext.runAsUser | int | `953` | Unix user id. Transparent DNS mode overrides this to root when transparentDNS.bindPort is below 1024 so PowerDNS can bind the privileged port before dropping privileges internally via recursor setuid/setgid. |
+| securityContext.runAsGroup | int | `953` | Unix group id. Transparent DNS mode overrides this to root when transparentDNS.bindPort is below 1024. |
 | priorityClassName | string | `""` | Optional priority class for pods. When transparentDNS.enabled=true and this value is empty, the chart defaults to "system-node-critical". |
 | podAntiAffinity | object | `{"topologyKey":"kubernetes.io/hostname","type":"soft"}` | Pod anti-affinity shortcut (used when affinity is empty). |
 | podAntiAffinity.type | string | `"soft"` | "soft", "hard" or "disabled". Ignored in DaemonSet mode. |
@@ -127,7 +127,7 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | probes.readiness.timeoutSeconds | int | `3` | Probe timeout. |
 | probes.readiness.failureThreshold | int | `3` | Failure threshold. |
 | pdns | object | `{"api":{"enabled":false,"port":8082},"config":{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"port":5353},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recordcache":{"refresh_on_ttl_perc":10},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":false}},"lua":{"enabled":false,"script":"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"},"metrics":{"enabled":false},"port":5353}` | PowerDNS recursor runtime configuration. |
-| pdns.port | int | `5353` | Container DNS port. Transparent DNS mode ignores this value and forces PowerDNS to listen on port 53. |
+| pdns.port | int | `5353` | Container DNS port. Transparent DNS mode ignores this value and forces PowerDNS to listen on transparentDNS.bindPort. |
 | pdns.api | object | `{"enabled":false,"port":8082}` | API endpoint settings. |
 | pdns.api.enabled | bool | `false` | Expose API port through the Service and container. |
 | pdns.api.port | int | `8082` | API TCP port. |

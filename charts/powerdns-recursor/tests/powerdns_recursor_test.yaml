@@ -223,6 +223,14 @@ tests:
           value: 53
         template: templates/daemonset.yaml
       - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 0
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsGroup
+          value: 0
+        template: templates/daemonset.yaml
+      - equal:
           path: spec.template.spec.containers[0].readinessProbe.tcpSocket.host
           value: 172.20.0.10
         template: templates/daemonset.yaml
@@ -401,6 +409,14 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].ports[0].containerPort
           value: 5353
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 953
+        template: templates/daemonset.yaml
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsGroup
+          value: 953
         template: templates/daemonset.yaml
       - notExists:
           path: spec.template.spec.containers[0].readinessProbe.tcpSocket.host

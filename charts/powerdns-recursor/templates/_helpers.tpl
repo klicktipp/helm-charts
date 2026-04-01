@@ -320,7 +320,12 @@ Effective container security context.
 */}}
 {{- define "pdns.containerSecurityContext" -}}
 {{- $securityContext := deepCopy (default (dict) .Values.securityContext) -}}
-{{- if .Values.transparentDNS.enabled -}}
+{{- if and .Values.transparentDNS.enabled (lt (.Values.transparentDNS.bindPort | int) 1024) -}}
+{{- $_ := set $securityContext "runAsUser" 0 -}}
+{{- $_ := set $securityContext "runAsGroup" 0 -}}
+{{- if hasKey $securityContext "runAsNonRoot" -}}
+{{- $_ := set $securityContext "runAsNonRoot" false -}}
+{{- end -}}
 {{- $capabilities := default (dict) (get $securityContext "capabilities") -}}
 {{- $capAdd := default (list) (get $capabilities "add") -}}
 {{- if not (has "NET_BIND_SERVICE" $capAdd) -}}
