@@ -1,3 +1,4 @@
+{{- include "pdns.validate" . }}
 {{- if .Values.service.enabled }}
 ---
 apiVersion: v1
@@ -14,9 +15,6 @@ spec:
   type: {{ .Values.service.type }}
   {{- with .Values.service.clusterIP }}
   clusterIP: {{ . | quote }}
-  {{- end }}
-  {{- with (include "pdns.internalTrafficPolicy" .) }}
-  internalTrafficPolicy: {{ . | quote }}
   {{- end }}
   {{- with .Values.service.loadBalancerIP }}
   loadBalancerIP: {{ . | quote }}

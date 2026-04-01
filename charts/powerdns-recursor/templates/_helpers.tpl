@@ -162,6 +162,9 @@ Validate cross-field settings.
 {{- if and .Values.service.local.enabled (not .Values.service.local.clusterIP) -}}
 {{- fail "service.local.enabled=true requires service.local.clusterIP to be set" -}}
 {{- end -}}
+{{- if .Values.service.internalTrafficPolicy -}}
+{{- fail "service.internalTrafficPolicy is not supported on the primary service; use service.local.enabled=true with service.local.clusterIP for node-local routing" -}}
+{{- end -}}
 {{- end }}
 
 {{/*
@@ -184,15 +187,6 @@ Effective DaemonSet update strategy with transparent DNS-aware maxSurge default.
 {{- end -}}
 {{- $_ := set $strategy "rollingUpdate" $rollingUpdate -}}
 {{- toYaml $strategy -}}
-{{- end }}
-
-{{/*
-Internal traffic policy for the primary Service.
-*/}}
-{{- define "pdns.internalTrafficPolicy" -}}
-{{- if .Values.service.internalTrafficPolicy -}}
-{{- .Values.service.internalTrafficPolicy -}}
-{{- end -}}
 {{- end }}
 
 {{/*

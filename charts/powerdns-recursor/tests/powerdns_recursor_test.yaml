@@ -90,14 +90,12 @@ tests:
           path: spec.internalTrafficPolicy
         template: templates/service.yaml
 
-  - it: should allow overriding service internal traffic policy for daemonsets
+  - it: should fail when the primary service internal traffic policy is configured
     set:
-      workload.type: DaemonSet
       service.internalTrafficPolicy: Cluster
     asserts:
-      - equal:
-          path: spec.internalTrafficPolicy
-          value: Cluster
+      - failedTemplate:
+          errorMessage: service.internalTrafficPolicy is not supported on the primary service; use service.local.enabled=true with service.local.clusterIP for node-local routing
         template: templates/service.yaml
 
   - it: should keep the configured clusterIP on the primary service in daemonset mode
@@ -147,7 +145,7 @@ tests:
     asserts:
       - failedTemplate:
           errorMessage: service.local.enabled=true requires workload.type=DaemonSet
-        template: templates/service-local.yaml
+        template: templates/service.yaml
 
   - it: should fail when the local-only service is enabled without a fixed clusterIP
     set:
@@ -156,7 +154,7 @@ tests:
     asserts:
       - failedTemplate:
           errorMessage: service.local.enabled=true requires service.local.clusterIP to be set
-        template: templates/service-local.yaml
+        template: templates/service.yaml
 
   - it: should allow disabling the primary service in transparent daemonset mode
     set:

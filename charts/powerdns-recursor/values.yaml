@@ -160,8 +160,6 @@ service:
   type: ClusterIP
   # -- Optional fixed ClusterIP for the primary Service.
   clusterIP: ""
-  # -- Service internal traffic policy for the primary cluster-wide Service. Leave empty for the Kubernetes default.
-  internalTrafficPolicy: ""
   # -- DNS service port (TCP/UDP).
   port: 53
   # -- Service annotations.
