@@ -1,0 +1,110 @@
+name: PR Quality Gate
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+concurrency:
+  group: pr-quality-gate-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  checks: read
+  contents: read
+  pull-requests: read
+
+jobs:
+  quality-gate:
+    name: Enforce all checks passed
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Wait for workflows and enforce success
+        uses: actions/github-script@v8
+        env:
+          MAX_WAIT_SECONDS: "1800"
+          POLL_INTERVAL_SECONDS: "15"
+          SELF_CHECK_NAME: "PR Quality Gate / Enforce all checks passed"
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const ref = context.payload.pull_request.head.sha;
+            const maxWaitSeconds = Number(process.env.MAX_WAIT_SECONDS || "1800");
+            const pollIntervalSeconds = Number(process.env.POLL_INTERVAL_SECONDS || "15");
+            const selfCheckName = process.env.SELF_CHECK_NAME;
+            const failConclusions = new Set([
+              "action_required",
+              "cancelled",
+              "failure",
+              "stale",
+              "timed_out",
+            ]);
+
+            const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+            function latestPerName(checkRuns) {
+              const byName = new Map();
+              for (const run of checkRuns) {
+                const previous = byName.get(run.name);
+                if (!previous || run.id > previous.id) {
+                  byName.set(run.name, run);
+                }
+              }
+              return [...byName.values()];
+            }
+
+            const startedAt = Date.now();
+
+            while (true) {
+              const checks = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref,
+                per_page: 100,
+              });
+
+              const workflowChecks = latestPerName(
+                checks.filter(
+                  (run) => run.app?.slug === "github-actions" && run.name !== selfCheckName,
+                ),
+              );
+
+              const pending = workflowChecks.filter((run) => run.status !== "completed");
+              const failed = workflowChecks.filter(
+                (run) => run.status === "completed" && failConclusions.has(run.conclusion || ""),
+              );
+
+              core.info(
+                `Checks observed: ${workflowChecks.length}, pending: ${pending.length}, failed: ${failed.length}`,
+              );
+
+              if (failed.length > 0) {
+                const details = failed
+                  .map((run) => `- ${run.name} (${run.conclusion})`)
+                  .join("\n");
+                core.setFailed(`Some checks failed:\n${details}`);
+                return;
+              }
+
+              if (workflowChecks.length > 0 && pending.length === 0) {
+                core.notice("All GitHub Actions checks completed successfully.");
+                return;
+              }
+
+              const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+              if (elapsedSeconds >= maxWaitSeconds) {
+                const pendingDetails = pending.map((run) => run.name).join(", ") || "none";
+                core.setFailed(
+                  `Timed out waiting for checks to complete after ${maxWaitSeconds}s. Pending checks: ${pendingDetails}`,
+                );
+                return;
+              }
+
+              await sleep(pollIntervalSeconds * 1000);
+            }
