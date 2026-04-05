@@ -3,9 +3,9 @@ apiVersion: v2
 name: rspamd
 description: A Helm chart for deploying Rspamd on Kubernetes
 type: application
-version: 1.2.4
+version: 1.3.0
 # renovate: datasource=github-releases depName=rspamd/rspamd
-appVersion: 3.14.2
+appVersion: 4.0.1
 keywords:
   - rspamd
   - spam-filter
