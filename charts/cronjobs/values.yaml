@@ -66,11 +66,15 @@ secretEnvFrom: []
 # -- Environment variable entries.
 env: {}
 
+# -- Default time zone for all CronJobs. Individual jobs can override this value.
+timezone: ""
+
 # -- Configure jobs.
 jobs: {}
 #  test:
 #    containerName: cronjob
 #    schedule: "*/5 * * * *"
+#    timezone: "Europe/Berlin"
 #    command:
 #      - /bin/sh
 #      - -c
