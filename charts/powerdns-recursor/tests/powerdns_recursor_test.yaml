@@ -458,6 +458,58 @@ tests:
           path: data["recursor.yml"]
           pattern: "zone: example\\.org"
         template: templates/configmaps.yaml
+
+  - it: should forward additional internal zones to the cluster dns upstream service in transparent dns mode
+    set:
+      workload.type: DaemonSet
+      transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
+      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.namespace: kube-system
+      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
+      transparentDNS.additionalForwardZones:
+        - compute.internal
+        - google.internal
+    asserts:
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "zone: compute\\.internal[\\s\\S]*172\\.20\\.0\\.11:53"
+        template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "zone: google\\.internal[\\s\\S]*172\\.20\\.0\\.11:53"
+        template: templates/configmaps.yaml
+
+  - it: should replace existing additional transparent dns forwarding zones instead of duplicating them
+    set:
+      workload.type: DaemonSet
+      transparentDNS.enabled: true
+      transparentDNS.localIP: 169.254.20.10
+      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.namespace: kube-system
+      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
+      transparentDNS.additionalForwardZones:
+        - compute.internal
+      pdns.config.recursor.forward_zones:
+        - zone: compute.internal
+          forwarders:
+            - 10.0.0.53:53
+        - zone: example.org
+          forwarders:
+            - 10.0.0.54:53
+    asserts:
+      - notMatchRegex:
+          path: data["recursor.yml"]
+          pattern: "10\\.0\\.0\\.53:53"
+        template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "zone: compute\\.internal[\\s\\S]*172\\.20\\.0\\.11:53"
+        template: templates/configmaps.yaml
+      - matchRegex:
+          path: data["recursor.yml"]
+          pattern: "zone: example\\.org"
+        template: templates/configmaps.yaml
       - matchRegex:
           path: data["recursor.yml"]
           pattern: "10\\.0\\.0\\.54:53"
