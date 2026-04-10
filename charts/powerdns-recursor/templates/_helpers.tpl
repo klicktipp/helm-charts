@@ -344,12 +344,12 @@ Additional zones forwarded to CoreDNS in transparent DNS mode.
 */}}
 {{- define "pdns.transparentDNSForwardZones" -}}
 {{- $zones := list .Values.transparentDNS.clusterDomain -}}
-{{- $zones = concat $zones (fromYamlArray (include "pdns.transparentDNSPrivateReverseZones" .)) -}}
 {{- range $zone := default (list) .Values.transparentDNS.additionalForwardZones -}}
   {{- if not (has $zone $zones) -}}
     {{- $zones = append $zones $zone -}}
   {{- end -}}
 {{- end -}}
+{{- $zones = concat $zones (fromYamlArray (include "pdns.transparentDNSPrivateReverseZones" .)) -}}
 {{- toYaml $zones -}}
 {{- end }}
 
