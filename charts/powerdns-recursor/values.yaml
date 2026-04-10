@@ -36,6 +36,8 @@ transparentDNS:
   takeoverClusterIP: true
   # -- Cluster DNS domain still forwarded to CoreDNS. Required when transparentDNS.enabled=true.
   clusterDomain: cluster.local
+  # -- Additional internal DNS zones that should still be forwarded to CoreDNS in transparent DNS mode, for example cloud-provider internal zones such as `compute.internal`, `google.internal`, or `ec2.internal`.
+  additionalForwardZones: []
   clusterDNS:
     # -- Namespace where the cluster DNS pods live and, by default, where the optional auxiliary upstream Service is created. Required when transparentDNS.enabled=true. If this differs from the Helm release namespace, the install/upgrade identity must be allowed to create and manage Services in that namespace.
     namespace: kube-system

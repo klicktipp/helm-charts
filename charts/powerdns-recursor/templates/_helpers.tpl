@@ -340,6 +340,20 @@ Private reverse lookup zones forwarded to CoreDNS in transparent DNS mode.
 {{- end }}
 
 {{/*
+Additional zones forwarded to CoreDNS in transparent DNS mode.
+*/}}
+{{- define "pdns.transparentDNSForwardZones" -}}
+{{- $zones := list .Values.transparentDNS.clusterDomain -}}
+{{- range $zone := default (list) .Values.transparentDNS.additionalForwardZones -}}
+  {{- if not (has $zone $zones) -}}
+    {{- $zones = append $zones $zone -}}
+  {{- end -}}
+{{- end -}}
+{{- $zones = concat $zones (fromYamlArray (include "pdns.transparentDNSPrivateReverseZones" .)) -}}
+{{- toYaml $zones -}}
+{{- end }}
+
+{{/*
 Rendered PDNS config with transparent DNS forwarding when enabled.
 */}}
 {{- define "pdns.config" -}}
@@ -352,16 +366,15 @@ Rendered PDNS config with transparent DNS forwarding when enabled.
 {{- $recursor := default (dict) (get $config "recursor") -}}
 {{- $existing := default (list) (get $recursor "forward_zones") -}}
 {{- $upstreamIP := include "pdns.transparentDNSClusterDNSIP" . -}}
-{{- $privateReverseZones := fromYamlArray (include "pdns.transparentDNSPrivateReverseZones" .) -}}
-{{- $transparentZones := concat (list .Values.transparentDNS.clusterDomain) $privateReverseZones -}}
+{{- $transparentZones := fromYamlArray (include "pdns.transparentDNSForwardZones" .) -}}
 {{- $filtered := list -}}
 {{- range $entry := $existing -}}
   {{- if not (and (kindIs "map" $entry) (has (get $entry "zone") $transparentZones)) -}}
     {{- $filtered = append $filtered $entry -}}
   {{- end -}}
 {{- end -}}
-{{- $zones := list (dict "zone" .Values.transparentDNS.clusterDomain "forwarders" (list (printf "%s:53" $upstreamIP))) -}}
-{{- range $zone := $privateReverseZones -}}
+{{- $zones := list -}}
+{{- range $zone := $transparentZones -}}
 {{- $zones = append $zones (dict "zone" $zone "forwarders" (list (printf "%s:53" $upstreamIP))) -}}
 {{- end -}}
 {{- $_ := set $recursor "forward_zones" (concat $filtered $zones) -}}
