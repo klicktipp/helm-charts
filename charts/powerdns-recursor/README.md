@@ -1,6 +1,6 @@
 # powerdns-recursor
 
-![Version: 0.4.4](https://img.shields.io/badge/Version-0.4.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
+![Version: 0.4.5](https://img.shields.io/badge/Version-0.4.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 5.4.0](https://img.shields.io/badge/AppVersion-5.4.0-informational?style=flat-square)
 
 Helm chart for deploying PowerDNS Recursor on Kubernetes
 
@@ -133,7 +133,7 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | probes.readiness.periodSeconds | int | `5` | Probe period. |
 | probes.readiness.timeoutSeconds | int | `3` | Probe timeout. |
 | probes.readiness.failureThreshold | int | `3` | Failure threshold. |
-| pdns | object | `{"api":{"enabled":false,"port":8082},"config":{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"port":5353},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recordcache":{"refresh_on_ttl_perc":10},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":false}},"lua":{"enabled":false,"script":"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"},"metrics":{"enabled":false},"port":5353}` | PowerDNS recursor runtime configuration. |
+| pdns | object | `{"api":{"enabled":false,"port":8082},"config":{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"port":5353},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":false}},"lua":{"enabled":false,"script":"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"},"metrics":{"enabled":false},"port":5353}` | PowerDNS recursor runtime configuration. |
 | pdns.port | int | `5353` | Container DNS port. Transparent DNS mode ignores this value and forces PowerDNS to listen on port 53. |
 | pdns.api | object | `{"enabled":false,"port":8082}` | API endpoint settings. |
 | pdns.api.enabled | bool | `false` | Expose API port through the Service and container. |
@@ -141,7 +141,6 @@ Helm chart for deploying PowerDNS Recursor on Kubernetes
 | pdns.lua | object | `{"enabled":false,"script":"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"}` | Optional Lua config file support. |
 | pdns.lua.enabled | bool | `false` | Create additional Lua ConfigMap and mount recursor.lua. |
 | pdns.lua.script | string | `"zoneToCache(\".\", \"url\", \"https://www.internic.net/domain/root.zone\", { refreshPeriod = 86400 })\n"` | Lua script content written to /etc/powerdns/recursor.lua. |
-| pdns.config | object | `{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"port":5353},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recordcache":{"refresh_on_ttl_perc":10},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":false}}` | Base configuration passed into the `pdns.config` helper to render recursor.yml. Transparent DNS mode may adjust parts of this structure automatically. |
+| pdns.config | object | `{"dnssec":{"validation":"process"},"incoming":{"listen":["0.0.0.0"],"port":5353},"logging":{"loglevel":6,"quiet":true},"outgoing":{"source_address":["0.0.0.0"]},"recursor":{"config_dir":"/etc/powerdns","setgid":"pdns","setuid":"pdns","socket_mode":"660"},"webservice":{"webserver":false}}` | Base configuration passed into the `pdns.config` helper to render recursor.yml. Transparent DNS mode may adjust parts of this structure automatically. |
 | pdns.config.incoming.port | int | `5353` | Transparent DNS mode overrides the incoming port to 53 and the listen addresses to transparentDNS.localIP plus, optionally, transparentDNS.clusterDNS.serviceIP, service.clusterIP, and service.local.clusterIP via the `pdns.config` helper. |
-| pdns.config.recordcache.refresh_on_ttl_perc | int | `10` | Refresh cache entries shortly before TTL expiry to reduce miss spikes. |
 | pdns.metrics | object | `{"enabled":false}` | Legacy compatibility block. |

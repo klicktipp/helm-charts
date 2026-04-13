@@ -340,9 +340,6 @@ pdns:
     logging:
       loglevel: 6
       quiet: true
-    recordcache:
-      # -- Refresh cache entries shortly before TTL expiry to reduce miss spikes.
-      refresh_on_ttl_perc: 10
     webservice:
       webserver: false
   # -- Legacy compatibility block.
