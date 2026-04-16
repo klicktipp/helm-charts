@@ -1,6 +1,6 @@
 # rabbitmq-cluster-operator
 
-![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.0](https://img.shields.io/badge/AppVersion-2.20.0-informational?style=flat-square)
+![Version: 0.3.1](https://img.shields.io/badge/Version-0.3.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.1](https://img.shields.io/badge/AppVersion-2.20.1-informational?style=flat-square)
 
 Helm chart to deploy the official RabbitMQ Cluster Operator and optionally include the Messaging Topology Operator chart.
 
@@ -17,7 +17,7 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../rabbitmq-topology-operator | msgTopologyOperator(rabbitmq-topology-operator) | 0.3.1 |
+| file://../rabbitmq-topology-operator | msgTopologyOperator(rabbitmq-topology-operator) | 0.3.2 |
 
 ## Values
 
@@ -45,10 +45,10 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 | rabbitmqImage.tag | string | `"4.2.5-management-alpine"` | RabbitMQ Image tag (immutable tags are recommended) |
 | rabbitmqImage.digest | string | `""` | RabbitMQ image digest in the form `sha256:...`; overrides `rabbitmqImage.tag` when set |
 | rabbitmqImage.pullSecrets | list | `[]` | RabbitMQ Image pull secrets |
-| credentialUpdaterImage | object | `{"digest":"","pullSecrets":[],"registry":"ghcr.io","repository":"rabbitmq/default-user-credential-updater","tag":"1.0.12"}` | RabbitMQ Default User Credential Updater image |
+| credentialUpdaterImage | object | `{"digest":"","pullSecrets":[],"registry":"ghcr.io","repository":"rabbitmq/default-user-credential-updater","tag":"1.0.13"}` | RabbitMQ Default User Credential Updater image |
 | credentialUpdaterImage.registry | string | `"ghcr.io"` | RabbitMQ Default User Credential Updater image registry |
 | credentialUpdaterImage.repository | string | `"rabbitmq/default-user-credential-updater"` | RabbitMQ Default User Credential Updater image repository |
-| credentialUpdaterImage.tag | string | `"1.0.12"` | RabbitMQ Default User Credential Updater image tag (immutable tags are recommended) |
+| credentialUpdaterImage.tag | string | `"1.0.13"` | RabbitMQ Default User Credential Updater image tag (immutable tags are recommended) |
 | credentialUpdaterImage.digest | string | `""` | Credential updater image digest in the form `sha256:...`; overrides `credentialUpdaterImage.tag` when set |
 | credentialUpdaterImage.pullSecrets | list | `[]` | RabbitMQ Default User Credential Updater image pull secrets |
 | clusterOperator | object | `{"affinity":{},"args":[],"automountServiceAccountToken":true,"command":[],"containerPorts":{"metrics":9782},"containerSecurityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"enabled":true,"privileged":false,"readOnlyRootFilesystem":true,"runAsGroup":1001,"runAsNonRoot":true,"runAsUser":1001,"seLinuxOptions":{},"seccompProfile":{"type":"RuntimeDefault"}},"crdUpgrade":{"annotations":{},"backoffLimit":1,"enabled":true,"image":{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"ghcr.io","repository":"klicktipp/kubectl","tag":"1.35.3"},"resources":{}},"customLivenessProbe":{},"customReadinessProbe":{},"customStartupProbe":{},"extraEnvVars":[],"extraEnvVarsCM":"","extraEnvVarsSecret":"","extraVolumeMounts":[],"extraVolumes":[],"hostAliases":[],"image":{"digest":"","pullPolicy":"IfNotPresent","pullSecrets":[],"registry":"ghcr.io","repository":"rabbitmq/cluster-operator","tag":""},"initContainers":[],"lifecycleHooks":{},"livenessProbe":{"enabled":true,"failureThreshold":5,"initialDelaySeconds":5,"periodSeconds":30,"successThreshold":1,"timeoutSeconds":5},"networkPolicy":{"allowExternal":true,"allowExternalEgress":true,"enabled":true,"extraEgress":[],"extraIngress":[],"ingressNSMatchLabels":{},"ingressNSPodMatchLabels":{},"kubeAPIServerPorts":[443,6443,8443]},"nodeSelector":{},"pdb":{"create":true,"maxUnavailable":"","minAvailable":""},"podAnnotations":{},"podLabels":{},"podSecurityContext":{"enabled":true,"fsGroup":1001,"fsGroupChangePolicy":"Always","supplementalGroups":[],"sysctls":[]},"priorityClassName":"","rbac":{"clusterRole":{"customRules":[],"extraRules":[]},"create":true},"readinessProbe":{"enabled":true,"failureThreshold":5,"initialDelaySeconds":5,"periodSeconds":30,"successThreshold":1,"timeoutSeconds":5},"replicaCount":1,"resources":{},"revisionHistoryLimit":10,"schedulerName":"","serviceAccount":{"annotations":{},"automountServiceAccountToken":false,"create":true,"name":""},"sidecars":[],"startupProbe":{"enabled":false,"failureThreshold":5,"initialDelaySeconds":5,"periodSeconds":30,"successThreshold":1,"timeoutSeconds":5},"terminationGracePeriodSeconds":"","tolerations":[],"topologySpreadConstraints":[],"updateStrategy":{"type":"RollingUpdate"},"watchAllNamespaces":true,"watchNamespaces":[]}` | Cluster Operator image |
