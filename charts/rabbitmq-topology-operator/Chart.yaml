@@ -5,7 +5,7 @@ description: Helm chart to deploy the official RabbitMQ Messaging Topology Opera
 type: application
 version: 0.3.1
 # renovate: datasource=docker depName=ghcr.io/rabbitmq/messaging-topology-operator
-appVersion: 1.19.0
+appVersion: 1.19.1
 home: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
 icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
 sources:
