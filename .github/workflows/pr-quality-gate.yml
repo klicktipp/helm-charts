@@ -36,6 +36,8 @@ jobs:
             const ref = context.payload.pull_request.head.sha;
             const maxWaitSeconds = Number(process.env.MAX_WAIT_SECONDS || "1800");
             const pollIntervalSeconds = Number(process.env.POLL_INTERVAL_SECONDS || "15");
+            // GITHUB_RUN_ID is a built-in GitHub Actions environment variable
+            // containing the unique identifier of the current workflow run.
             const selfRunId = process.env.GITHUB_RUN_ID;
             const failConclusions = new Set([
               "action_required",
@@ -70,7 +72,9 @@ jobs:
 
               const workflowChecks = latestPerName(
                 checks.filter(
-                  (run) => run.app?.slug === "github-actions" && !run.details_url?.includes(`/runs/${selfRunId}`),
+                  (run) =>
+                    run.app?.slug === "github-actions" &&
+                    !(selfRunId && run.details_url?.includes(`/runs/${selfRunId}`)),
                 ),
               );
 
