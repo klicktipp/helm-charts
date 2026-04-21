@@ -1,6 +1,6 @@
 # cronjobs
 
-![Version: 1.6.5](https://img.shields.io/badge/Version-1.6.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 1.6.6](https://img.shields.io/badge/Version-1.6.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 A generic helm cronjob chart for kubernetes
 
@@ -23,6 +23,7 @@ A generic helm cronjob chart for kubernetes
 | configMaps | object | `{}` | Configure configMaps. |
 | secretEnvFrom | list | `[]` | Set secretEnvFrom. |
 | env | object | `{}` | Environment variable entries. |
+| timezone | string | `""` | Default time zone for all CronJobs. Individual jobs can override this value. |
 | jobs | object | `{}` | Configure jobs. |
 | serviceAccount | object | `{"annotations":{},"automount":true,"create":true,"name":""}` | ServiceAccount configuration. |
 | serviceAccount.create | bool | `true` | Set serviceAccount.create. |

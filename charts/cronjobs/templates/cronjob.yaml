@@ -5,6 +5,7 @@
 {{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-volume-name" $job_name }}
 {{- $env := mergeOverwrite dict $.Values.env ($job.env | default dict) }}
 {{- $image := mergeOverwrite dict ($.Values.image | default dict) ($job.image | default dict) }}
+{{- $timezone := $job.timezone | default $.Values.timezone }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -25,6 +26,9 @@ spec:
   failedJobsHistoryLimit: {{ default 1 .failedJobsHistoryLimit }}
   successfulJobsHistoryLimit: {{ default 1 .successfulJobsHistoryLimit }}
   schedule: {{ .schedule | quote }}
+  {{- with $timezone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
   suspend: {{ .suspend | default false }}
   {{- if .startingDeadlineSeconds }}
   startingDeadlineSeconds: {{ .startingDeadlineSeconds }}

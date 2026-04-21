@@ -1,14 +1,17 @@
-{{- if eq (include "pdns.workloadType" .) "Deployment" }}
+{{- include "pdns.validate" . }}
+{{- if eq (include "pdns.workloadType" .) "DaemonSet" }}
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: {{ include "pdns.fullname" . }}
   labels:
     {{- include "pdns.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  minReadySeconds: {{ default 0 .Values.workload.daemonSet.minReadySeconds }}
+  updateStrategy:
+    {{- include "pdns.daemonSetUpdateStrategy" . | nindent 4 }}
   selector:
     matchLabels:
       {{- include "pdns.selectorLabels" . | nindent 6 }}

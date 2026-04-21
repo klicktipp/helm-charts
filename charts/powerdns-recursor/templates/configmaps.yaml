@@ -1,3 +1,4 @@
+{{- include "pdns.validate" . }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -7,7 +8,7 @@ metadata:
     {{- include "pdns.labels" . | nindent 4 }}
 data:
   recursor.yml: |
-    {{- .Values.pdns.config | toYaml | nindent 4 }}
+    {{- include "pdns.config" . | nindent 4 }}
 {{- if or .Values.pdns.lua.enabled .Values.pdns.config.recursor.lua_config_file }}
 ---
 apiVersion: v1

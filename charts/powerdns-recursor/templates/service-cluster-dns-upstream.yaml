@@ -1,0 +1,30 @@
+{{- include "pdns.validate" . }}
+{{- if and .Values.transparentDNS.enabled (not .Values.transparentDNS.customClusterDNSIP) .Values.transparentDNS.clusterDNS.upstreamService.create }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pdns.transparentDNSUpstreamServiceName" . }}
+  namespace: {{ .Values.transparentDNS.clusterDNS.namespace }}
+  labels:
+    {{- include "pdns.labels" . | nindent 4 }}
+  {{- with .Values.transparentDNS.clusterDNS.upstreamService.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  clusterIP: {{ .Values.transparentDNS.clusterDNS.upstreamService.clusterIP | quote }}
+  ports:
+    - name: dns-udp
+      port: 53
+      protocol: UDP
+      targetPort: 53
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+      targetPort: 53
+  {{- with .Values.transparentDNS.clusterDNS.selector }}
+  selector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

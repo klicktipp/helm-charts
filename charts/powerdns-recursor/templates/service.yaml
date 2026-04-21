@@ -1,3 +1,5 @@
+{{- include "pdns.validate" . }}
+{{- if .Values.service.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -38,6 +40,7 @@ spec:
     {{- end }}
   selector:
     {{- include "pdns.selectorLabels" . | nindent 4 }}
+{{- end }}
 {{- if .Values.service.headless.enabled }}
 {{- if and (not .Values.service.headless.includeDnsPorts) (not .Values.pdns.api.enabled) }}
 {{- fail "service.headless.enabled=true requires either service.headless.includeDnsPorts=true or pdns.api.enabled=true" }}
