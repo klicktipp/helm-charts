@@ -6,6 +6,11 @@
 {{- $env := mergeOverwrite dict $.Values.env ($job.env | default dict) }}
 {{- $image := mergeOverwrite dict ($.Values.image | default dict) ($job.image | default dict) }}
 {{- $timezone := $job.timezone | default $.Values.timezone }}
+{{- $startupJitter := mergeOverwrite dict ($.Values.startupJitter | default dict) ($job.startupJitter | default dict) }}
+{{- $jitterImage := $startupJitter.image | default dict }}
+{{- $startupJitterSeed := $startupJitter.seed | default "cronjobs-jitter" }}
+{{- $startupJitterMaxSeconds := $startupJitter.maxSeconds | default 60 }}
+{{- $startupDelaySeconds := include "com.klicktipp.generateStartupDelaySeconds" (dict "seed" (list $startupJitterSeed $.Release.Namespace $JOB_NAME_SLUG) "maxSeconds" $startupJitterMaxSeconds) }}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -83,6 +88,18 @@ spec:
           {{- end }}
           securityContext:
             {{- toYaml ($job.podSecurityContext | default $.Values.podSecurityContext) | nindent 12 }}
+          {{- if $startupJitter.enabled }}
+          initContainers:
+            - name: jitter
+              image: {{ include "cronjobs.startupJitterImage" $jitterImage | quote }}
+              imagePullPolicy: {{ $jitterImage.pullPolicy | default "IfNotPresent" }}
+              command:
+                - /usr/local/bin/bash
+                - -ec
+                - |
+                  echo "Startup jitter delay: {{ $startupDelaySeconds }}s"
+                  sleep {{ $startupDelaySeconds }}
+          {{- end }}
           containers:
             - name: {{ .containerName | default ($.Values.commonContainerName | default $JOB_NAME_SLUG) }}
               securityContext:

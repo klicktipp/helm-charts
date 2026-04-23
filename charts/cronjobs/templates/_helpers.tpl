@@ -61,10 +61,35 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Return the fully qualified startup jitter image reference.
+*/}}
+{{- define "cronjobs.startupJitterImage" -}}
+{{- $repository := .repository | default "bash" -}}
+{{- $tag := .tag | default "5.3" -}}
+{{- if .registry -}}
+{{- printf "%s/%s:%s" .registry $repository $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repository $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Given a list of strings, concatenate all of them with a dash ("-")
 and slugify the string to be DNS name compatible
 */}}
 {{- define "com.klicktipp.slugify-volume-name" -}}
 {{- $r := (join "-" .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trunc 63 | trimSuffix "-" }}
 {{- $r }}
+{{- end -}}
+
+{{/*
+Generate deterministic startup delay seconds from seed parts.
+*/}}
+{{- define "com.klicktipp.generateStartupDelaySeconds" -}}
+{{- $seed := join "-" (index . "seed") -}}
+{{- $exceptionList := list "prod" "staging" -}}
+{{- $hash := sha256sum $seed -}}
+{{- $intFromHash := int64 (printf "%x" (substr 0 8 $hash)) -}}
+{{- $maxSeconds := int (default 60 (index . "maxSeconds")) -}}
+{{- mod $intFromHash (add $maxSeconds 1) -}}
 {{- end -}}
