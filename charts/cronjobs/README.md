@@ -24,6 +24,14 @@ A generic helm cronjob chart for kubernetes
 | secretEnvFrom | list | `[]` | Set secretEnvFrom. |
 | env | object | `{}` | Environment variable entries. |
 | timezone | string | `""` | Default time zone for all CronJobs. Individual jobs can override this value. |
+| startupJitter | object | `{"enabled":false,"image":{"pullPolicy":"IfNotPresent","repository":"bash","tag":"5.2"},"maxSeconds":60,"seed":"cronjobs-jitter"}` | Startup jitter settings for all jobs. Individual jobs can override these values. |
+| startupJitter.enabled | bool | `false` | Enable startup jitter initContainer. |
+| startupJitter.maxSeconds | int | `60` | Maximum startup delay in seconds. Effective delay is between 0 and this value. |
+| startupJitter.seed | string | `"cronjobs-jitter"` | Seed prefix combined with namespace for pseudo-random delay generation. |
+| startupJitter.image | object | `{"pullPolicy":"IfNotPresent","repository":"bash","tag":"5.2"}` | Jitter initContainer image settings. |
+| startupJitter.image.repository | string | `"bash"` | Container image repository. |
+| startupJitter.image.tag | string | `"5.2"` | Container image tag. |
+| startupJitter.image.pullPolicy | string | `"IfNotPresent"` | Container image pull policy. |
 | jobs | object | `{}` | Configure jobs. |
 | serviceAccount | object | `{"annotations":{},"automount":true,"create":true,"name":""}` | ServiceAccount configuration. |
 | serviceAccount.create | bool | `true` | Set serviceAccount.create. |

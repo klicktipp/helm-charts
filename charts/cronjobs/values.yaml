@@ -69,6 +69,23 @@ env: {}
 # -- Default time zone for all CronJobs. Individual jobs can override this value.
 timezone: ""
 
+# -- Startup jitter settings for all jobs. Individual jobs can override these values.
+startupJitter:
+  # -- Enable startup jitter initContainer.
+  enabled: false
+  # -- Maximum startup delay in seconds. The effective delay is between 0 and this value.
+  maxSeconds: 60
+  # -- Seed prefix combined with namespace for pseudo-random delay generation.
+  seed: "cronjobs-jitter"
+  # -- Jitter initContainer image settings.
+  image:
+    # -- Container image repository.
+    repository: bash
+    # -- Container image tag.
+    tag: "5.2"
+    # -- Container image pull policy.
+    pullPolicy: IfNotPresent
+
 # -- Configure jobs.
 jobs: {}
 #  test:
@@ -84,6 +101,14 @@ jobs: {}
 #      repository: alpine
 #      tag: latest
 #      pullPolicy: IfNotPresent
+#    startupJitter:
+#      enabled: true
+#      maxSeconds: 60
+#      seed: "my-team"
+#      image:
+#        repository: bash
+#        tag: "5.2"
+#        pullPolicy: IfNotPresent
 #    # see https://github.com/kubernetes/kubernetes/issues/74848#issuecomment-475178355
 #    restartPolicy: Never
 #    startingDeadlineSeconds: 60
