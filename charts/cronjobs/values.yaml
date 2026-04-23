@@ -82,7 +82,7 @@ startupJitter:
     # -- Container image repository.
     repository: bash
     # -- Container image tag.
-    tag: "5.2"
+    tag: "5.3"
     # -- Container image pull policy.
     pullPolicy: IfNotPresent
 
