@@ -10,7 +10,7 @@ image:
   # -- RabbitMQ container image repository.
   repository: rabbitmq
   # -- RabbitMQ container image tag.
-  tag: 4.2-management-alpine
+  tag: 4.3-management-alpine
 
 pdb:
   # -- Create a PodDisruptionBudget for RabbitMQ pods.
