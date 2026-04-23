@@ -96,7 +96,9 @@ spec:
               command:
                 - /usr/local/bin/bash
                 - -ec
-                - sleep {{ $startupDelaySeconds }}
+                - |
+                  echo "Startup jitter delay: {{ $startupDelaySeconds }}s"
+                  sleep {{ $startupDelaySeconds }}
           {{- end }}
           containers:
             - name: {{ .containerName | default ($.Values.commonContainerName | default $JOB_NAME_SLUG) }}
