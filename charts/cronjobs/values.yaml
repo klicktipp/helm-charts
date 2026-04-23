@@ -79,6 +79,8 @@ startupJitter:
   seed: "cronjobs-jitter"
   # -- Jitter initContainer image settings.
   image:
+    # -- Container image registry.
+    registry: "docker.io"
     # -- Container image repository.
     repository: bash
     # -- Container image tag.
@@ -106,8 +108,9 @@ jobs: {}
 #      maxSeconds: 60
 #      seed: "my-team"
 #      image:
+#        registry: "docker.io"
 #        repository: bash
-#        tag: "5.2"
+#        tag: "5.3"
 #        pullPolicy: IfNotPresent
 #    # see https://github.com/kubernetes/kubernetes/issues/74848#issuecomment-475178355
 #    restartPolicy: Never

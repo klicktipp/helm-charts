@@ -91,7 +91,7 @@ spec:
           {{- if $startupJitter.enabled }}
           initContainers:
             - name: jitter
-              image: "{{ $jitterImage.repository | default "bash" }}:{{ $jitterImage.tag | default "5.2" }}"
+              image: {{ include "cronjobs.startupJitterImage" $jitterImage | quote }}
               imagePullPolicy: {{ $jitterImage.pullPolicy | default "IfNotPresent" }}
               command:
                 - /usr/local/bin/bash

@@ -61,6 +61,19 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Return the fully qualified startup jitter image reference.
+*/}}
+{{- define "cronjobs.startupJitterImage" -}}
+{{- $repository := .repository | default "bash" -}}
+{{- $tag := .tag | default "5.3" -}}
+{{- if .registry -}}
+{{- printf "%s/%s:%s" .registry $repository $tag -}}
+{{- else -}}
+{{- printf "%s:%s" $repository $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Given a list of strings, concatenate all of them with a dash ("-")
 and slugify the string to be DNS name compatible
 */}}
