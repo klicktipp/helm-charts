@@ -1,6 +1,6 @@
 # rabbitmq-cluster
 
-![Version: 3.1.2](https://img.shields.io/badge/Version-3.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.1](https://img.shields.io/badge/AppVersion-2.20.1-informational?style=flat-square)
+![Version: 3.2.0](https://img.shields.io/badge/Version-3.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.1](https://img.shields.io/badge/AppVersion-2.20.1-informational?style=flat-square)
 
 Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (RabbitmqCluster).
 
@@ -20,7 +20,7 @@ Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (Rabbitmq
 | fullnameOverride | string | `""` | Override for the fully-qualified release name. |
 | image.registry | string | `""` | RabbitMQ container image registry (e.g. `docker.io`, `ghcr.io`, ECR registry host). Empty means no registry prefix. |
 | image.repository | string | `"rabbitmq"` | RabbitMQ container image repository. |
-| image.tag | string | `"4.2-management-alpine"` | RabbitMQ container image tag. |
+| image.tag | string | `"4.3-management-alpine"` | RabbitMQ container image tag. |
 | pdb.enabled | bool | `false` | Create a PodDisruptionBudget for RabbitMQ pods. |
 | pdb.maxUnavailable | int | `1` | `maxUnavailable` for PodDisruptionBudget (int or percentage string). |
 | ingress.enabled | bool | `false` | Create an Ingress for RabbitMQ management UI. |
