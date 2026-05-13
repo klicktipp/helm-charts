@@ -528,6 +528,10 @@ proxysql_cluster:
     # -- Set proxysql_cluster.job.ttlSecondsAfterFinished.
     ttlSecondsAfterFinished: 86400
 
+    # -- Extra mysql client flags used by init-cluster job.
+    # Default disables TLS for internal admin connection to avoid certificate trust errors.
+    mysqlClientFlags: "--ssl=0"
+
     # -- Node selector for pod scheduling.
     nodeSelector: {}
     # -- Tolerations for pod scheduling.
