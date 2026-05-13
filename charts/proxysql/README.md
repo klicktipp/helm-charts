@@ -164,5 +164,10 @@ ProxySQL Helm chart for Kubernetes
 | debug.sidecar.securityContext.runAsUser | int | `999` | Set debug.sidecar.securityContext.runAsUser. |
 | debug.sidecar.securityContext.runAsGroup | int | `999` | Set debug.sidecar.securityContext.runAsGroup. |
 | terminationGracePeriodSeconds | int | `60` | Termination grace period in seconds. |
+| lifecycle | object | `{"preStop":{"connection_drain_timeout":0,"enabled":true,"poll_interval_seconds":1,"sleep_time":0}}` | Pod lifecycle hooks configuration. |
+| lifecycle.preStop.enabled | bool | `true` | Enable preStop drain hook. |
+| lifecycle.preStop.sleep_time | int | `0` | Initial delay before checking active client connections. If set to > 0, this overrides `sleep_before_connection_check`. |
+| lifecycle.preStop.connection_drain_timeout | int | `0` | Maximum seconds to wait for active client connections to drain. Set to 0 to wait indefinitely (bounded by `terminationGracePeriodSeconds`). |
+| lifecycle.preStop.poll_interval_seconds | int | `1` | Poll interval in seconds while waiting for active connections. |
 | topologySpreadConstraints | string | `nil` | Configure topologySpreadConstraints. |
-| sleep_before_connection_check | int | `15` | Set sleep_before_connection_check. |
+| sleep_before_connection_check | int | `15` | Set sleep_before_connection_check. Deprecated: prefer lifecycle.preStop.sleep_time. |
