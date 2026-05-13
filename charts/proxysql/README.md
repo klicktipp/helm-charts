@@ -1,6 +1,6 @@
 # proxysql
 
-![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-informational?style=flat-square) ![AppVersion: v2.7.3](https://img.shields.io/badge/AppVersion-v2.7.3-informational?style=flat-square)
+![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-informational?style=flat-square) ![AppVersion: v3.0.8](https://img.shields.io/badge/AppVersion-v3.0.8-informational?style=flat-square)
 
 ProxySQL Helm chart for Kubernetes
 
