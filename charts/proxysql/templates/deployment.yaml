@@ -14,6 +14,9 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.proxysql_cluster.satellite.replicas }}
+  minReadySeconds: {{ .Values.proxysql_cluster.satellite.deployment.minReadySeconds | int }}
+  strategy:
+    {{- toYaml .Values.proxysql_cluster.satellite.deployment.strategy | nindent 4 }}
   selector:
     matchLabels:
       {{- include "proxysql.satellite.selectorLabels" . | nindent 6 }}
@@ -57,8 +60,19 @@ spec:
             - "--exit-on-error"
             {{- end }}
           env:
+            - name: PROXYSQL_SERVICE_PORT
+              value: {{ .Values.service.proxyPort | quote }}
+            - name: PROXYSQL_TERMINATION_MARKER_FILE
+              value: {{ .Values.lifecycle.preStop.termination_marker_file | quote }}
+            {{- if .Values.lifecycle.preStop.enabled }}
+            {{- $sleepBeforeConnectionCheck := ternary (.Values.lifecycle.preStop.sleep_time | int) (.Values.sleep_before_connection_check | int) (gt (.Values.lifecycle.preStop.sleep_time | int) 0) }}
             - name: SLEEP_BEFORE_CONNECTION_CHECK
-              value: {{ .Values.sleep_before_connection_check | quote }}
+              value: {{ $sleepBeforeConnectionCheck | quote }}
+            - name: CONNECTION_DRAIN_TIMEOUT_SECONDS
+              value: {{ .Values.lifecycle.preStop.connection_drain_timeout | quote }}
+            - name: CONNECTION_CHECK_INTERVAL_SECONDS
+              value: {{ .Values.lifecycle.preStop.poll_interval_seconds | quote }}
+            {{- end }}
           envFrom:
           {{- if or .Values.readinessProbe.enabled .Values.livenessProbe.enabled }}
             - configMapRef:
@@ -70,10 +84,12 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ template "proxysql.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.lifecycle.preStop.enabled }}
           lifecycle:
             preStop:
               exec:
                 command: ["/bin/sh", "-c", "/usr/local/bin/wait_queries_to_finish.sh"]
+          {{- end }}
           ports:
             - name: proxy
               containerPort: {{ .Values.service.proxyPort }}
@@ -87,7 +103,7 @@ spec:
           {{- if .Values.startupProbe.enabled }}
           startupProbe:
             exec:
-              command: ["bash", "-c", "true <>/dev/tcp/127.0.0.1/{{ .Values.service.proxyPort }}"]
+              command: {{ .Values.proxysql_cluster.healthcheck.startupCommand | toYaml | nindent 16 }}
             initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
@@ -97,7 +113,7 @@ spec:
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
             exec:
-              command: {{ .Values.proxysql_cluster.healthcheck.command | toYaml | nindent 16 }}
+              command: {{ .Values.proxysql_cluster.healthcheck.readinessCommand | toYaml | nindent 16 }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
@@ -107,7 +123,7 @@ spec:
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             exec:
-              command: {{ .Values.proxysql_cluster.healthcheck.command | toYaml | nindent 16 }}
+              command: {{ .Values.proxysql_cluster.healthcheck.livenessCommand | toYaml | nindent 16 }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}

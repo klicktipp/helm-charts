@@ -1,14 +1,21 @@
 #!/bin/bash
 
-set -u
+set -euo pipefail
 
-export VERBOSE="${PROXYSQL_HEALTHCHECK_VERBOSE:-false}"
+PROXYSQL_HEALTHCHECK_VERBOSE="${PROXYSQL_HEALTHCHECK_VERBOSE:-false}"
 
 # Set the database connection variables
 export DB_USER="${PROXYSQL_HEALTHCHECK_DB_USER:-monitor}"
 export DB_HOST="${PROXYSQL_HEALTHCHECK_DB_HOST:-127.0.0.1}"
 export DB_PORT="${PROXYSQL_HEALTHCHECK_DB_PORT:-6032}"
 export MYSQL_PWD="${PROXYSQL_HEALTHCHECK_DB_PASS:-monitor}"
+
+HEALTHCHECK_MODE="${1:-default}"
+
+# Usage:
+#   proxysql_cluster_healthcheck.sh [default|readiness|liveness|started|test]
+
+TERMINATION_MARKER_FILE="${PROXYSQL_TERMINATION_MARKER_FILE:-/tmp/proxysql-terminating}"
 
 # Health check configuration with default values
 PROXYSQL_HEALTHCHECK_DIFF_CHECK_LIMIT=${PROXYSQL_HEALTHCHECK_DIFF_CHECK_LIMIT:-10}
@@ -25,8 +32,6 @@ function find_mysql_client() {
     fi
 }
 
-MYSQL_CLIENT=$(find_mysql_client)
-
 function log_info() {
   echo "[$(date -Ins)] [INFO] $1"
 }
@@ -34,6 +39,8 @@ function log_info() {
 function log_error() {
   echo "[$(date -Ins)] [ERROR] $1" >&2
 }
+
+MYSQL_CLIENT=$(find_mysql_client)
 
 function mysql_cli() {
   $MYSQL_CLIENT -u "$DB_USER" -h "$DB_HOST" -P "$DB_PORT" --skip-column-names --batch -e "$1"
@@ -82,6 +89,40 @@ function run_valid_config_count() {
   fi
 }
 
+function run_started_check() {
+  mysql_cli "SELECT 1;" >/dev/null
+  log_info "ProxySQL startup check OK."
+}
+
+function run_full_checks() {
+  run_valid_config_count
+  run_diff_check_count
+}
+
 # Call the health check function once for Kubernetes probes
-run_valid_config_count
-run_diff_check_count
+case "${HEALTHCHECK_MODE}" in
+  readiness)
+    if [[ -f "${TERMINATION_MARKER_FILE}" ]]; then
+      log_info "Pod is terminating (${TERMINATION_MARKER_FILE} exists), readiness check failed."
+      exit 1
+    fi
+    run_full_checks
+    ;;
+  liveness)
+    run_full_checks
+    ;;
+  started)
+    run_started_check
+    ;;
+  test)
+    log_info "Running healthcheck in test mode."
+    run_full_checks
+    ;;
+  default)
+    run_full_checks
+    ;;
+  *)
+    log_error "Unknown healthcheck mode: ${HEALTHCHECK_MODE}"
+    exit 1
+    ;;
+esac
