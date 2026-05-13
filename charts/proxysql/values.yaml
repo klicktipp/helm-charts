@@ -438,9 +438,9 @@ proxysql_cluster:
     exit_on_error: false
 
     # -- Set proxysql_cluster.satellite.podDisruptionBudget.
-    podDisruptionBudget:
-      # -- Keep at least half of satellite pods available during voluntary disruptions.
-      minAvailable: 50%
+    podDisruptionBudget: {}
+    #  minAvailable: 0     # required count of pods to remain available, even without the evicted pod.
+    #  maxUnavailable: 0   # Count of pods that may be unavailable after eviction.
 
     # Optional: If set, the proxysql pods will use the given priorityClassName.
     # -- Set proxysql_cluster.satellite.priorityClassName.
