@@ -62,6 +62,7 @@ spec:
               value: "true"
             - name: PROXYSQL_SERVICE_PORT
               value: {{ .Values.service.proxyPort | quote }}
+            {{- if .Values.lifecycle.preStop.enabled }}
             - name: SLEEP_BEFORE_CONNECTION_CHECK
               value: {{ .Values.sleep_before_connection_check | quote }}
           envFrom:
