@@ -6,60 +6,57 @@
 
 set -euo pipefail
 
-PROXYSQL_SERVICE_PORT=${PROXYSQL_SERVICE_PORT_PROXY:-6033}
-SLEEP_BEFORE_CONNECTION_CHECK=${SLEEP_BEFORE_CONNECTION_CHECK:-15}
-SLEEP_MAX=3 # Maximum sleep duration in seconds.
-HEX_PORT=$(printf ':%04X' $PROXYSQL_SERVICE_PORT) # Convert the port number to a padded hexadecimal string.
+PROXYSQL_SERVICE_PORT="${PROXYSQL_SERVICE_PORT:-6033}"
+SLEEP_BEFORE_CONNECTION_CHECK="${SLEEP_BEFORE_CONNECTION_CHECK:-15}"
+CONNECTION_DRAIN_TIMEOUT_SECONDS="${CONNECTION_DRAIN_TIMEOUT_SECONDS:-0}"
+CONNECTION_CHECK_INTERVAL_SECONDS="${CONNECTION_CHECK_INTERVAL_SECONDS:-1}"
 
-echo "Waiting for ProxySQL queries to finish..."
+HEX_PORT="$(printf '%04X' "${PROXYSQL_SERVICE_PORT}")"
 
-# Retrieves IP addresses of established connections to the ProxySQL service port
-function get_connected_ips() {
-  local connected_ips=()
-  # Loop over all proxysql process IDs
-  for pid in $(pidof proxysql 2>/dev/null || echo ""); do
-    # Read related tcp connection information, filter by established connections on proxy port, extract IPs, and remove duplicates
-    while read -r ip; do
-      connected_ips+=("$ip")
-    done < <(awk 'toupper($0) ~ /'"$HEX_PORT"' [0-9A-F]+:[0-9A-F]+ 01/ {print substr($3,1,length($3)-5)}' /proc/${pid}/net/tcp | sort -u)
+count_active_connections() {
+  local total=0
+  local pid
+  local c4
+  local c6
+
+  for pid in $(pidof proxysql 2>/dev/null || true); do
+    if [ -r "/proc/${pid}/net/tcp" ]; then
+      c4=$(awk -v p="${HEX_PORT}" '$2 ~ ":" p "$" && $4 == "01" {n++} END {print n+0}' "/proc/${pid}/net/tcp")
+      total=$((total + c4))
+    fi
+
+    if [ -r "/proc/${pid}/net/tcp6" ]; then
+      c6=$(awk -v p="${HEX_PORT}" '$2 ~ ":" p "$" && $4 == "01" {n++} END {print n+0}' "/proc/${pid}/net/tcp6")
+      total=$((total + c6))
+    fi
   done
-  echo "${connected_ips[@]}"
+
+  printf '%s\n' "${total}"
 }
 
-# Converts a hexadecimal IP address to its decimal representation
-function convert_hex_ip_to_decimal() {
-  local hex_ip=$1
-  local dec_ip=""
+echo "Waiting for ProxySQL connections to finish..."
+echo "Sleep ${SLEEP_BEFORE_CONNECTION_CHECK}s before checking active connections."
+sleep "${SLEEP_BEFORE_CONNECTION_CHECK}"
 
-  # Handle endianness and convert each pair of hex characters to decimal
-  for i in {6..1..2}; do
-    dec_ip+=".$((16#${hex_ip:i-2:2}))"
-  done
-  echo "${dec_ip:1}" # Remove the leading dot before returning the decimal IP
-}
+deadline=0
+if [ "${CONNECTION_DRAIN_TIMEOUT_SECONDS}" -gt 0 ]; then
+  deadline=$(( $(date +%s) + CONNECTION_DRAIN_TIMEOUT_SECONDS ))
+  echo "Maximum drain wait: ${CONNECTION_DRAIN_TIMEOUT_SECONDS}s."
+fi
 
-echo "Wait for ${SLEEP_BEFORE_CONNECTION_CHECK} seconds, to give the k8s enough time to remove the pod from the service"
-echo "before checking for active connections."
-sleep ${SLEEP_BEFORE_CONNECTION_CHECK}
-
-echo "Entering main loop waiting for active ProxySQL connections to end"
 while true; do
-  connected_ips_hex=( $(get_connected_ips) ) # Retrieve list of currently connected IP addresses in hexadecimal format
+  active="$(count_active_connections)"
 
-  # If no connections are found, then exit
-  if [ ${#connected_ips_hex[@]} -eq 0 ]; then
-    echo "Done. Exiting..."
+  if [ "${active}" -eq 0 ]; then
+    echo "No active ProxySQL connections. Exiting preStop."
     exit 0
   fi
 
-  # Convert all hexadecimal IP addresses to decimal notation
-  connected_ips_dec=()
-  for ip_hex in "${connected_ips_hex[@]}"; do
-    connected_ips_dec+=( "$(convert_hex_ip_to_decimal "$ip_hex")" )
-  done
+  if [ "${deadline}" -gt 0 ] && [ "$(date +%s)" -ge "${deadline}" ]; then
+    echo "Drain timeout reached with ${active} active connections. Proceeding with termination."
+    exit 0
+  fi
 
-  # Print the number of unique connected IPs
-  echo "Connected IPs: ${#connected_ips_dec[@]}"
-  echo "Sleeping..."
-  sleep $(( RANDOM % SLEEP_MAX + 1 ))
+  echo "Active ProxySQL connections: ${active}. Sleeping ${CONNECTION_CHECK_INTERVAL_SECONDS}s."
+  sleep "${CONNECTION_CHECK_INTERVAL_SECONDS}"
 done
