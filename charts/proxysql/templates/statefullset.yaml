@@ -14,6 +14,9 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.proxysql_cluster.core.replicas }}
+  minReadySeconds: {{ .Values.proxysql_cluster.core.statefullset.minReadySeconds | int }}
+  updateStrategy:
+    {{- toYaml .Values.proxysql_cluster.core.statefullset.updateStrategy | nindent 4 }}
   selector:
     matchLabels:
       {{- include "proxysql.core.selectorLabels" . | nindent 6 }}

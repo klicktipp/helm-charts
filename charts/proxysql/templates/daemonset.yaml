@@ -13,6 +13,9 @@ metadata:
     {{- toYaml .Values.commonAnnotations | nindent 4 }}
   {{- end }}
 spec:
+  minReadySeconds: {{ .Values.proxysql_cluster.satellite.daemonset.minReadySeconds | int }}
+  updateStrategy:
+    {{- toYaml .Values.proxysql_cluster.satellite.daemonset.updateStrategy | nindent 4 }}
   selector:
     matchLabels:
       {{- include "proxysql.satellite.selectorLabels" . | nindent 6 }}

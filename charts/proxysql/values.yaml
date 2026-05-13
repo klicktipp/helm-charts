@@ -387,6 +387,9 @@ proxysql_cluster:
 
     # -- Set proxysql_cluster.core.statefullset.
     statefullset:
+      # -- Set proxysql_cluster.core.statefullset.minReadySeconds.
+      minReadySeconds: 0
+
       # -- Node selector for pod scheduling.
       nodeSelector: {}
       # -- Tolerations for pod scheduling.
@@ -404,6 +407,11 @@ proxysql_cluster:
       #  requests:
       #    cpu: 100m
       #    memory: 128Mi
+
+      # -- StatefulSet update strategy.
+      updateStrategy:
+        # -- Set proxysql_cluster.core.statefullset.updateStrategy.type.
+        type: RollingUpdate
 
     # -- Service configuration.
     service:
@@ -430,9 +438,9 @@ proxysql_cluster:
     exit_on_error: false
 
     # -- Set proxysql_cluster.satellite.podDisruptionBudget.
-    podDisruptionBudget: {}
-    #  minAvailable: 0     # required count of pods to remain available, even without the evicted pod.
-    #  maxUnavailable: 0   # Count of pods that may be unavailable after eviction.
+    podDisruptionBudget:
+      # -- Keep at least half of satellite pods available during voluntary disruptions.
+      minAvailable: 50%
 
     # Optional: If set, the proxysql pods will use the given priorityClassName.
     # -- Set proxysql_cluster.satellite.priorityClassName.
@@ -440,6 +448,17 @@ proxysql_cluster:
 
     # -- Set proxysql_cluster.satellite.daemonset.
     daemonset:
+      # -- Set proxysql_cluster.satellite.daemonset.minReadySeconds.
+      minReadySeconds: 0
+
+      # -- DaemonSet update strategy.
+      updateStrategy:
+        # -- Set proxysql_cluster.satellite.daemonset.updateStrategy.type.
+        type: RollingUpdate
+        rollingUpdate:
+          # -- Update one pod at a time during upgrades.
+          maxUnavailable: 1
+
       # -- Node selector for pod scheduling.
       nodeSelector: {}
       # -- Tolerations for pod scheduling.
@@ -466,6 +485,21 @@ proxysql_cluster:
       #  requests:
       #    cpu: 100m
       #    memory: 128Mi
+
+    # -- Set proxysql_cluster.satellite.deployment.
+    deployment:
+      # -- Set proxysql_cluster.satellite.deployment.minReadySeconds.
+      minReadySeconds: 0
+
+      # -- Deployment update strategy.
+      strategy:
+        # -- Set proxysql_cluster.satellite.deployment.strategy.type.
+        type: RollingUpdate
+        rollingUpdate:
+          # -- Do not take existing pods down before replacement is ready.
+          maxUnavailable: 0
+          # -- Allow one extra pod during upgrades.
+          maxSurge: 1
 
     # -- Service configuration.
     service:

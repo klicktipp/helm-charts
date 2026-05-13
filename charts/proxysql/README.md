@@ -103,38 +103,52 @@ ProxySQL Helm chart for Kubernetes
 | mysql_query_rules | string | `nil` | Configure mysql_query_rules. |
 | use_default_proxysql_servers | bool | `true` | Configure use_default_proxysql_servers. |
 | additional_proxysql_servers | string | `nil` | Configure additional_proxysql_servers. |
-| proxysql_cluster | object | `{"core":{"enabled":true,"exit_on_error":false,"podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""},"statefullset":{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]}},"enabled":false,"healthcheck":{"command":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh"],"diff_check_limit":10,"kill_if_healthcheck_failed":true,"psql_host":"127.0.0.1","psql_host_port":null,"psql_pass":null,"psql_user":null,"verbose":false},"job":{"affinity":{},"backoffLimit":3,"enabled":true,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"ttlSecondsAfterFinished":86400},"satellite":{"daemonset":{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]},"enabled":true,"exit_on_error":false,"kind":"DaemonSet","podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""}},"secret":{"cluster_password":"proxysql","cluster_username":"proxysql-cluster"}}` | Set proxysql_cluster. |
+| proxysql_cluster | object | `{"core":{"enabled":true,"exit_on_error":false,"podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""},"statefullset":{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"type":"RollingUpdate"}}},"enabled":false,"healthcheck":{"command":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh"],"diff_check_limit":10,"kill_if_healthcheck_failed":true,"psql_host":"127.0.0.1","psql_host_port":null,"psql_pass":null,"psql_user":null,"verbose":false},"job":{"affinity":{},"backoffLimit":3,"enabled":true,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"ttlSecondsAfterFinished":86400},"satellite":{"daemonset":{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}},"deployment":{"minReadySeconds":0,"strategy":{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}},"enabled":true,"exit_on_error":false,"kind":"DaemonSet","podDisruptionBudget":{"minAvailable":"50%"},"priorityClassName":"","replicas":3,"service":{"name":""}},"secret":{"cluster_password":"proxysql","cluster_username":"proxysql-cluster"}}` | Set proxysql_cluster. |
 | proxysql_cluster.enabled | bool | `false` | Enable this feature. |
 | proxysql_cluster.secret | object | `{"cluster_password":"proxysql","cluster_username":"proxysql-cluster"}` | Component secret configuration map. |
 | proxysql_cluster.secret.cluster_username | string | `"proxysql-cluster"` | Set proxysql_cluster.secret.cluster_username. |
 | proxysql_cluster.secret.cluster_password | string | `"proxysql"` | Set proxysql_cluster.secret.cluster_password. |
-| proxysql_cluster.core | object | `{"enabled":true,"exit_on_error":false,"podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""},"statefullset":{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]}}` | Set proxysql_cluster.core. |
+| proxysql_cluster.core | object | `{"enabled":true,"exit_on_error":false,"podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""},"statefullset":{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"type":"RollingUpdate"}}}` | Set proxysql_cluster.core. |
 | proxysql_cluster.core.enabled | bool | `true` | Enable this feature. |
 | proxysql_cluster.core.replicas | int | `3` | Configure proxysql_cluster.core.replicas. |
 | proxysql_cluster.core.exit_on_error | bool | `false` | Set proxysql_cluster.core.exit_on_error. |
 | proxysql_cluster.core.podDisruptionBudget | object | `{}` | Set proxysql_cluster.core.podDisruptionBudget. |
 | proxysql_cluster.core.priorityClassName | string | `""` | Set proxysql_cluster.core.priorityClassName. |
-| proxysql_cluster.core.statefullset | object | `{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]}` | Set proxysql_cluster.core.statefullset. |
+| proxysql_cluster.core.statefullset | object | `{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"type":"RollingUpdate"}}` | Set proxysql_cluster.core.statefullset. |
+| proxysql_cluster.core.statefullset.minReadySeconds | int | `0` | Set proxysql_cluster.core.statefullset.minReadySeconds. |
 | proxysql_cluster.core.statefullset.nodeSelector | object | `{}` | Node selector for pod scheduling. |
 | proxysql_cluster.core.statefullset.tolerations | list | `[]` | Tolerations for pod scheduling. |
 | proxysql_cluster.core.statefullset.affinity | object | `{}` | Affinity rules for pod scheduling. |
 | proxysql_cluster.core.statefullset.podAnnotations | object | `{}` | Pod annotations. |
 | proxysql_cluster.core.statefullset.resources | object | `{}` | Container resource requests and limits. |
+| proxysql_cluster.core.statefullset.updateStrategy | object | `{"type":"RollingUpdate"}` | StatefulSet update strategy. |
+| proxysql_cluster.core.statefullset.updateStrategy.type | string | `"RollingUpdate"` | Set proxysql_cluster.core.statefullset.updateStrategy.type. |
 | proxysql_cluster.core.service | object | `{"name":""}` | Service configuration. |
 | proxysql_cluster.core.service.name | string | `""` | Set proxysql_cluster.core.service.name. |
-| proxysql_cluster.satellite | object | `{"daemonset":{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]},"enabled":true,"exit_on_error":false,"kind":"DaemonSet","podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""}}` | Set proxysql_cluster.satellite. |
+| proxysql_cluster.satellite | object | `{"daemonset":{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}},"deployment":{"minReadySeconds":0,"strategy":{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}},"enabled":true,"exit_on_error":false,"kind":"DaemonSet","podDisruptionBudget":{"minAvailable":"50%"},"priorityClassName":"","replicas":3,"service":{"name":""}}` | Set proxysql_cluster.satellite. |
 | proxysql_cluster.satellite.kind | string | `"DaemonSet"` | Set proxysql_cluster.satellite.kind. |
 | proxysql_cluster.satellite.enabled | bool | `true` | Enable this feature. |
 | proxysql_cluster.satellite.replicas | int | `3` | Configure proxysql_cluster.satellite.replicas. |
 | proxysql_cluster.satellite.exit_on_error | bool | `false` | Set proxysql_cluster.satellite.exit_on_error. |
-| proxysql_cluster.satellite.podDisruptionBudget | object | `{}` | Set proxysql_cluster.satellite.podDisruptionBudget. |
+| proxysql_cluster.satellite.podDisruptionBudget | object | `{"minAvailable":"50%"}` | Set proxysql_cluster.satellite.podDisruptionBudget. |
+| proxysql_cluster.satellite.podDisruptionBudget.minAvailable | string | `"50%"` | Keep at least half of satellite pods available during voluntary disruptions. |
 | proxysql_cluster.satellite.priorityClassName | string | `""` | Set proxysql_cluster.satellite.priorityClassName. |
-| proxysql_cluster.satellite.daemonset | object | `{"affinity":{},"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[]}` | Set proxysql_cluster.satellite.daemonset. |
+| proxysql_cluster.satellite.daemonset | object | `{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}}` | Set proxysql_cluster.satellite.daemonset. |
+| proxysql_cluster.satellite.daemonset.minReadySeconds | int | `0` | Set proxysql_cluster.satellite.daemonset.minReadySeconds. |
+| proxysql_cluster.satellite.daemonset.updateStrategy | object | `{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}` | DaemonSet update strategy. |
+| proxysql_cluster.satellite.daemonset.updateStrategy.type | string | `"RollingUpdate"` | Set proxysql_cluster.satellite.daemonset.updateStrategy.type. |
+| proxysql_cluster.satellite.daemonset.updateStrategy.rollingUpdate.maxUnavailable | int | `1` | Update one pod at a time during upgrades. |
 | proxysql_cluster.satellite.daemonset.nodeSelector | object | `{}` | Node selector for pod scheduling. |
 | proxysql_cluster.satellite.daemonset.tolerations | list | `[]` | Tolerations for pod scheduling. |
 | proxysql_cluster.satellite.daemonset.affinity | object | `{}` | Affinity rules for pod scheduling. |
 | proxysql_cluster.satellite.daemonset.podAnnotations | object | `{}` | Pod annotations. |
 | proxysql_cluster.satellite.daemonset.resources | object | `{}` | Container resource requests and limits. |
+| proxysql_cluster.satellite.deployment | object | `{"minReadySeconds":0,"strategy":{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}}` | Set proxysql_cluster.satellite.deployment. |
+| proxysql_cluster.satellite.deployment.minReadySeconds | int | `0` | Set proxysql_cluster.satellite.deployment.minReadySeconds. |
+| proxysql_cluster.satellite.deployment.strategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}` | Deployment update strategy. |
+| proxysql_cluster.satellite.deployment.strategy.type | string | `"RollingUpdate"` | Set proxysql_cluster.satellite.deployment.strategy.type. |
+| proxysql_cluster.satellite.deployment.strategy.rollingUpdate.maxUnavailable | int | `0` | Do not take existing pods down before replacement is ready. |
+| proxysql_cluster.satellite.deployment.strategy.rollingUpdate.maxSurge | int | `1` | Allow one extra pod during upgrades. |
 | proxysql_cluster.satellite.service | object | `{"name":""}` | Service configuration. |
 | proxysql_cluster.satellite.service.name | string | `""` | Set proxysql_cluster.satellite.service.name. |
 | proxysql_cluster.job | object | `{"affinity":{},"backoffLimit":3,"enabled":true,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"ttlSecondsAfterFinished":86400}` | Set proxysql_cluster.job. |
