@@ -10,8 +10,15 @@ PROXYSQL_SERVICE_PORT="${PROXYSQL_SERVICE_PORT:-6033}"
 SLEEP_BEFORE_CONNECTION_CHECK="${SLEEP_BEFORE_CONNECTION_CHECK:-15}"
 CONNECTION_DRAIN_TIMEOUT_SECONDS="${CONNECTION_DRAIN_TIMEOUT_SECONDS:-0}"
 CONNECTION_CHECK_INTERVAL_SECONDS="${CONNECTION_CHECK_INTERVAL_SECONDS:-1}"
+TERMINATION_MARKER_FILE="${PROXYSQL_TERMINATION_MARKER_FILE:-/tmp/proxysql-terminating}"
 
 HEX_PORT="$(printf '%04X' "${PROXYSQL_SERVICE_PORT}")"
+
+cleanup() {
+  rm -f "${TERMINATION_MARKER_FILE}"
+}
+
+trap cleanup EXIT
 
 count_active_connections() {
   local total=0
@@ -35,6 +42,8 @@ count_active_connections() {
 }
 
 echo "Waiting for ProxySQL connections to finish..."
+touch "${TERMINATION_MARKER_FILE}"
+echo "Termination marker set at ${TERMINATION_MARKER_FILE}."
 echo "Sleep ${SLEEP_BEFORE_CONNECTION_CHECK}s before checking active connections."
 sleep "${SLEEP_BEFORE_CONNECTION_CHECK}"
 
