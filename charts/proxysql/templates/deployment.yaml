@@ -57,6 +57,8 @@ spec:
             - "--exit-on-error"
             {{- end }}
           env:
+            - name: PROXYSQL_SERVICE_PORT
+              value: {{ .Values.service.proxyPort | quote }}
             - name: SLEEP_BEFORE_CONNECTION_CHECK
               value: {{ .Values.sleep_before_connection_check | quote }}
           envFrom:
