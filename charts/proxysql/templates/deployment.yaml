@@ -62,7 +62,12 @@ spec:
             {{- if .Values.lifecycle.preStop.enabled }}
             {{- $sleepBeforeConnectionCheck := ternary (.Values.lifecycle.preStop.sleep_time | int) (.Values.sleep_before_connection_check | int) (gt (.Values.lifecycle.preStop.sleep_time | int) 0) }}
             - name: SLEEP_BEFORE_CONNECTION_CHECK
-              value: {{ .Values.sleep_before_connection_check | quote }}
+              value: {{ $sleepBeforeConnectionCheck | quote }}
+            - name: CONNECTION_DRAIN_TIMEOUT_SECONDS
+              value: {{ .Values.lifecycle.preStop.connection_drain_timeout | quote }}
+            - name: CONNECTION_CHECK_INTERVAL_SECONDS
+              value: {{ .Values.lifecycle.preStop.poll_interval_seconds | quote }}
+            {{- end }}
           envFrom:
           {{- if or .Values.readinessProbe.enabled .Values.livenessProbe.enabled }}
             - configMapRef:
@@ -74,10 +79,12 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ template "proxysql.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.lifecycle.preStop.enabled }}
           lifecycle:
             preStop:
               exec:
                 command: ["/bin/sh", "-c", "/usr/local/bin/wait_queries_to_finish.sh"]
+          {{- end }}
           ports:
             - name: proxy
               containerPort: {{ .Values.service.proxyPort }}

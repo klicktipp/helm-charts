@@ -559,6 +559,20 @@ debug:
 # -- Termination grace period in seconds.
 terminationGracePeriodSeconds: 60
 
+# -- Pod lifecycle hooks configuration.
+lifecycle:
+  preStop:
+    # -- Enable preStop drain hook.
+    enabled: true
+    # -- Initial delay before checking active client connections.
+    # If set to > 0, this overrides `sleep_before_connection_check`.
+    sleep_time: 0
+    # -- Maximum seconds to wait for active client connections to drain.
+    # Set to 0 to wait indefinitely (bounded by `terminationGracePeriodSeconds`).
+    connection_drain_timeout: 0
+    # -- Poll interval in seconds while waiting for active connections.
+    poll_interval_seconds: 1
+
 # -- Configure topologySpreadConstraints.
 topologySpreadConstraints:
 #  - maxSkew: 1 # allows a node or zone to have up to X pods more or less than any other node or zone.
@@ -568,4 +582,5 @@ topologySpreadConstraints:
 # How long shall the pre-stop-Hook wait k8s to deregister the pod from the service,
 # before checking for open connections?
 # -- Set sleep_before_connection_check.
+# Deprecated: prefer lifecycle.preStop.sleep_time.
 sleep_before_connection_check: 15
