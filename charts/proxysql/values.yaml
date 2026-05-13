@@ -565,14 +565,15 @@ proxysql_cluster:
     # -- Set proxysql_cluster.healthcheck.verbose.
     verbose: false
 
-    # -- Override container command.
-    command: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh"]
     # -- Override startup command.
+    # By default, use `proxysql_cluster_healthcheck.sh started`.
     startupCommand: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh started"]
     # -- Override readiness command.
-    # This command is used for readiness probes and should fail during graceful termination.
+    # By default, use `proxysql_cluster_healthcheck.sh readiness`.
+    # This command should fail during graceful termination.
     readinessCommand: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh readiness"]
     # -- Override liveness command.
+    # By default, use `proxysql_cluster_healthcheck.sh liveness`.
     livenessCommand: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh liveness"]
 
 # Enable debugging container along the proxysql instance

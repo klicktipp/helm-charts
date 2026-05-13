@@ -103,7 +103,7 @@ spec:
           {{- if .Values.startupProbe.enabled }}
           startupProbe:
             exec:
-              command: {{ default (list "bash" "-c" (printf "true <>/dev/tcp/127.0.0.1/%v" .Values.service.proxyPort)) .Values.proxysql_cluster.healthcheck.startupCommand | toYaml | nindent 16 }}
+              command: {{ .Values.proxysql_cluster.healthcheck.startupCommand | toYaml | nindent 16 }}
             initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
@@ -113,7 +113,7 @@ spec:
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
             exec:
-              command: {{ default .Values.proxysql_cluster.healthcheck.command .Values.proxysql_cluster.healthcheck.readinessCommand | toYaml | nindent 16 }}
+              command: {{ .Values.proxysql_cluster.healthcheck.readinessCommand | toYaml | nindent 16 }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
@@ -123,7 +123,7 @@ spec:
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             exec:
-              command: {{ default .Values.proxysql_cluster.healthcheck.command .Values.proxysql_cluster.healthcheck.livenessCommand | toYaml | nindent 16 }}
+              command: {{ .Values.proxysql_cluster.healthcheck.livenessCommand | toYaml | nindent 16 }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}

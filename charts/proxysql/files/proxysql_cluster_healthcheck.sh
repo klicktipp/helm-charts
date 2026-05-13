@@ -1,8 +1,8 @@
 #!/bin/bash
 
-set -u
+set -euo pipefail
 
-export VERBOSE="${PROXYSQL_HEALTHCHECK_VERBOSE:-false}"
+PROXYSQL_HEALTHCHECK_VERBOSE="${PROXYSQL_HEALTHCHECK_VERBOSE:-false}"
 
 # Set the database connection variables
 export DB_USER="${PROXYSQL_HEALTHCHECK_DB_USER:-monitor}"
@@ -11,6 +11,9 @@ export DB_PORT="${PROXYSQL_HEALTHCHECK_DB_PORT:-6032}"
 export MYSQL_PWD="${PROXYSQL_HEALTHCHECK_DB_PASS:-monitor}"
 
 HEALTHCHECK_MODE="${1:-default}"
+
+# Usage:
+#   proxysql_cluster_healthcheck.sh [default|readiness|liveness|started|test]
 
 TERMINATION_MARKER_FILE="${PROXYSQL_TERMINATION_MARKER_FILE:-/tmp/proxysql-terminating}"
 
@@ -29,8 +32,6 @@ function find_mysql_client() {
     fi
 }
 
-MYSQL_CLIENT=$(find_mysql_client)
-
 function log_info() {
   echo "[$(date -Ins)] [INFO] $1"
 }
@@ -38,6 +39,8 @@ function log_info() {
 function log_error() {
   echo "[$(date -Ins)] [ERROR] $1" >&2
 }
+
+MYSQL_CLIENT=$(find_mysql_client)
 
 function mysql_cli() {
   $MYSQL_CLIENT -u "$DB_USER" -h "$DB_HOST" -P "$DB_PORT" --skip-column-names --batch -e "$1"
