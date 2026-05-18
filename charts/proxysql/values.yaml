@@ -628,8 +628,6 @@ lifecycle:
     connection_drain_timeout: 0
     # -- Poll interval in seconds while waiting for active connections.
     poll_interval_seconds: 1
-    # -- Sentinel file used to signal termination and fail readiness immediately.
-    termination_marker_file: "/tmp/proxysql-terminating"
 
 # -- Configure topologySpreadConstraints.
 topologySpreadConstraints:
