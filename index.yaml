@@ -1501,6 +1501,22 @@ entries:
   proxysql:
   - apiVersion: v1
     appVersion: 3.0.8
+    created: "2026-05-18T13:32:36.81809562Z"
+    description: ProxySQL Helm chart for Kubernetes
+    digest: 95143a9f9e8675d656b671791cd6e1318733af59a34bbb7c0049e4985a2e69f1
+    home: https://www.proxysql.com/
+    maintainers:
+    - email: services@dysnix.com
+      name: Dysnix
+    name: proxysql
+    sources:
+    - https://github.com/dysnix/charts
+    - https://github.com/sysown/proxysql
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/proxysql-1.2.2/proxysql-1.2.2.tgz
+    version: 1.2.2
+  - apiVersion: v1
+    appVersion: 3.0.8
     created: "2026-05-13T12:35:36.723769357Z"
     description: ProxySQL Helm chart for Kubernetes
     digest: 74f84a0ce54777cc9d1846d96c61a5c5da416efcc4d586fc28b7ff772d8aa87a
@@ -3654,4 +3670,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-05-13T12:35:36.724077825Z"
+generated: "2026-05-18T13:32:36.818362642Z"
