@@ -19,6 +19,8 @@ TERMINATION_MARKER_FILE="${PROXYSQL_TERMINATION_MARKER_FILE:-/tmp/proxysql-termi
 
 # Health check configuration with default values
 PROXYSQL_HEALTHCHECK_DIFF_CHECK_LIMIT=${PROXYSQL_HEALTHCHECK_DIFF_CHECK_LIMIT:-10}
+PROXYSQL_HEALTHCHECK_PROXY_HOST="${PROXYSQL_HEALTHCHECK_PROXY_HOST:-127.0.0.1}"
+PROXYSQL_HEALTHCHECK_PROXY_PORT="${PROXYSQL_HEALTHCHECK_PROXY_PORT:-{{ .Values.service.proxyPort }}}"
 
 # Locate mysql or mariadb client binary
 function find_mysql_client() {
@@ -90,7 +92,7 @@ function run_valid_config_count() {
 }
 
 function run_started_check() {
-  mysql_cli "SELECT 1;" >/dev/null
+  bash -c "true <>/dev/tcp/${PROXYSQL_HEALTHCHECK_PROXY_HOST}/${PROXYSQL_HEALTHCHECK_PROXY_PORT}"
   log_info "ProxySQL startup check OK."
 }
 
