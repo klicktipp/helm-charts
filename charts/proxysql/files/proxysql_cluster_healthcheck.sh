@@ -10,12 +10,12 @@ export DB_HOST="${PROXYSQL_HEALTHCHECK_DB_HOST:-127.0.0.1}"
 export DB_PORT="${PROXYSQL_HEALTHCHECK_DB_PORT:-6032}"
 export MYSQL_PWD="${PROXYSQL_HEALTHCHECK_DB_PASS:-monitor}"
 
-HEALTHCHECK_MODE="${1:-default}"
+HEALTHCHECK_MODE="${1:-}"
 
 # Usage:
-#   proxysql_cluster_healthcheck.sh [default|readiness|liveness|started|test]
+#   proxysql_cluster_healthcheck.sh <readiness|liveness|started|test>
 
-TERMINATION_MARKER_FILE="${PROXYSQL_TERMINATION_MARKER_FILE:-/tmp/proxysql-terminating}"
+
 
 # Health check configuration with default values
 PROXYSQL_HEALTHCHECK_DIFF_CHECK_LIMIT=${PROXYSQL_HEALTHCHECK_DIFF_CHECK_LIMIT:-10}
@@ -91,37 +91,29 @@ function run_valid_config_count() {
   fi
 }
 
-function run_started_check() {
+function run_open_tcp_port_check() {
   bash -c "true <>/dev/tcp/${PROXYSQL_HEALTHCHECK_PROXY_HOST}/${PROXYSQL_HEALTHCHECK_PROXY_PORT}"
   log_info "ProxySQL startup check OK."
 }
 
-function run_full_checks() {
-  run_valid_config_count
-  run_diff_check_count
-}
 
 # Call the health check function once for Kubernetes probes
 case "${HEALTHCHECK_MODE}" in
   readiness)
-    if [[ -f "${TERMINATION_MARKER_FILE}" ]]; then
-      log_info "Pod is terminating (${TERMINATION_MARKER_FILE} exists), readiness check failed."
-      exit 1
-    fi
-    run_full_checks
+    run_valid_config_count
+    run_diff_check_count
     ;;
   liveness)
-    run_full_checks
+    run_valid_config_count
+    run_diff_check_count
     ;;
   started)
-    run_started_check
+    run_open_tcp_port_check
     ;;
   test)
     log_info "Running healthcheck in test mode."
-    run_full_checks
-    ;;
-  default)
-    run_full_checks
+    run_valid_config_count
+    run_diff_check_count
     ;;
   *)
     log_error "Unknown healthcheck mode: ${HEALTHCHECK_MODE}"
