@@ -532,17 +532,6 @@ proxysql_cluster:
     # Default disables TLS for internal admin connection to avoid certificate trust errors.
     mysqlClientFlags: "--ssl=0"
 
-    # -- Optional host override for init-cluster job target.
-    # By default, when core is enabled this uses `<fullname>-core.<namespace>.svc`,
-    # otherwise it uses the first entry from `additional_proxysql_servers`.
-    host: ""
-
-    # -- Optional admin port override for init-cluster job target.
-    # By default, when core is enabled this uses `.service.adminPort`,
-    # otherwise it uses the first entry port from `additional_proxysql_servers`.
-    port: null
-
-    # -- Node selector for pod scheduling.
     nodeSelector: {}
     # -- Tolerations for pod scheduling.
     tolerations: []
