@@ -7,7 +7,6 @@ set -euo pipefail
 
 PROXYSQL_HEALTHCHECK_VERBOSE="${PROXYSQL_HEALTHCHECK_VERBOSE:-false}"
 HEALTHCHECK_STATE_DIR="${PROXYSQL_HEALTHCHECK_STATE_DIR:-/tmp}"
-LAST_ERROR=""
 
 # Set the database connection variables
 export DB_USER="${PROXYSQL_HEALTHCHECK_DB_USER:-monitor}"
