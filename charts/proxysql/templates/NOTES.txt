@@ -13,7 +13,3 @@
   echo "mysql -uuser -ppassword -h127.0.0.1 -P6033"
   kubectl port-forward $POD_NAME 6033:6033
 {{- end }}
-
-{{- if and .Values.lifecycle.preStop.enabled (le (.Values.lifecycle.preStop.sleep_time | int) 0) (ne (.Values.sleep_before_connection_check | int) 15) }}
-WARNING: `sleep_before_connection_check` is deprecated. Please migrate to `lifecycle.preStop.sleep_time`.
-{{- end }}

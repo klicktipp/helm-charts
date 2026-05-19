@@ -61,12 +61,9 @@ spec:
           env:
             - name: PROXYSQL_SERVICE_PORT
               value: {{ .Values.service.proxyPort | quote }}
-            - name: PROXYSQL_TERMINATION_MARKER_FILE
-              value: {{ .Values.lifecycle.preStop.termination_marker_file | quote }}
             {{- if .Values.lifecycle.preStop.enabled }}
-            {{- $sleepBeforeConnectionCheck := ternary (.Values.lifecycle.preStop.sleep_time | int) (.Values.sleep_before_connection_check | int) (gt (.Values.lifecycle.preStop.sleep_time | int) 0) }}
             - name: SLEEP_BEFORE_CONNECTION_CHECK
-              value: {{ $sleepBeforeConnectionCheck | quote }}
+              value: {{ .Values.lifecycle.preStop.sleep_time | quote }}
             - name: CONNECTION_DRAIN_TIMEOUT_SECONDS
               value: {{ .Values.lifecycle.preStop.connection_drain_timeout | quote }}
             - name: CONNECTION_CHECK_INTERVAL_SECONDS

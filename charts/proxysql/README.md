@@ -1,6 +1,6 @@
 # proxysql
 
-![Version: 1.2.2](https://img.shields.io/badge/Version-1.2.2-informational?style=flat-square) ![AppVersion: 3.0.8](https://img.shields.io/badge/AppVersion-3.0.8-informational?style=flat-square)
+![Version: 1.3.0](https://img.shields.io/badge/Version-1.3.0-informational?style=flat-square) ![AppVersion: 3.0.8](https://img.shields.io/badge/AppVersion-3.0.8-informational?style=flat-square)
 
 ProxySQL Helm chart for Kubernetes
 
@@ -103,7 +103,7 @@ ProxySQL Helm chart for Kubernetes
 | mysql_query_rules | string | `nil` | Configure mysql_query_rules. |
 | use_default_proxysql_servers | bool | `true` | Configure use_default_proxysql_servers. |
 | additional_proxysql_servers | string | `nil` | Configure additional_proxysql_servers. |
-| proxysql_cluster | object | `{"core":{"enabled":true,"exit_on_error":false,"podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""},"statefullset":{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"type":"RollingUpdate"}}},"enabled":false,"healthcheck":{"diff_check_limit":10,"kill_if_healthcheck_failed":true,"livenessCommand":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh liveness"],"psql_host":"127.0.0.1","psql_host_port":null,"psql_pass":null,"psql_user":null,"readinessCommand":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh readiness"],"startupCommand":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh started"],"verbose":false},"job":{"affinity":{},"backoffLimit":3,"enabled":true,"host":"","mysqlClientFlags":"--ssl=0","nodeSelector":{},"podAnnotations":{},"port":null,"resources":{},"tolerations":[],"ttlSecondsAfterFinished":86400},"satellite":{"daemonset":{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}},"deployment":{"minReadySeconds":0,"strategy":{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}},"enabled":true,"exit_on_error":false,"kind":"DaemonSet","podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""}},"secret":{"cluster_password":"proxysql","cluster_username":"proxysql-cluster"}}` | Set proxysql_cluster. |
+| proxysql_cluster | object | `{"core":{"enabled":true,"exit_on_error":false,"podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""},"statefullset":{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"type":"RollingUpdate"}}},"enabled":false,"healthcheck":{"diff_check_limit":10,"kill_if_healthcheck_failed":true,"livenessCommand":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh liveness"],"psql_host":"127.0.0.1","psql_host_port":null,"psql_pass":null,"psql_user":null,"readinessCommand":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh readiness"],"startupCommand":["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh started"],"verbose":false},"job":{"affinity":{},"backoffLimit":3,"enabled":true,"mysqlClientFlags":"--ssl=0","nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"ttlSecondsAfterFinished":86400},"satellite":{"daemonset":{"affinity":{},"minReadySeconds":0,"nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"updateStrategy":{"rollingUpdate":{"maxUnavailable":1},"type":"RollingUpdate"}},"deployment":{"minReadySeconds":0,"strategy":{"rollingUpdate":{"maxSurge":1,"maxUnavailable":0},"type":"RollingUpdate"}},"enabled":true,"exit_on_error":false,"kind":"DaemonSet","podDisruptionBudget":{},"priorityClassName":"","replicas":3,"service":{"name":""}},"secret":{"cluster_password":"proxysql","cluster_username":"proxysql-cluster"}}` | Set proxysql_cluster. |
 | proxysql_cluster.enabled | bool | `false` | Enable this feature. |
 | proxysql_cluster.secret | object | `{"cluster_password":"proxysql","cluster_username":"proxysql-cluster"}` | Component secret configuration map. |
 | proxysql_cluster.secret.cluster_username | string | `"proxysql-cluster"` | Set proxysql_cluster.secret.cluster_username. |
@@ -150,14 +150,11 @@ ProxySQL Helm chart for Kubernetes
 | proxysql_cluster.satellite.deployment.strategy.rollingUpdate.maxSurge | int | `1` | Allow one extra pod during upgrades. |
 | proxysql_cluster.satellite.service | object | `{"name":""}` | Service configuration. |
 | proxysql_cluster.satellite.service.name | string | `""` | Set proxysql_cluster.satellite.service.name. |
-| proxysql_cluster.job | object | `{"affinity":{},"backoffLimit":3,"enabled":true,"host":"","mysqlClientFlags":"--ssl=0","nodeSelector":{},"podAnnotations":{},"port":null,"resources":{},"tolerations":[],"ttlSecondsAfterFinished":86400}` | Set proxysql_cluster.job. |
+| proxysql_cluster.job | object | `{"affinity":{},"backoffLimit":3,"enabled":true,"mysqlClientFlags":"--ssl=0","nodeSelector":{},"podAnnotations":{},"resources":{},"tolerations":[],"ttlSecondsAfterFinished":86400}` | Set proxysql_cluster.job. |
 | proxysql_cluster.job.enabled | bool | `true` | Enable this feature. |
 | proxysql_cluster.job.backoffLimit | int | `3` | Set proxysql_cluster.job.backoffLimit. |
 | proxysql_cluster.job.ttlSecondsAfterFinished | int | `86400` | Set proxysql_cluster.job.ttlSecondsAfterFinished. |
 | proxysql_cluster.job.mysqlClientFlags | string | `"--ssl=0"` | Extra mysql client flags used by init-cluster job. Default disables TLS for internal admin connection to avoid certificate trust errors. |
-| proxysql_cluster.job.host | string | `""` | Optional host override for init-cluster job target. By default, when core is enabled this uses `<fullname>-core.<namespace>.svc`, otherwise it uses the first entry from `additional_proxysql_servers`. |
-| proxysql_cluster.job.port | string | `nil` | Optional admin port override for init-cluster job target. By default, when core is enabled this uses `.service.adminPort`, otherwise it uses the first entry port from `additional_proxysql_servers`. |
-| proxysql_cluster.job.nodeSelector | object | `{}` | Node selector for pod scheduling. |
 | proxysql_cluster.job.tolerations | list | `[]` | Tolerations for pod scheduling. |
 | proxysql_cluster.job.affinity | object | `{}` | Affinity rules for pod scheduling. |
 | proxysql_cluster.job.podAnnotations | object | `{}` | Pod annotations. |
@@ -170,9 +167,9 @@ ProxySQL Helm chart for Kubernetes
 | proxysql_cluster.healthcheck.diff_check_limit | int | `10` | Set proxysql_cluster.healthcheck.diff_check_limit. |
 | proxysql_cluster.healthcheck.kill_if_healthcheck_failed | bool | `true` | Set proxysql_cluster.healthcheck.kill_if_healthcheck_failed. |
 | proxysql_cluster.healthcheck.verbose | bool | `false` | Set proxysql_cluster.healthcheck.verbose. |
-| proxysql_cluster.healthcheck.startupCommand | list | `["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh started"]` | Override startup command. By default, use `proxysql_cluster_healthcheck.sh started`. |
-| proxysql_cluster.healthcheck.readinessCommand | list | `["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh readiness"]` | Override readiness command. By default, use `proxysql_cluster_healthcheck.sh readiness`. This command should fail during graceful termination. |
-| proxysql_cluster.healthcheck.livenessCommand | list | `["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh liveness"]` | Override liveness command. By default, use `proxysql_cluster_healthcheck.sh liveness`. |
+| proxysql_cluster.healthcheck.startupCommand | list | `["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh started"]` | Override startup command. The default script writes one-line JSON status to `/tmp/proxysql_cluster_healthcheck_started.status`. By default, use `proxysql_cluster_healthcheck.sh started`. |
+| proxysql_cluster.healthcheck.readinessCommand | list | `["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh readiness"]` | Override readiness command. The default script writes one-line JSON status to `/tmp/proxysql_cluster_healthcheck_readiness.status`. By default, use `proxysql_cluster_healthcheck.sh readiness`. This command should fail during graceful termination. |
+| proxysql_cluster.healthcheck.livenessCommand | list | `["/bin/sh","-c","/usr/local/bin/proxysql_cluster_healthcheck.sh liveness"]` | Override liveness command. The default script writes one-line JSON status to `/tmp/proxysql_cluster_healthcheck_liveness.status`. By default, use `proxysql_cluster_healthcheck.sh liveness`. |
 | debug | object | `{"sidecar":{"command":["/bin/sleep","infinity"],"enabled":false,"image":"mysql:debian","securityContext":{"runAsGroup":999,"runAsUser":999}}}` | Set debug. |
 | debug.sidecar | object | `{"command":["/bin/sleep","infinity"],"enabled":false,"image":"mysql:debian","securityContext":{"runAsGroup":999,"runAsUser":999}}` | Set debug.sidecar. |
 | debug.sidecar.enabled | bool | `false` | Enable this feature. |
@@ -182,11 +179,9 @@ ProxySQL Helm chart for Kubernetes
 | debug.sidecar.securityContext.runAsUser | int | `999` | Set debug.sidecar.securityContext.runAsUser. |
 | debug.sidecar.securityContext.runAsGroup | int | `999` | Set debug.sidecar.securityContext.runAsGroup. |
 | terminationGracePeriodSeconds | int | `60` | Termination grace period in seconds. |
-| lifecycle | object | `{"preStop":{"connection_drain_timeout":0,"enabled":true,"poll_interval_seconds":1,"sleep_time":0,"termination_marker_file":"/tmp/proxysql-terminating"}}` | Pod lifecycle hooks configuration. |
+| lifecycle | object | `{"preStop":{"connection_drain_timeout":0,"enabled":true,"poll_interval_seconds":1,"sleep_time":15}}` | Pod lifecycle hooks configuration. |
 | lifecycle.preStop.enabled | bool | `true` | Enable preStop drain hook. |
-| lifecycle.preStop.sleep_time | int | `0` | Initial delay before checking active client connections. If set to > 0, this overrides `sleep_before_connection_check`. |
+| lifecycle.preStop.sleep_time | int | `15` | Initial delay before checking active client connections. |
 | lifecycle.preStop.connection_drain_timeout | int | `0` | Maximum seconds to wait for active client connections to drain. Set to 0 to wait indefinitely (bounded by `terminationGracePeriodSeconds`). |
 | lifecycle.preStop.poll_interval_seconds | int | `1` | Poll interval in seconds while waiting for active connections. |
-| lifecycle.preStop.termination_marker_file | string | `"/tmp/proxysql-terminating"` | Sentinel file used to signal termination and fail readiness immediately. |
 | topologySpreadConstraints | string | `nil` | Configure topologySpreadConstraints. |
-| sleep_before_connection_check | int | `15` | Set sleep_before_connection_check. Deprecated: prefer lifecycle.preStop.sleep_time. |

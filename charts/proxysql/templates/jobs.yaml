@@ -1,17 +1,7 @@
 ---
-{{- if and .Values.proxysql_cluster.enabled .Values.proxysql_cluster.job.enabled }}
+{{- if and .Values.proxysql_cluster.enabled .Values.proxysql_cluster.job.enabled .Values.proxysql_cluster.core.enabled }}
 {{- $coreServiceName := printf "%s-core.%s.svc" (include "proxysql.fullname" .) .Release.Namespace }}
-{{- $externalCoreHost := "" }}
-{{- $externalCorePort := .Values.service.adminPort }}
-{{- if gt (len .Values.additional_proxysql_servers) 0 }}
-{{- $externalCoreHost = (index .Values.additional_proxysql_servers 0).hostname }}
-{{- $externalCorePort = ((index .Values.additional_proxysql_servers 0).port | default .Values.service.adminPort) }}
-{{- end }}
-{{- $defaultJobHost := ternary $coreServiceName $externalCoreHost .Values.proxysql_cluster.core.enabled }}
-{{- $jobHost := required "proxysql_cluster.job.host must be set when core is disabled and additional_proxysql_servers is empty" (.Values.proxysql_cluster.job.host | default $defaultJobHost) }}
 {{- $coreServiceAdminPort := (.Values.proxysql_cluster.healthcheck.psql_host_port | default .Values.service.adminPort) }}
-{{- $defaultJobPort := ternary $coreServiceAdminPort $externalCorePort .Values.proxysql_cluster.core.enabled }}
-{{- $jobPort := .Values.proxysql_cluster.job.port | default $defaultJobPort | default .Values.service.adminPort }}
 {{- $mysqlClientFlags := .Values.proxysql_cluster.job.mysqlClientFlags }}
 apiVersion: batch/v1
 kind: Job
@@ -72,11 +62,11 @@ spec:
           args:
             - "-c"
             - |
-                until true <>/dev/tcp/{{ $jobHost }}/{{ $jobPort }}; do
-                  echo "Waiting for {{ $jobHost }}:{{ $jobPort }} node...";
+                until true <>/dev/tcp/{{ $coreServiceName }}/{{ $coreServiceAdminPort }}; do
+                  echo "Waiting for {{ $coreServiceName }}:{{ $coreServiceAdminPort }} node...";
                   sleep 3s;
                 done;
-                echo "Success connecting to {{ $jobHost }}:{{ $jobPort }}";
+                echo "Success connecting to {{ $coreServiceName }}:{{ $coreServiceAdminPort }}";
                 sleep 3s;
       containers:
         - name: "psql-init-update-cluster-checksums"
@@ -88,7 +78,7 @@ spec:
             - "-c"
             - >
                 mysql --user=${PSQL_USER} --password=${PSQL_PASSWORD}
-                --host={{ $jobHost }} --port={{ $jobPort }}
+                --host={{ $coreServiceName }} --port={{ $coreServiceAdminPort }}
                 {{- if $mysqlClientFlags }} {{ $mysqlClientFlags }}{{- end }} --wait -vv < /data/update-cluster-checksums.sql
           resources:
             {{- toYaml (default .Values.resources .Values.proxysql_cluster.job.resources) | nindent 12 }}

@@ -532,17 +532,6 @@ proxysql_cluster:
     # Default disables TLS for internal admin connection to avoid certificate trust errors.
     mysqlClientFlags: "--ssl=0"
 
-    # -- Optional host override for init-cluster job target.
-    # By default, when core is enabled this uses `<fullname>-core.<namespace>.svc`,
-    # otherwise it uses the first entry from `additional_proxysql_servers`.
-    host: ""
-
-    # -- Optional admin port override for init-cluster job target.
-    # By default, when core is enabled this uses `.service.adminPort`,
-    # otherwise it uses the first entry port from `additional_proxysql_servers`.
-    port: null
-
-    # -- Node selector for pod scheduling.
     nodeSelector: {}
     # -- Tolerations for pod scheduling.
     tolerations: []
@@ -579,14 +568,14 @@ proxysql_cluster:
     # -- Set proxysql_cluster.healthcheck.verbose.
     verbose: false
 
-    # -- Override startup command.
+    # -- Override startup command. The default script writes one-line JSON status to `/tmp/proxysql_cluster_healthcheck_started.status`.
     # By default, use `proxysql_cluster_healthcheck.sh started`.
     startupCommand: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh started"]
-    # -- Override readiness command.
+    # -- Override readiness command. The default script writes one-line JSON status to `/tmp/proxysql_cluster_healthcheck_readiness.status`.
     # By default, use `proxysql_cluster_healthcheck.sh readiness`.
     # This command should fail during graceful termination.
     readinessCommand: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh readiness"]
-    # -- Override liveness command.
+    # -- Override liveness command. The default script writes one-line JSON status to `/tmp/proxysql_cluster_healthcheck_liveness.status`.
     # By default, use `proxysql_cluster_healthcheck.sh liveness`.
     livenessCommand: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh liveness"]
 
@@ -621,24 +610,15 @@ lifecycle:
     # -- Enable preStop drain hook.
     enabled: true
     # -- Initial delay before checking active client connections.
-    # If set to > 0, this overrides `sleep_before_connection_check`.
-    sleep_time: 0
+    sleep_time: 15
     # -- Maximum seconds to wait for active client connections to drain.
     # Set to 0 to wait indefinitely (bounded by `terminationGracePeriodSeconds`).
     connection_drain_timeout: 0
     # -- Poll interval in seconds while waiting for active connections.
     poll_interval_seconds: 1
-    # -- Sentinel file used to signal termination and fail readiness immediately.
-    termination_marker_file: "/tmp/proxysql-terminating"
 
 # -- Configure topologySpreadConstraints.
 topologySpreadConstraints:
 #  - maxSkew: 1 # allows a node or zone to have up to X pods more or less than any other node or zone.
 #    topologyKey: kubernetes.io/hostname # at least one Pod per Node
 #    whenUnsatisfiable: DoNotSchedule
-
-# How long shall the pre-stop-Hook wait k8s to deregister the pod from the service,
-# before checking for open connections?
-# -- Set sleep_before_connection_check.
-# Deprecated: prefer lifecycle.preStop.sleep_time.
-sleep_before_connection_check: 15
