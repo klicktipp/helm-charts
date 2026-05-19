@@ -121,7 +121,7 @@ function run_valid_config_count() {
 function run_open_tcp_port_check() {
   if ! bash -c "true <>/dev/tcp/${PROXYSQL_HEALTHCHECK_PROXY_HOST}/${PROXYSQL_HEALTHCHECK_PROXY_PORT}"; then
     log_error "ProxySQL startup check failed."
-    return 1
+    exit 1
   fi
   log_info "ProxySQL startup check OK."
 }
