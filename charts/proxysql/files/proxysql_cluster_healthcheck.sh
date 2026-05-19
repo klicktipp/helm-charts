@@ -93,7 +93,7 @@ function run_diff_check_count() {
   else
     log_error "ProxySQL Cluster diff_check CRITICAL. diff_check >= $PROXYSQL_HEALTHCHECK_DIFF_CHECK_LIMIT."
     get_current_proxysql_state
-    return 1
+    exit 1
   fi
 }
 
