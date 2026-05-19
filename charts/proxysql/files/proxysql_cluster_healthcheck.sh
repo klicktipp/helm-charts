@@ -51,6 +51,11 @@ function log_error() {
   write_check_status_file "$HEALTHCHECK_MODE" "failed" "${message}"
 }
 
+function log_warning() {
+  local message="$1"
+  echo "[$(date -Ins)] [WARNING] ${message}"
+}
+
 function mysql_cli() {
   $MYSQL_CLIENT -u "$DB_USER" -h "$DB_HOST" -P "$DB_PORT" --skip-column-names --batch -e "$1" 2>/dev/null
 }
