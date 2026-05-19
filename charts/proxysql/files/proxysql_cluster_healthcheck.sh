@@ -130,16 +130,18 @@ function run_open_tcp_port_check() {
 # Call the health check function once for Kubernetes probes
 case "${HEALTHCHECK_MODE}" in
   readiness)
+    # Can this Pod receive traffic?
     run_valid_config_count
     run_diff_check_count
     log_info "Readiness check passed."
     ;;
   liveness)
-    run_valid_config_count
-    run_diff_check_count
+    # Is this container stuck/dead?
+    run_open_tcp_port_check
     log_info "Liveness check passed."
     ;;
   started)
+    # Has the app finished starting?
     run_open_tcp_port_check
     log_info "Started check passed."
     ;;
