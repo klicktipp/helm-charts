@@ -57,7 +57,7 @@ function log_warning() {
 }
 
 function mysql_cli() {
-  $MYSQL_CLIENT -u "$DB_USER" -h "$DB_HOST" -P "$DB_PORT" --skip-column-names --batch -e "$1" 2>/dev/null
+  $MYSQL_CLIENT -u "$DB_USER" -h "$DB_HOST" -P "$DB_PORT" --skip-column-names --batch -e "$1"
 }
 
 function write_check_status_file() {
