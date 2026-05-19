@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Usage:
+#   proxysql_cluster_healthcheck.sh <readiness|liveness|started|test>
+
 set -euo pipefail
 
 PROXYSQL_HEALTHCHECK_VERBOSE="${PROXYSQL_HEALTHCHECK_VERBOSE:-false}"
@@ -13,11 +16,6 @@ export DB_PORT="${PROXYSQL_HEALTHCHECK_DB_PORT:-6032}"
 export MYSQL_PWD="${PROXYSQL_HEALTHCHECK_DB_PASS:-monitor}"
 
 HEALTHCHECK_MODE="${1:-}"
-
-# Usage:
-#   proxysql_cluster_healthcheck.sh <readiness|liveness|started|test>
-
-
 
 # Health check configuration with default values
 PROXYSQL_HEALTHCHECK_DIFF_CHECK_LIMIT=${PROXYSQL_HEALTHCHECK_DIFF_CHECK_LIMIT:-10}
@@ -46,7 +44,6 @@ function log_info() {
 
 function log_error() {
   local message="$1"
-  LAST_ERROR="$message"
   echo "[$(date -Ins)] [ERROR] ${message}" >&2
   write_check_status_file "$HEALTHCHECK_MODE" "failed" "${message}"
 }
