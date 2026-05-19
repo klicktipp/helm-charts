@@ -568,14 +568,14 @@ proxysql_cluster:
     # -- Set proxysql_cluster.healthcheck.verbose.
     verbose: false
 
-    # -- Override startup command.
+    # -- Override startup command. The default script writes one-line JSON status to `/tmp/proxysql_cluster_healthcheck_started.status`.
     # By default, use `proxysql_cluster_healthcheck.sh started`.
     startupCommand: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh started"]
-    # -- Override readiness command.
+    # -- Override readiness command. The default script writes one-line JSON status to `/tmp/proxysql_cluster_healthcheck_readiness.status`.
     # By default, use `proxysql_cluster_healthcheck.sh readiness`.
     # This command should fail during graceful termination.
     readinessCommand: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh readiness"]
-    # -- Override liveness command.
+    # -- Override liveness command. The default script writes one-line JSON status to `/tmp/proxysql_cluster_healthcheck_liveness.status`.
     # By default, use `proxysql_cluster_healthcheck.sh liveness`.
     livenessCommand: ["/bin/sh", "-c", "/usr/local/bin/proxysql_cluster_healthcheck.sh liveness"]
 
