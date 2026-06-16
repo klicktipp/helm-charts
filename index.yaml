@@ -3559,6 +3559,29 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/rspamd-1.2.0/rspamd-1.2.0.tgz
     version: 1.2.0
+  snds-exporter:
+  - apiVersion: v2
+    appVersion: 0.2.2
+    created: "2026-06-16T12:58:48.798694815Z"
+    description: A Helm chart for running the snds-exporter with OAuth token files
+      in Kubernetes.
+    digest: 4e4f110f246dc5d014d32201711d351d32093a884580ca5131bdc1f49ae4a5ab
+    home: https://github.com/klicktipp/helm-charts
+    keywords:
+    - snds
+    - exporter
+    - prometheus
+    - microsoft
+    maintainers:
+    - name: vquie
+      url: https://github.com/vquie
+    name: snds-exporter
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/snds-exporter-0.2.0/snds-exporter-0.2.0.tgz
+    version: 0.2.0
   zalando-postgres-cluster:
   - apiVersion: v2
     appVersion: 1.15.1
@@ -3686,4 +3709,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-05-19T11:52:15.876987005Z"
+generated: "2026-06-16T12:58:48.799060665Z"
