@@ -1,0 +1,140 @@
+# Default values for csa-exporter.
+
+# -- Number of csa-exporter pods to run.
+replicaCount: 1
+
+# -- Container image configuration.
+image:
+  # -- Optional image registry prefix.
+  registry: ghcr.io
+  # -- Image repository name.
+  repository: klicktipp/csa-exporter
+  # -- Image tag. When empty, the chart appVersion is used.
+  tag: ""
+  # -- Image pull policy.
+  pullPolicy: IfNotPresent
+  # -- Optional image digest overriding the tag-based reference.
+  digest: ""
+
+# -- Image pull secrets for the pod.
+imagePullSecrets: []
+# -- Partially override generated resource names.
+nameOverride: ""
+# -- Fully override generated resource names.
+fullnameOverride: ""
+# -- Override the namespace used for namespaced resources.
+namespaceOverride: ""
+
+# -- ServiceAccount configuration.
+serviceAccount:
+  # -- Create a dedicated ServiceAccount.
+  create: true
+  # -- Mount the ServiceAccount token into the pod.
+  automount: true
+  # -- ServiceAccount annotations.
+  annotations: {}
+  # -- Existing ServiceAccount name to use. When empty, a name is generated.
+  name: ""
+
+# -- Extra annotations added to the pod template.
+podAnnotations: {}
+# -- Extra labels added to the pod template.
+podLabels: {}
+
+# -- Pod-level security context.
+podSecurityContext: {}
+# -- Container-level security context.
+securityContext: {}
+
+# -- Service configuration.
+service:
+  # -- Kubernetes Service type.
+  type: ClusterIP
+  # -- Metrics port exposed by the Service and container.
+  port: 9100
+
+# -- CPU and memory requests/limits for the container.
+resources: {}
+
+# -- Authentication settings for the CSA API.
+auth:
+  # -- Create a Secret from values in this chart instead of referencing an existing one.
+  createSecret: false
+  # -- Existing Secret name containing either token auth or id/secret auth keys.
+  existingSecretName: ""
+  # -- Secret keys used to read credentials from the Secret. Token auth takes precedence.
+  secretKeys:
+    # -- Secret key containing the CSA API token.
+    token: csa-api-token
+    # -- Secret key containing the CSA API client ID.
+    id: ""
+    # -- Secret key containing the CSA API client secret.
+    secret: ""
+  # -- Token value written to the generated Secret. Takes precedence over id/secret auth.
+  token: ""
+  # -- Client ID value written to the generated Secret when using key-pair auth.
+  id: ""
+  # -- Client secret value written to the generated Secret when using key-pair auth.
+  secret: ""
+
+# -- Optional runtime environment overrides passed to the container.
+env:
+  # -- Override the CSA API base URL expected by the exporter image.
+  apiUrl: ""
+  # -- Override the outbound CSA API timeout value.
+  apiTimeout: ""
+  # -- Override the exporter log level.
+  logLevel: ""
+
+# -- Additional environment variables appended to the container.
+extraEnv: []
+# -- Additional volume mounts appended to the container.
+extraVolumeMounts: []
+# -- Additional volumes appended to the pod.
+extraVolumes: []
+
+# -- Prometheus Operator ServiceMonitor configuration.
+serviceMonitor:
+  # -- Self-monitoring configuration for the exporter Service.
+  selfMonitor:
+    # -- Create a ServiceMonitor when the CRD is available.
+    enabled: true
+    # -- Metrics path scraped by Prometheus.
+    path: /metrics
+    # -- Extra metric relabeling rules for scraped metrics.
+    additionalMetricsRelabels: {}
+    # -- Extra target relabeling rules for the ServiceMonitor endpoint.
+    additionalRelabeling:
+      - action: labeldrop
+        # -- Regex used by the default relabeling rule.
+        regex: (instance|pod)
+    # -- Additional labels added to the ServiceMonitor.
+    labels: {}
+    # -- Prometheus scrape interval.
+    interval: 300s
+    # -- Prometheus scrape timeout.
+    scrapeTimeout: 60s
+
+# -- Liveness probe configuration for the exporter container.
+livenessProbe:
+  httpGet:
+    # -- HTTP path used by the liveness probe.
+    path: /livez
+    # -- Named port used by the liveness probe.
+    port: http
+# -- Readiness probe configuration for the exporter container.
+readinessProbe:
+  httpGet:
+    # -- HTTP path used by the readiness probe.
+    path: /healthz
+    # -- Named port used by the readiness probe.
+    port: http
+
+# -- Node selector for pod scheduling.
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling.
+tolerations: []
+
+# -- Affinity rules for pod scheduling.
+affinity: {}

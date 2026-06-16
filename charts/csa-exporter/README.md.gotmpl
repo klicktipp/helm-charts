@@ -1,0 +1,37 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+{{ template "chart.maintainersSection" . }}
+{{ template "chart.sourcesSection" . }}
+
+## Authentication
+
+The chart supports two authentication modes for the CSA API:
+
+- Token-based auth with `CSA_API_TOKEN`
+- Key-pair auth with `CSA_API_ID` and `CSA_API_SECRET`
+
+The recommended production setup is to provide an existing Kubernetes Secret with the required keys and set `auth.existingSecretName`.
+
+If you want the chart to create the Secret, set `auth.createSecret=true` and provide either:
+
+- `auth.token` together with `auth.secretKeys.token`
+- `auth.id` and `auth.secret` together with `auth.secretKeys.id` and `auth.secretKeys.secret`
+
+When both auth variants are configured, token auth takes precedence.
+
+## Runtime Configuration
+
+The chart exposes optional runtime overrides through `env.*` values:
+
+- `env.apiUrl` overrides the default CSA API endpoint used by the container image
+- `env.apiTimeout` sets the outbound API timeout
+- `env.logLevel` adjusts application logging
+
+{{ template "chart.valuesSection" . }}
