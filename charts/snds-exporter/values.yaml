@@ -1,0 +1,161 @@
+# Default values for snds-exporter.
+
+# -- Number of snds-exporter pods to run.
+replicaCount: 1
+
+# -- Container image configuration.
+image:
+  # -- Optional image registry prefix.
+  registry: ghcr.io/klicktipp
+  # -- Image repository name.
+  repository: snds-exporter
+  # -- Image tag. When empty, the chart appVersion is used.
+  tag: ""
+  # -- Image pull policy.
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets for the pod.
+imagePullSecrets: []
+# -- Partially override generated resource names.
+nameOverride: ""
+# -- Fully override generated resource names.
+fullnameOverride: ""
+# -- Override the namespace used for namespaced resources.
+namespaceOverride: ""
+
+# -- ServiceAccount configuration.
+serviceAccount:
+  # -- Create a dedicated ServiceAccount.
+  create: true
+  # -- Mount the ServiceAccount token into the pod.
+  automount: true
+  # -- ServiceAccount annotations.
+  annotations: {}
+  # -- Existing ServiceAccount name to use. When empty, a name is generated.
+  name: ""
+
+# -- Extra annotations added to the pod template.
+podAnnotations: {}
+# -- Extra labels added to the pod template.
+podLabels: {}
+
+# -- Pod-level security context.
+podSecurityContext: {}
+
+# -- Container-level security context.
+securityContext: {}
+
+# -- Service configuration.
+service:
+  # -- Kubernetes Service type.
+  type: ClusterIP
+  # -- Metrics port exposed by the Service and container.
+  port: 9100
+
+# -- CPU and memory requests/limits for the container.
+resources: {}
+
+# -- Authentication and token refresh settings.
+auth:
+  # -- Mount path for SNDS token files inside the container.
+  mountPath: /var/run/snds-exporter
+  # -- Secret configuration for access token and cache files.
+  secret:
+    # -- Create the auth Secret from values in this chart.
+    create: true
+    # -- Existing Secret name. When empty, a name is generated.
+    name: ""
+    # -- Secret key containing the access token.
+    accessTokenKey: access-token
+    # -- Secret key containing the token cache file.
+    tokenCacheKey: token-cache.json
+    # -- Annotations added to the generated Secret.
+    annotations: {}
+    # -- Access token content written to the generated Secret.
+    accessToken: ""
+    # -- Token cache JSON content written to the generated Secret.
+    tokenCache: ""
+  # -- Token refresh integration settings.
+  refresh:
+    # -- Enable automatic OAuth token refresh inside the exporter.
+    enabled: true
+    # -- Refresh the token this many seconds before expiry.
+    beforeSeconds: 600
+    # -- Kubernetes Secret patch settings used after token refresh.
+    patchKubernetesSecret:
+      # -- Allow the exporter to patch the Secret after refreshing tokens.
+      enabled: true
+      # -- Secret name to patch. Defaults to the auth Secret name.
+      secretName: ""
+      # -- Secret namespace to patch. Defaults to the release namespace.
+      secretNamespace: ""
+      # -- Secret key updated with the refreshed access token.
+      accessTokenKey: access-token
+      # -- Secret key updated with the refreshed token cache content.
+      tokenCacheKey: token-cache.json
+
+# -- snds-exporter runtime configuration.
+exporter:
+  # -- SNDS REST API endpoint returning report data.
+  restApiUrl: https://substrate.office.com/ip-domain-management-snds/api/report/data
+  # -- SNDS status API endpoint returning IP status information.
+  statusApiUrl: https://substrate.office.com/ip-domain-management-snds/api/report/status/ip
+  # -- Number of days requested from the report API.
+  restApiLookbackDays: 3
+  # -- HTTP request timeout in seconds for SNDS API calls.
+  requestTimeout: 10
+  # -- Response cache duration in seconds.
+  cacheSeconds: 3600
+  # -- Verify TLS certificates for outbound HTTPS requests.
+  verifyTls: true
+  # -- Custom User-Agent header sent to SNDS APIs.
+  userAgent: kt-snds-exporter/1.0
+  # -- Log unexpected API responses for debugging.
+  debugUnknownResponses: false
+
+# -- Additional environment variables appended to the container.
+extraEnv: []
+# -- Additional volume mounts appended to the container.
+extraVolumeMounts: []
+# -- Additional volumes appended to the pod.
+extraVolumes: []
+
+# -- Prometheus Operator ServiceMonitor configuration.
+serviceMonitor:
+  # -- Self-monitoring configuration for the exporter Service.
+  selfMonitor:
+    # -- Create a ServiceMonitor when the CRD is available.
+    enabled: true
+    # -- Metrics path scraped by Prometheus.
+    path: /metrics
+    # -- Extra metric relabeling rules for scraped metrics.
+    additionalMetricsRelabels: {}
+    # -- Extra target relabeling rules for the ServiceMonitor endpoint.
+    additionalRelabeling:
+      - action: labeldrop
+        regex: (instance|pod)
+    # -- Additional labels added to the ServiceMonitor.
+    labels: {}
+    # -- Prometheus scrape interval.
+    interval: 1h
+    # -- Prometheus scrape timeout.
+    scrapeTimeout: 60s
+
+# -- Liveness probe configuration for the exporter container.
+livenessProbe:
+  httpGet:
+    path: /livez
+    port: http
+
+# -- Readiness probe configuration for the exporter container.
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+
+# -- Node selector for pod scheduling.
+nodeSelector: {}
+# -- Tolerations for pod scheduling.
+tolerations: []
+# -- Affinity rules for pod scheduling.
+affinity: {}

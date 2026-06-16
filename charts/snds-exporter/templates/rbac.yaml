@@ -1,0 +1,31 @@
+{{- if .Values.auth.refresh.patchKubernetesSecret.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "snds-exporter.fullname" . }}
+  namespace: {{ include "snds-exporter.patchSecretNamespace" . }}
+  labels:
+    {{- include "snds-exporter.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames:
+      - {{ include "snds-exporter.patchSecretName" . }}
+    verbs: ["get", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "snds-exporter.fullname" . }}
+  namespace: {{ include "snds-exporter.patchSecretNamespace" . }}
+  labels:
+    {{- include "snds-exporter.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "snds-exporter.serviceAccountName" . }}
+    namespace: {{ include "snds-exporter.namespace" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "snds-exporter.fullname" . }}
+{{- end }}

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: snds-exporter
+description: A Helm chart for running the snds-exporter with OAuth token files in Kubernetes.
+type: application
+version: 0.2.0
+appVersion: "0.2.2"
+keywords:
+  - snds
+  - exporter
+  - prometheus
+  - microsoft
+home: https://github.com/klicktipp/helm-charts
+sources:
+  - https://github.com/klicktipp/helm-charts
+maintainers:
+  - name: vquie
+    url: https://github.com/vquie
