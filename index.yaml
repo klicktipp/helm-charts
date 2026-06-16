@@ -516,6 +516,26 @@ entries:
     version: 0.2.2
   csa-exporter:
   - apiVersion: v2
+    appVersion: 0.2.1
+    created: "2026-06-16T19:21:22.805043146Z"
+    description: A Helm chart for Kubernetes to scrape the CSA stats API.
+    digest: 4bfa7ede561661268001c072881453e07f5e2e23806ef58d42d58b4b6283dca4
+    home: https://github.com/klicktipp/helm-charts
+    keywords:
+    - csa
+    - exporter
+    - prometheus
+    maintainers:
+    - name: vquie
+      url: https://github.com/vquie
+    name: csa-exporter
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/csa-exporter-0.1.2/csa-exporter-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.2.0
     created: "2026-06-16T19:15:11.807826447Z"
     description: A Helm chart for Kubernetes to scrape the CSA stats API.
@@ -3816,4 +3836,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-06-16T19:15:11.808037333Z"
+generated: "2026-06-16T19:21:22.805202085Z"
