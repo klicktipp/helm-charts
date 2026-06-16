@@ -108,8 +108,8 @@ exporter:
   cacheSeconds: 3600
   # -- Verify TLS certificates for outbound HTTPS requests.
   verifyTls: true
-  # -- Custom User-Agent header sent to SNDS APIs.
-  userAgent: kt-snds-exporter/1.0
+  # -- Custom User-Agent header sent to SNDS APIs. When empty, defaults to `snds-exporter/<appVersion>`.
+  userAgent: ""
   # -- Log unexpected API responses for debugging.
   debugUnknownResponses: false
 

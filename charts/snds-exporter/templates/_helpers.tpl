@@ -92,3 +92,11 @@ Create the name of the service account to use
 {{- include "snds-exporter.namespace" . -}}
 {{- end -}}
 {{- end -}}
+
+{{- define "snds-exporter.userAgent" -}}
+{{- if .Values.exporter.userAgent -}}
+{{- .Values.exporter.userAgent -}}
+{{- else -}}
+{{- printf "snds-exporter/%s" .Chart.AppVersion -}}
+{{- end -}}
+{{- end -}}

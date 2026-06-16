@@ -69,7 +69,7 @@ spec:
             - name: VERIFY_TLS
               value: {{ .Values.exporter.verifyTls | quote }}
             - name: USER_AGENT
-              value: {{ .Values.exporter.userAgent | quote }}
+              value: {{ include "snds-exporter.userAgent" . | quote }}
             - name: DEBUG_UNKNOWN_RESPONSES
               value: {{ .Values.exporter.debugUnknownResponses | quote }}
             {{- if .Values.auth.refresh.enabled }}
