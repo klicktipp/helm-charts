@@ -105,7 +105,7 @@ exporter:
   # -- HTTP request timeout in seconds for SNDS API calls.
   requestTimeout: 10
   # -- Response cache duration in seconds.
-  cacheSeconds: 300
+  cacheSeconds: 3600
   # -- Verify TLS certificates for outbound HTTPS requests.
   verifyTls: true
   # -- Custom User-Agent header sent to SNDS APIs.
@@ -137,7 +137,7 @@ serviceMonitor:
     # -- Additional labels added to the ServiceMonitor.
     labels: {}
     # -- Prometheus scrape interval.
-    interval: 300s
+    interval: 1h
     # -- Prometheus scrape timeout.
     scrapeTimeout: 60s
 

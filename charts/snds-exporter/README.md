@@ -111,26 +111,26 @@ The chart creates the required Role and RoleBinding for this Secret patch flow w
 | auth.refresh.patchKubernetesSecret.secretNamespace | string | `""` | Secret namespace to patch. Defaults to the release namespace. |
 | auth.refresh.patchKubernetesSecret.accessTokenKey | string | `"access-token"` | Secret key updated with the refreshed access token. |
 | auth.refresh.patchKubernetesSecret.tokenCacheKey | string | `"token-cache.json"` | Secret key updated with the refreshed token cache content. |
-| exporter | object | `{"cacheSeconds":300,"debugUnknownResponses":false,"requestTimeout":10,"restApiLookbackDays":3,"restApiUrl":"https://substrate.office.com/ip-domain-management-snds/api/report/data","statusApiUrl":"https://substrate.office.com/ip-domain-management-snds/api/report/status/ip","userAgent":"kt-snds-exporter/1.0","verifyTls":true}` | snds-exporter runtime configuration. |
+| exporter | object | `{"cacheSeconds":3600,"debugUnknownResponses":false,"requestTimeout":10,"restApiLookbackDays":3,"restApiUrl":"https://substrate.office.com/ip-domain-management-snds/api/report/data","statusApiUrl":"https://substrate.office.com/ip-domain-management-snds/api/report/status/ip","userAgent":"kt-snds-exporter/1.0","verifyTls":true}` | snds-exporter runtime configuration. |
 | exporter.restApiUrl | string | `"https://substrate.office.com/ip-domain-management-snds/api/report/data"` | SNDS REST API endpoint returning report data. |
 | exporter.statusApiUrl | string | `"https://substrate.office.com/ip-domain-management-snds/api/report/status/ip"` | SNDS status API endpoint returning IP status information. |
 | exporter.restApiLookbackDays | int | `3` | Number of days requested from the report API. |
 | exporter.requestTimeout | int | `10` | HTTP request timeout in seconds for SNDS API calls. |
-| exporter.cacheSeconds | int | `300` | Response cache duration in seconds. |
+| exporter.cacheSeconds | int | `3600` | Response cache duration in seconds. |
 | exporter.verifyTls | bool | `true` | Verify TLS certificates for outbound HTTPS requests. |
 | exporter.userAgent | string | `"kt-snds-exporter/1.0"` | Custom User-Agent header sent to SNDS APIs. |
 | exporter.debugUnknownResponses | bool | `false` | Log unexpected API responses for debugging. |
 | extraEnv | list | `[]` | Additional environment variables appended to the container. |
 | extraVolumeMounts | list | `[]` | Additional volume mounts appended to the container. |
 | extraVolumes | list | `[]` | Additional volumes appended to the pod. |
-| serviceMonitor | object | `{"selfMonitor":{"additionalMetricsRelabels":{},"additionalRelabeling":[{"action":"labeldrop","regex":"(instance|pod)"}],"enabled":true,"interval":"300s","labels":{},"path":"/metrics","scrapeTimeout":"60s"}}` | Prometheus Operator ServiceMonitor configuration. |
-| serviceMonitor.selfMonitor | object | `{"additionalMetricsRelabels":{},"additionalRelabeling":[{"action":"labeldrop","regex":"(instance|pod)"}],"enabled":true,"interval":"300s","labels":{},"path":"/metrics","scrapeTimeout":"60s"}` | Self-monitoring configuration for the exporter Service. |
+| serviceMonitor | object | `{"selfMonitor":{"additionalMetricsRelabels":{},"additionalRelabeling":[{"action":"labeldrop","regex":"(instance|pod)"}],"enabled":true,"interval":"1h","labels":{},"path":"/metrics","scrapeTimeout":"60s"}}` | Prometheus Operator ServiceMonitor configuration. |
+| serviceMonitor.selfMonitor | object | `{"additionalMetricsRelabels":{},"additionalRelabeling":[{"action":"labeldrop","regex":"(instance|pod)"}],"enabled":true,"interval":"1h","labels":{},"path":"/metrics","scrapeTimeout":"60s"}` | Self-monitoring configuration for the exporter Service. |
 | serviceMonitor.selfMonitor.enabled | bool | `true` | Create a ServiceMonitor when the CRD is available. |
 | serviceMonitor.selfMonitor.path | string | `"/metrics"` | Metrics path scraped by Prometheus. |
 | serviceMonitor.selfMonitor.additionalMetricsRelabels | object | `{}` | Extra metric relabeling rules for scraped metrics. |
 | serviceMonitor.selfMonitor.additionalRelabeling | list | `[{"action":"labeldrop","regex":"(instance|pod)"}]` | Extra target relabeling rules for the ServiceMonitor endpoint. |
 | serviceMonitor.selfMonitor.labels | object | `{}` | Additional labels added to the ServiceMonitor. |
-| serviceMonitor.selfMonitor.interval | string | `"300s"` | Prometheus scrape interval. |
+| serviceMonitor.selfMonitor.interval | string | `"1h"` | Prometheus scrape interval. |
 | serviceMonitor.selfMonitor.scrapeTimeout | string | `"60s"` | Prometheus scrape timeout. |
 | livenessProbe | object | `{"httpGet":{"path":"/livez","port":"http"}}` | Liveness probe configuration for the exporter container. |
 | readinessProbe | object | `{"httpGet":{"path":"/healthz","port":"http"}}` | Readiness probe configuration for the exporter container. |
