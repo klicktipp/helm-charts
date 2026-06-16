@@ -6,9 +6,9 @@ replicaCount: 1
 # -- Container image configuration.
 image:
   # -- Optional image registry prefix.
-  registry: ghcr.io/klicktipp
+  registry: ghcr.io
   # -- Image repository name.
-  repository: snds-exporter
+  repository: klicktipp/snds-exporter
   # -- Image tag. When empty, the chart appVersion is used.
   tag: ""
   # -- Image pull policy.

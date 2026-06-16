@@ -1,6 +1,6 @@
 # snds-exporter
 
-![Version: 0.2.2](https://img.shields.io/badge/Version-0.2.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.2](https://img.shields.io/badge/AppVersion-0.2.2-informational?style=flat-square)
+![Version: 0.2.3](https://img.shields.io/badge/Version-0.2.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.2](https://img.shields.io/badge/AppVersion-0.2.2-informational?style=flat-square)
 
 A Helm chart for running the snds-exporter with OAuth token files in Kubernetes.
 
@@ -70,9 +70,9 @@ The chart creates the required Role and RoleBinding for this Secret patch flow w
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | replicaCount | int | `1` | Number of snds-exporter pods to run. |
-| image | object | `{"pullPolicy":"IfNotPresent","registry":"ghcr.io/klicktipp","repository":"snds-exporter","tag":""}` | Container image configuration. |
-| image.registry | string | `"ghcr.io/klicktipp"` | Optional image registry prefix. |
-| image.repository | string | `"snds-exporter"` | Image repository name. |
+| image | object | `{"pullPolicy":"IfNotPresent","registry":"ghcr.io","repository":"klicktipp/snds-exporter","tag":""}` | Container image configuration. |
+| image.registry | string | `"ghcr.io"` | Optional image registry prefix. |
+| image.repository | string | `"klicktipp/snds-exporter"` | Image repository name. |
 | image.tag | string | `""` | Image tag. When empty, the chart appVersion is used. |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy. |
 | imagePullSecrets | list | `[]` | Image pull secrets for the pod. |
