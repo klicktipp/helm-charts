@@ -1,0 +1,16 @@
+apiVersion: v2
+name: csa-exporter
+description: A Helm chart for Kubernetes to scrape the CSA stats API.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - csa
+  - exporter
+  - prometheus
+home: https://github.com/klicktipp/helm-charts
+sources:
+  - https://github.com/klicktipp/helm-charts
+maintainers:
+  - name: vquie
+    url: https://github.com/vquie

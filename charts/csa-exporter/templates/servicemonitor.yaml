@@ -1,0 +1,37 @@
+{{- if .Values.serviceMonitor.selfMonitor.enabled }}
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "csa-exporter.fullname" $ }}
+  namespace: {{ template "csa-exporter.namespace" $ }}
+  labels:
+    {{- include "csa-exporter.labels" $ | nindent 4 }}
+    {{- if .Values.serviceMonitor.selfMonitor.labels  }}
+    {{- toYaml (.Values.serviceMonitor.selfMonitor.labels) | nindent 4 }}
+    {{- end }}
+spec:
+  endpoints:
+    - path: {{ .Values.serviceMonitor.selfMonitor.path }}
+      port: http
+      interval: {{ .Values.serviceMonitor.selfMonitor.interval }}
+      scrapeTimeout: {{ .Values.serviceMonitor.selfMonitor.scrapeTimeout }}
+      scheme: http
+{{- if .Values.serviceMonitor.selfMonitor.additionalRelabeling }}
+      relabelings:
+{{ toYaml .Values.serviceMonitor.selfMonitor.additionalRelabeling | indent 6 }}
+{{- end }}
+{{- if .Values.serviceMonitor.selfMonitor.additionalMetricsRelabels }}
+      metricRelabelings:
+{{ toYaml .Values.serviceMonitor.selfMonitor.additionalMetricsRelabels | indent 6 }}
+{{- end }}
+  jobLabel: "{{ .Release.Name }}"
+  selector:
+    matchLabels:
+      {{- include "csa-exporter.selectorLabels" $ | nindent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ template "csa-exporter.namespace" $ }}
+{{- end }}
+{{- end }}
