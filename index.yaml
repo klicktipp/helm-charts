@@ -514,6 +514,27 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/cronjobs-0.2.2/cronjobs-0.2.2.tgz
     version: 0.2.2
+  csa-exporter:
+  - apiVersion: v2
+    appVersion: 0.2.0
+    created: "2026-06-16T17:04:30.882009136Z"
+    description: A Helm chart for Kubernetes to scrape the CSA stats API.
+    digest: a42089660438745167e6b3be137a2395f54345d622a654d073573e27abe4ebcb
+    home: https://github.com/klicktipp/helm-charts
+    keywords:
+    - csa
+    - exporter
+    - prometheus
+    maintainers:
+    - name: vquie
+      url: https://github.com/vquie
+    name: csa-exporter
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/csa-exporter-0.1.0/csa-exporter-0.1.0.tgz
+    version: 0.1.0
   klicktipp-common:
   - apiVersion: v2
     appVersion: 1.0.0
@@ -3775,4 +3796,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-06-16T16:56:03.823550406Z"
+generated: "2026-06-16T17:04:30.882191999Z"
