@@ -1,6 +1,6 @@
 # csa-exporter
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.0](https://img.shields.io/badge/AppVersion-0.2.0-informational?style=flat-square)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.0](https://img.shields.io/badge/AppVersion-0.2.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes to scrape the CSA stats API.
 
@@ -83,15 +83,15 @@ The chart exposes optional runtime overrides through `env.*` values:
 | extraEnv | list | `[]` | Additional environment variables appended to the container. |
 | extraVolumeMounts | list | `[]` | Additional volume mounts appended to the container. |
 | extraVolumes | list | `[]` | Additional volumes appended to the pod. |
-| serviceMonitor | object | `{"selfMonitor":{"additionalMetricsRelabels":{},"additionalRelabeling":[{"action":"labeldrop","regex":"(instance|pod)"}],"enabled":true,"interval":"300s","labels":{},"path":"/metrics","scrapeTimeout":"60s"}}` | Prometheus Operator ServiceMonitor configuration. |
-| serviceMonitor.selfMonitor | object | `{"additionalMetricsRelabels":{},"additionalRelabeling":[{"action":"labeldrop","regex":"(instance|pod)"}],"enabled":true,"interval":"300s","labels":{},"path":"/metrics","scrapeTimeout":"60s"}` | Self-monitoring configuration for the exporter Service. |
+| serviceMonitor | object | `{"selfMonitor":{"additionalMetricsRelabels":{},"additionalRelabeling":[{"action":"labeldrop","regex":"(instance|pod)"}],"enabled":true,"interval":"1h","labels":{},"path":"/metrics","scrapeTimeout":"60s"}}` | Prometheus Operator ServiceMonitor configuration. |
+| serviceMonitor.selfMonitor | object | `{"additionalMetricsRelabels":{},"additionalRelabeling":[{"action":"labeldrop","regex":"(instance|pod)"}],"enabled":true,"interval":"1h","labels":{},"path":"/metrics","scrapeTimeout":"60s"}` | Self-monitoring configuration for the exporter Service. |
 | serviceMonitor.selfMonitor.enabled | bool | `true` | Create a ServiceMonitor when the CRD is available. |
 | serviceMonitor.selfMonitor.path | string | `"/metrics"` | Metrics path scraped by Prometheus. |
 | serviceMonitor.selfMonitor.additionalMetricsRelabels | object | `{}` | Extra metric relabeling rules for scraped metrics. |
 | serviceMonitor.selfMonitor.additionalRelabeling | list | `[{"action":"labeldrop","regex":"(instance|pod)"}]` | Extra target relabeling rules for the ServiceMonitor endpoint. |
 | serviceMonitor.selfMonitor.additionalRelabeling[0].regex | string | `"(instance|pod)"` | Regex used by the default relabeling rule. |
 | serviceMonitor.selfMonitor.labels | object | `{}` | Additional labels added to the ServiceMonitor. |
-| serviceMonitor.selfMonitor.interval | string | `"300s"` | Prometheus scrape interval. |
+| serviceMonitor.selfMonitor.interval | string | `"1h"` | Prometheus scrape interval. |
 | serviceMonitor.selfMonitor.scrapeTimeout | string | `"60s"` | Prometheus scrape timeout. |
 | livenessProbe | object | `{"httpGet":{"path":"/livez","port":"http"}}` | Liveness probe configuration for the exporter container. |
 | livenessProbe.httpGet.path | string | `"/livez"` | HTTP path used by the liveness probe. |

@@ -111,7 +111,7 @@ serviceMonitor:
     # -- Additional labels added to the ServiceMonitor.
     labels: {}
     # -- Prometheus scrape interval.
-    interval: 300s
+    interval: 1h
     # -- Prometheus scrape timeout.
     scrapeTimeout: 60s
 
