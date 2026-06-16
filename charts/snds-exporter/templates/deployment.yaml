@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "snds-exporter.fullname" . }}
+  labels:
+    {{- include "snds-exporter.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "snds-exporter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "snds-exporter.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "snds-exporter.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ if .Values.image.registry }}{{ .Values.image.registry }}/{{ end }}{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: snds-auth
+              mountPath: {{ .Values.auth.mountPath }}
+              readOnly: true
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          env:
+            - name: SNDS_ACCESS_TOKEN_FILE
+              value: {{ printf "%s/%s" .Values.auth.mountPath .Values.auth.secret.accessTokenKey | quote }}
+            - name: SNDS_TOKEN_CACHE_FILE
+              value: {{ printf "%s/%s" .Values.auth.mountPath .Values.auth.secret.tokenCacheKey | quote }}
+            - name: REST_API_URL
+              value: {{ .Values.exporter.restApiUrl | quote }}
+            - name: STATUS_API_URL
+              value: {{ .Values.exporter.statusApiUrl | quote }}
+            - name: REST_API_LOOKBACK_DAYS
+              value: {{ .Values.exporter.restApiLookbackDays | quote }}
+            - name: REQUEST_TIMEOUT
+              value: {{ .Values.exporter.requestTimeout | quote }}
+            - name: CACHE_SECONDS
+              value: {{ .Values.exporter.cacheSeconds | quote }}
+            - name: VERIFY_TLS
+              value: {{ .Values.exporter.verifyTls | quote }}
+            - name: USER_AGENT
+              value: {{ .Values.exporter.userAgent | quote }}
+            - name: DEBUG_UNKNOWN_RESPONSES
+              value: {{ .Values.exporter.debugUnknownResponses | quote }}
+            {{- if .Values.auth.refresh.enabled }}
+            - name: TOKEN_REFRESH_BEFORE_SECONDS
+              value: {{ .Values.auth.refresh.beforeSeconds | quote }}
+            {{- end }}
+            {{- if .Values.auth.refresh.patchKubernetesSecret.enabled }}
+            - name: K8S_SECRET_NAME
+              value: {{ include "snds-exporter.patchSecretName" . | quote }}
+            {{- if .Values.auth.refresh.patchKubernetesSecret.secretNamespace }}
+            - name: K8S_SECRET_NAMESPACE
+              value: {{ .Values.auth.refresh.patchKubernetesSecret.secretNamespace | quote }}
+            {{- end }}
+            - name: K8S_SECRET_ACCESS_TOKEN_KEY
+              value: {{ .Values.auth.refresh.patchKubernetesSecret.accessTokenKey | quote }}
+            - name: K8S_SECRET_CACHE_KEY
+              value: {{ .Values.auth.refresh.patchKubernetesSecret.tokenCacheKey | quote }}
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: snds-auth
+          secret:
+            secretName: {{ include "snds-exporter.authSecretName" . }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

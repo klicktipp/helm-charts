@@ -1,0 +1,67 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+{{ template "chart.maintainersSection" . }}
+{{ template "chart.sourcesSection" . }}
+
+## Authentication Model
+
+The chart expects two pieces of token state in the mounted Secret:
+
+- `access-token`: the current OAuth bearer token used for SNDS API requests
+- `token-cache.json`: the cached refresh-token state used for silent token renewal
+
+The exporter can renew tokens headlessly only when both files exist and the initial interactive login was completed with refresh-token cache creation. If `token-cache.json` is missing or no longer usable, silent refresh cannot work and a human must perform the login flow again.
+
+## Initial Login
+
+After the first pod start, you must perform one manual interactive login to seed the SNDS access token and refresh-token cache. The exporter cannot complete the initial OAuth authorization code flow on its own.
+
+The chart bootstraps the token Secret empty by default so the pod can start before login is completed. Until valid token state exists, `/metrics` will log authentication errors.
+
+The recommended Kubernetes bootstrap flow is:
+
+1. Deploy the chart and wait until the pod is running.
+2. Run the interactive login inside the running pod:
+
+```sh
+kubectl exec -it deploy/snds-exporter -- python3 /usr/local/bin/snds_token_helper.py
+```
+
+3. Open the Microsoft login URL printed by the helper in your local browser, complete the login, then paste the final redirect URL back into the terminal.
+4. Restart the workload once so the exporter reliably reopens the updated Secret contents:
+
+```sh
+kubectl rollout restart deployment/snds-exporter
+```
+
+If your release name or namespace differs, adjust the resource name accordingly, for example:
+
+```sh
+kubectl -n monitoring exec -it deploy/my-snds-exporter -- python3 /usr/local/bin/snds_token_helper.py
+kubectl -n monitoring rollout restart deployment/my-snds-exporter
+```
+
+## Secret Persistence
+
+When `auth.refresh.patchKubernetesSecret.enabled=true`, the exporter updates the Kubernetes Secret after a successful token refresh so the latest token state survives pod restarts.
+
+By default, the exporter patches the same Secret it mounts for startup token files. You can override the target Secret name, namespace, and keys with:
+
+- `auth.refresh.patchKubernetesSecret.secretName`
+- `auth.refresh.patchKubernetesSecret.secretNamespace`
+- `auth.refresh.patchKubernetesSecret.accessTokenKey`
+- `auth.refresh.patchKubernetesSecret.tokenCacheKey`
+
+The chart creates the required Role and RoleBinding for this Secret patch flow when secret patching is enabled.
+
+{{ template "chart.valuesSection" . }}
+
+<!-- BEGIN AUTO EXAMPLES -->
+<!-- END AUTO EXAMPLES -->
