@@ -1,7 +1,7 @@
 ---
 apiVersion: v2
 name: n8n
-version: 1.9.0
+version: 1.10.0
 # renovate: datasource=docker depName=n8nio/n8n
 appVersion: 2.19.0
 type: application
@@ -25,6 +25,6 @@ maintainers:
 
 dependencies:
   - name: valkey
-    version: 0.9.4
+    version: 0.10.0
     repository: https://valkey.io/valkey-helm/
     condition: valkey.enabled
