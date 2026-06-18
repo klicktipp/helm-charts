@@ -3622,6 +3622,28 @@ entries:
     version: 1.2.0
   snds-exporter:
   - apiVersion: v2
+    appVersion: 0.2.3
+    created: "2026-06-18T05:12:08.910731588Z"
+    description: A Helm chart for running the snds-exporter with OAuth token files
+      in Kubernetes.
+    digest: 76aea455c78daafe3738d954c6957f7409f742104b87fe3774bb687060336e26
+    home: https://github.com/klicktipp/helm-charts
+    keywords:
+    - snds
+    - exporter
+    - prometheus
+    - microsoft
+    maintainers:
+    - name: vquie
+      url: https://github.com/vquie
+    name: snds-exporter
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/snds-exporter-0.2.4/snds-exporter-0.2.4.tgz
+    version: 0.2.4
+  - apiVersion: v2
     appVersion: 0.2.2
     created: "2026-06-16T16:56:03.823267791Z"
     description: A Helm chart for running the snds-exporter with OAuth token files
@@ -3836,4 +3858,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-06-16T19:21:22.805202085Z"
+generated: "2026-06-18T05:12:08.911066549Z"
