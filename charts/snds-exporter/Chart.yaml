@@ -2,8 +2,8 @@ apiVersion: v2
 name: snds-exporter
 description: A Helm chart for running the snds-exporter with OAuth token files in Kubernetes.
 type: application
-version: 0.2.3
-appVersion: "0.2.2"
+version: 0.2.4
+appVersion: "0.2.3"
 keywords:
   - snds
   - exporter
