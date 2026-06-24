@@ -1311,6 +1311,36 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/n8n-0.1.0/n8n-0.1.0.tgz
     version: 0.1.0
+  openai-mcp-tunnel:
+  - annotations:
+      artifacthub.io/links: |
+        - name: Source
+          url: https://github.com/openai/tunnel-client
+        - name: Secure MCP Tunnel guide
+          url: https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
+    apiVersion: v2
+    appVersion: v0.0.9
+    created: "2026-06-24T15:30:09.982950337Z"
+    description: A Helm chart for running the OpenAI Secure MCP Tunnel client in Kubernetes.
+    digest: f8b8d53ad27dd64aaf4ba0d5d5d7c5a04e37e77870f7547f2920d33fe748a3e2
+    home: https://github.com/klicktipp/helm-charts
+    keywords:
+    - openai
+    - mcp
+    - tunnel
+    - codex
+    - chatgpt
+    maintainers:
+    - name: vquie
+      url: https://github.com/vquie
+    name: openai-mcp-tunnel
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    - https://github.com/openai/tunnel-client
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/openai-mcp-tunnel-0.1.0/openai-mcp-tunnel-0.1.0.tgz
+    version: 0.1.0
   powerdns-recursor:
   - apiVersion: v2
     appVersion: 5.4.1
@@ -3891,4 +3921,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-06-24T04:40:33.753286772Z"
+generated: "2026-06-24T15:30:09.983246438Z"
