@@ -638,70 +638,11 @@ webhook:
   terminationGracePeriodSeconds: 30
 
   mcp:
-    # -- Enable a dedicated single-replica webhook deployment for MCP traffic (`/mcp-server/`).
+    # -- Enable MCP ingress routing (`/mcp-server/`) to the main n8n pod.
     enabled: false
 
-    # -- Optional image override for MCP webhook workload.
-    # Supports `repository`, `tag`, and `pullPolicy`.
-    # Falls back to `webhook.image`, then `global.image`, then `image`.
-    image: {}
-
-    # -- MCP webhook user data folder (`N8N_USER_FOLDER`) and mount path for MCP persistence volume.
-    # Falls back to `webhook.userFolder` when empty.
-    userFolder: ""
-
-    # -- Additional env vars for MCP webhook pods.
-    # Merged on top of `global.extraEnv` and `webhook.extraEnv`; same `name` overrides.
-    extraEnv: []
-
-    # -- Additional ConfigMaps loaded via `envFrom` for MCP webhook pods.
-    envFromConfigMaps: []
-
-    # -- Additional Secrets loaded via `envFrom` for MCP webhook pods.
-    envFromSecrets: []
-
-    # -- Optional overrides for webhook persistence. Unset values inherit from `webhook.persistence`.
-    persistence: {}
-
-    # -- Deployment annotations for MCP webhook deployment.
-    deploymentAnnotations: {}
-    # -- Deployment labels for MCP webhook deployment.
-    deploymentLabels: {}
-    # -- Pod annotations for MCP webhook deployment.
-    podAnnotations: {}
-    # -- Pod labels for MCP webhook deployment.
-    podLabels: {}
-
-    # -- Security context overrides for MCP webhook deployment.
-    podSecurityContext: {}
-    # -- Container security context overrides for MCP webhook deployment.
-    securityContext: {}
-
-    # -- Pod resource overrides for MCP webhook deployment.
-    resources: {}
-
-    # -- Scheduling overrides for MCP webhook deployment.
-    nodeSelector: {}
-    # -- Pod tolerations for MCP webhook deployment.
-    tolerations: []
-    # -- Pod affinity for MCP webhook deployment.
-    affinity: {}
-
-    # -- Extra pod volumes for MCP webhook pods.
-    extraVolumes: []
-    # -- Extra volume mounts for MCP webhook pods.
-    extraVolumeMounts: []
-
-    service:
-      # -- Service annotations for MCP webhook service.
-      annotations: {}
-      # -- Service type for MCP webhook service.
-      type: ClusterIP
-      # -- Service port for MCP webhook service.
-      port: 80
-
     ingress:
-      # -- MCP paths that should be routed to the dedicated MCP webhook service.
+      # -- MCP paths that should be routed to the main n8n service.
       paths:
         - /mcp-server/
       # -- Path type for MCP ingress paths.

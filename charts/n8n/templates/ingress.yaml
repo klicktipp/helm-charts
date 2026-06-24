@@ -70,15 +70,15 @@ spec:
                 port:
                   number: {{ $.Values.webhook.service.port | default 80  }}
           {{- end }}
-          {{- if and $.Values.webhook.enabled $.Values.webhook.mcp.enabled }}
+          {{- if $.Values.webhook.mcp.enabled }}
           {{- range $mcpPath := $.Values.webhook.mcp.ingress.paths }}
           - path: {{ $mcpPath }}
             pathType: {{ $.Values.webhook.mcp.ingress.pathType | default "Prefix" }}
             backend:
               service:
-                name: {{ $fullName }}-webhook-mcp
+                name: {{ $fullName }}
                 port:
-                  number: {{ $.Values.webhook.mcp.service.port | default $.Values.webhook.service.port | default 80  }}
+                  number: {{ $.Values.main.service.port | default 80  }}
           {{- end }}
           {{- end }}
           {{- end }}
