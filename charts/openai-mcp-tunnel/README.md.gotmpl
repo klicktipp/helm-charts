@@ -1,0 +1,65 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+{{ template "chart.maintainersSection" . }}
+{{ template "chart.sourcesSection" . }}
+
+## Deployment Model
+
+This chart deploys [`openai/tunnel-client`](https://github.com/openai/tunnel-client) as a dedicated Kubernetes Deployment for an MCP server that is already reachable from the pod network.
+
+It is intentionally scoped to the dedicated-pod pattern described by OpenAI:
+
+- no inbound firewall rule is required for the tunnel itself
+- the pod needs outbound HTTPS access to `api.openai.com:443`
+- the pod also needs private reachability to the configured `MCP_SERVER_URL`, or a local stdio command via `MCP_COMMAND`
+
+## Security Defaults
+
+The chart ships with restrictive defaults suitable for production hardening:
+
+- non-root execution with all Linux capabilities dropped
+- `RuntimeDefault` seccomp profile
+- read-only root filesystem with a dedicated `/tmp` `emptyDir`
+- ServiceAccount token mounting disabled
+- optional NetworkPolicy enabled by default
+- admin UI remote access disabled by default
+
+Two runtime inputs are always required:
+
+- `controlPlane.tunnelId`
+- a Secret-backed `CONTROL_PLANE_API_KEY` via `credentials.existingSecretName` or `credentials.createSecret=true`
+
+The control-plane host override is optional:
+
+- leave `controlPlane.baseUrl` empty for the normal OpenAI default
+- set `controlPlane.baseUrl` only when you use a custom gateway host
+- set `controlPlane.urlPath` when that gateway expects a prefix before `/v1/...`, for example `/workspace/dev/us`
+
+## MCP Upstream Modes
+
+The chart supports exactly one `main` MCP binding:
+
+- `mcp.serverUrl` for a private Streamable HTTP MCP server reachable from the cluster
+- `mcp.command` for a stdio MCP command started inside the container
+- automatic fallback to the built-in stub MCP when neither `mcp.serverUrl` nor `mcp.command` is set
+- `mcp.bootstrap.enabled=true` if you want that stub mode to be explicit in values
+
+For Kubernetes production use, `mcp.serverUrl` is the safer default. OpenAI documents that stdio transport does not support MCP sessions, and multi-replica active-active behavior only works when the upstream is stateless or session-aware.
+
+The bootstrap stub is useful only as a first-step bring-up mechanism. It lets ChatGPT connect to the tunnel, but it does not expose your real MCP tools. Switch to `mcp.serverUrl` or `mcp.command` once the backend exists.
+
+## Production Notes
+
+For production rollouts, prefer one of these image supply-chain patterns:
+
+- pin `image.digest` against a vetted mirror in your own registry
+- or mirror the published `openai/tunnel-client` image into an internal registry and override `image.registry` / `image.repository`
+
+{{ template "chart.valuesSection" . }}

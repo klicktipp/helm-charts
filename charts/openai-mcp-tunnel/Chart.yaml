@@ -1,0 +1,25 @@
+apiVersion: v2
+name: openai-mcp-tunnel
+description: A Helm chart for running the OpenAI Secure MCP Tunnel client in Kubernetes.
+type: application
+version: 0.1.0
+appVersion: "v0.0.9"
+keywords:
+  - openai
+  - mcp
+  - tunnel
+  - codex
+  - chatgpt
+home: https://github.com/klicktipp/helm-charts
+sources:
+  - https://github.com/klicktipp/helm-charts
+  - https://github.com/openai/tunnel-client
+annotations:
+  artifacthub.io/links: |
+    - name: Source
+      url: https://github.com/openai/tunnel-client
+    - name: Secure MCP Tunnel guide
+      url: https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
+maintainers:
+  - name: vquie
+    url: https://github.com/vquie

@@ -1,0 +1,217 @@
+# Default values for openai-mcp-tunnel.
+
+# -- Number of tunnel-client pods to run.
+replicaCount: 1
+
+# -- Container image configuration for `openai/tunnel-client`.
+image:
+  # -- Optional image registry prefix.
+  registry: ghcr.io
+  # -- Image repository name.
+  repository: klicktipp/openai-tunnel-client
+  # -- Image tag. When empty, the chart appVersion is used.
+  tag: ""
+  # -- Image pull policy.
+  pullPolicy: IfNotPresent
+  # -- Optional image digest overriding the tag-based reference.
+  digest: ""
+
+# -- Image pull secrets for the pod.
+imagePullSecrets: []
+# -- Partially override generated resource names.
+nameOverride: ""
+# -- Fully override generated resource names.
+fullnameOverride: ""
+# -- Override the namespace used for namespaced resources.
+namespaceOverride: ""
+
+# -- ServiceAccount configuration.
+serviceAccount:
+  # -- Create a dedicated ServiceAccount.
+  create: true
+  # -- Mount the ServiceAccount token into the pod.
+  automount: false
+  # -- ServiceAccount annotations.
+  annotations: {}
+  # -- Existing ServiceAccount name to use. When empty, a name is generated.
+  name: ""
+
+# -- Extra annotations added to the pod template.
+podAnnotations: {}
+# -- Extra labels added to the pod template.
+podLabels: {}
+
+# -- Pod-level security context.
+podSecurityContext:
+  # -- Filesystem group applied to mounted volumes.
+  fsGroup: 65532
+  # -- Change policy for fsGroup ownership.
+  fsGroupChangePolicy: OnRootMismatch
+# -- Container-level security context.
+securityContext:
+  # -- Run the container without root privileges.
+  runAsNonRoot: true
+  # -- Numeric user ID for the container process.
+  runAsUser: 65532
+  # -- Numeric group ID for the container process.
+  runAsGroup: 65532
+  # -- Prevent privilege escalation.
+  allowPrivilegeEscalation: false
+  # -- Keep the root filesystem read-only.
+  readOnlyRootFilesystem: true
+  capabilities:
+    # -- Linux capabilities to drop.
+    drop:
+      - ALL
+  seccompProfile:
+    # -- Seccomp profile type.
+    type: RuntimeDefault
+
+# -- Service configuration for health, readiness, metrics, and optional UI access.
+service:
+  # -- Create a ClusterIP Service for the admin/health port.
+  enabled: true
+  # -- Kubernetes Service type.
+  type: ClusterIP
+  # -- Service port exposed by the pod.
+  port: 8080
+  # -- Annotations added to the Service.
+  annotations: {}
+
+# -- PodDisruptionBudget settings.
+podDisruptionBudget:
+  # -- Create a PodDisruptionBudget.
+  enabled: true
+  # -- Minimum number/percentage of pods that should remain available.
+  minAvailable: 1
+  # -- Maximum number/percentage of pods that may be unavailable.
+  maxUnavailable: ""
+
+# -- CPU and memory requests/limits for the container.
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+
+# -- Secret-backed control plane credentials.
+credentials:
+  # -- Create a Secret from values in this chart instead of referencing an existing one.
+  createSecret: false
+  # -- Existing Secret name containing the runtime API key.
+  existingSecretName: ""
+  # -- Secret key containing the runtime API key.
+  secretKey: control-plane-api-key
+  # -- Runtime API key value written to the generated Secret.
+  apiKey: ""
+
+# -- OpenAI control plane settings.
+controlPlane:
+  # -- Tunnel ID created in the OpenAI tunnels management UI or API.
+  tunnelId: ""
+  # -- Optional override for the control plane base URL. Leave empty to let `tunnel-client` use its built-in default (`https://api.openai.com`).
+  baseUrl: ""
+  # -- Optional URL path prefix inserted before `/v1/...` routes, for example `/workspace/dev/us` behind an enterprise gateway.
+  urlPath: ""
+
+# -- Upstream MCP configuration. Set either `serverUrl` or `command`.
+mcp:
+  bootstrap:
+    # -- Start `tunnel-client` with the built-in stub MCP so the tunnel can come up before a real MCP backend is available. When `mcp.serverUrl` and `mcp.command` are both empty, the chart falls back to this stub automatically.
+    enabled: false
+  # -- URL of the private MCP server reachable from the pod.
+  serverUrl: ""
+  # -- Command to launch a local stdio MCP server. `stdio` does not support MCP sessions.
+  command: ""
+  # -- Maximum lifetime of an upstream MCP connection.
+  connectionMaxTTL: "10m"
+  # -- Maximum number of concurrent upstream MCP requests.
+  maxConcurrentRequests: 10
+
+# -- Runtime logging configuration.
+log:
+  # -- Tunnel client log level.
+  level: info
+  # -- Tunnel client log format.
+  format: json
+
+# -- Health and admin UI settings.
+health:
+  # -- Listen address for `/healthz`, `/readyz`, `/metrics`, and `/ui`.
+  listenAddr: ":8080"
+  # -- Allow remote clients to reach `/ui` and log endpoints.
+  allowRemoteUI: false
+  # -- Open the embedded web UI automatically on startup.
+  openWebUI: false
+
+# -- Additional command-line arguments appended to `tunnel-client run`.
+extraArgs: []
+# -- Additional environment variables appended to the container.
+extraEnv: []
+# -- Additional envFrom entries appended to the container.
+extraEnvFrom: []
+# -- Additional volume mounts appended to the container.
+extraVolumeMounts: []
+# -- Additional volumes appended to the pod.
+extraVolumes: []
+
+# -- Prometheus Operator ServiceMonitor configuration.
+serviceMonitor:
+  # -- Create a ServiceMonitor when the CRD is available.
+  enabled: false
+  # -- Metrics path scraped by Prometheus.
+  path: /metrics
+  # -- Additional labels added to the ServiceMonitor.
+  labels: {}
+  # -- Prometheus scrape interval.
+  interval: 30s
+  # -- Prometheus scrape timeout.
+  scrapeTimeout: 10s
+
+# -- Liveness probe configuration for the tunnel-client container.
+livenessProbe:
+  httpGet:
+    # -- HTTP path used by the liveness probe.
+    path: /healthz
+    # -- Named port used by the liveness probe.
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+# -- Readiness probe configuration for the tunnel-client container.
+readinessProbe:
+  httpGet:
+    # -- HTTP path used by the readiness probe.
+    path: /readyz
+    # -- Named port used by the readiness probe.
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# -- NetworkPolicy configuration. Native Kubernetes NetworkPolicy cannot match `api.openai.com` by FQDN, so the default policy allows HTTPS egress on TCP/443 plus DNS and any user-specified extra rules.
+networkPolicy:
+  # -- Create a NetworkPolicy.
+  enabled: true
+  # -- Allow ingress to the admin/health port from pods in the same namespace.
+  allowSameNamespaceIngress: true
+  # -- Allow outbound DNS lookups.
+  allowDns: true
+  # -- Allow outbound HTTPS on TCP/443 for OpenAI control-plane access and common HTTPS-based MCP targets.
+  allowHttpsEgress: true
+  # -- Additional ingress rules appended to the NetworkPolicy spec.
+  extraIngress: []
+  # -- Additional egress rules appended to the NetworkPolicy spec.
+  extraEgress: []
+
+# -- Node selector for pod scheduling.
+nodeSelector: {}
+# -- Tolerations for pod scheduling.
+tolerations: []
+# -- Affinity rules for pod scheduling.
+affinity: {}
+# -- Topology spread constraints for pod scheduling.
+topologySpreadConstraints: []
