@@ -1,6 +1,6 @@
 # n8n
 
-![Version: 1.9.0](https://img.shields.io/badge/Version-1.9.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.19.0](https://img.shields.io/badge/AppVersion-2.19.0-informational?style=flat-square)
+![Version: 1.10.0](https://img.shields.io/badge/Version-1.10.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.28.0](https://img.shields.io/badge/AppVersion-2.28.0-informational?style=flat-square)
 
 Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services.
 
@@ -225,29 +225,8 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | webhook.extraVolumes | list | `[]` | Extra pod volumes for webhook pods. |
 | webhook.extraVolumeMounts | list | `[]` | Extra volume mounts for webhook pods. |
 | webhook.terminationGracePeriodSeconds | int | `30` | Pod termination grace period in seconds for webhook deployment. |
-| webhook.mcp.enabled | bool | `false` | Enable a dedicated single-replica webhook deployment for MCP traffic (`/mcp-server/`). |
-| webhook.mcp.image | object | `{}` | Optional image override for MCP webhook workload. Supports `repository`, `tag`, and `pullPolicy`. Falls back to `webhook.image`, then `global.image`, then `image`. |
-| webhook.mcp.userFolder | string | `""` | MCP webhook user data folder (`N8N_USER_FOLDER`) and mount path for MCP persistence volume. Falls back to `webhook.userFolder` when empty. |
-| webhook.mcp.extraEnv | list | `[]` | Additional env vars for MCP webhook pods. Merged on top of `global.extraEnv` and `webhook.extraEnv`; same `name` overrides. |
-| webhook.mcp.envFromConfigMaps | list | `[]` | Additional ConfigMaps loaded via `envFrom` for MCP webhook pods. |
-| webhook.mcp.envFromSecrets | list | `[]` | Additional Secrets loaded via `envFrom` for MCP webhook pods. |
-| webhook.mcp.persistence | object | `{}` | Optional overrides for webhook persistence. Unset values inherit from `webhook.persistence`. |
-| webhook.mcp.deploymentAnnotations | object | `{}` | Deployment annotations for MCP webhook deployment. |
-| webhook.mcp.deploymentLabels | object | `{}` | Deployment labels for MCP webhook deployment. |
-| webhook.mcp.podAnnotations | object | `{}` | Pod annotations for MCP webhook deployment. |
-| webhook.mcp.podLabels | object | `{}` | Pod labels for MCP webhook deployment. |
-| webhook.mcp.podSecurityContext | object | `{}` | Security context overrides for MCP webhook deployment. |
-| webhook.mcp.securityContext | object | `{}` | Container security context overrides for MCP webhook deployment. |
-| webhook.mcp.resources | object | `{}` | Pod resource overrides for MCP webhook deployment. |
-| webhook.mcp.nodeSelector | object | `{}` | Scheduling overrides for MCP webhook deployment. |
-| webhook.mcp.tolerations | list | `[]` | Pod tolerations for MCP webhook deployment. |
-| webhook.mcp.affinity | object | `{}` | Pod affinity for MCP webhook deployment. |
-| webhook.mcp.extraVolumes | list | `[]` | Extra pod volumes for MCP webhook pods. |
-| webhook.mcp.extraVolumeMounts | list | `[]` | Extra volume mounts for MCP webhook pods. |
-| webhook.mcp.service.annotations | object | `{}` | Service annotations for MCP webhook service. |
-| webhook.mcp.service.type | string | `"ClusterIP"` | Service type for MCP webhook service. |
-| webhook.mcp.service.port | int | `80` | Service port for MCP webhook service. |
-| webhook.mcp.ingress.paths | list | `["/mcp-server/"]` | MCP paths that should be routed to the dedicated MCP webhook service. |
+| webhook.mcp.enabled | bool | `false` | Enable MCP ingress routing (`/mcp-server/`) to the main n8n pod. |
+| webhook.mcp.ingress.paths | list | `["/mcp-server/"]` | MCP paths that should be routed to the main n8n service. |
 | webhook.mcp.ingress.pathType | string | `"Prefix"` | Path type for MCP ingress paths. |
 | extraManifests | list | `[]` | Additional static Kubernetes manifests rendered with the chart. |
 | extraTemplateManifests | list | `[]` | Additional templated manifests rendered with Helm context. |
