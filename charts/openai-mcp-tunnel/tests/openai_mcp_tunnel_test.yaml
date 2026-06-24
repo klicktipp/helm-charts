@@ -1,0 +1,165 @@
+suite: openai-mcp-tunnel-tests
+release:
+  namespace: openai
+templates:
+  - templates/serviceaccount.yaml
+  - templates/secret.yaml
+  - templates/deployment.yaml
+  - templates/service.yaml
+  - templates/pdb.yaml
+  - templates/networkpolicy.yaml
+  - templates/servicemonitor.yaml
+
+tests:
+  - it: should render default resources with automatic bootstrap stub when only tunnel credentials are provided
+    set:
+      credentials.existingSecretName: openai-tunnel-secret
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+    asserts:
+      - isKind:
+          of: ServiceAccount
+        template: templates/serviceaccount.yaml
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-openai-mcp-tunnel
+        template: templates/serviceaccount.yaml
+      - isKind:
+          of: Deployment
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.automountServiceAccountToken
+          value: false
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].env[1].name
+          value: CONTROL_PLANE_TUNNEL_ID
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].env[1].value
+          value: tunnel_0123456789abcdef0123456789abcdef
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].args[0]
+          value: --embedded-mcp-stub
+        template: templates/deployment.yaml
+      - isKind:
+          of: Service
+        template: templates/service.yaml
+      - equal:
+          path: spec.ports[0].port
+          value: 8080
+        template: templates/service.yaml
+      - isKind:
+          of: PodDisruptionBudget
+        template: templates/pdb.yaml
+      - isKind:
+          of: NetworkPolicy
+        template: templates/networkpolicy.yaml
+      - equal:
+          path: spec.egress[1].ports[0].port
+          value: 443
+        template: templates/networkpolicy.yaml
+
+  - it: should render an explicit MCP server URL without bootstrap args
+    set:
+      credentials.existingSecretName: openai-tunnel-secret
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+      mcp.serverUrl: http://mcp-server.default.svc.cluster.local:3000/mcp
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[9].name
+          value: MCP_SERVER_URL
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].env[9].value
+          value: http://mcp-server.default.svc.cluster.local:3000/mcp
+        template: templates/deployment.yaml
+      - notExists:
+          path: spec.template.spec.containers[0].args
+        template: templates/deployment.yaml
+
+  - it: should render custom gateway host and prefixed URL path when configured
+    set:
+      credentials.existingSecretName: openai-tunnel-secret
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+      controlPlane.baseUrl: https://gateway.example.com
+      controlPlane.urlPath: /workspace/dev/us
+      mcp.serverUrl: http://mcp-server.default.svc.cluster.local:3000/mcp
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env[2].name
+          value: CONTROL_PLANE_BASE_URL
+        template: templates/deployment.yaml
+      - equal:
+          path: spec.template.spec.containers[0].env[2].value
+          value: https://gateway.example.com
+        template: templates/deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CONTROL_PLANE_URL_PATH
+            value: /workspace/dev/us
+        template: templates/deployment.yaml
+
+  - it: should create a secret when requested and api key is provided
+    set:
+      credentials.createSecret: true
+      credentials.apiKey: sk-example-runtime-key
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+    asserts:
+      - isKind:
+          of: Secret
+        template: templates/secret.yaml
+      - equal:
+          path: stringData["control-plane-api-key"]
+          value: sk-example-runtime-key
+        template: templates/secret.yaml
+
+  - it: should fail when serviceaccount rendering is attempted without tunnel credentials
+    asserts:
+      - failedTemplate:
+          errorMessage: controlPlane.tunnelId is required
+        template: templates/serviceaccount.yaml
+
+  - it: should fail when createSecret is enabled without an api key
+    set:
+      credentials.createSecret: true
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+    asserts:
+      - failedTemplate:
+          errorMessage: credentials.apiKey is required when credentials.createSecret=true
+        template: templates/serviceaccount.yaml
+
+  - it: should fail when bootstrap is enabled together with mcp.serverUrl
+    set:
+      credentials.existingSecretName: openai-tunnel-secret
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+      mcp.bootstrap.enabled: true
+      mcp.serverUrl: http://mcp-server.default.svc.cluster.local:3000/mcp
+    asserts:
+      - failedTemplate:
+          errorMessage: mcp.bootstrap.enabled cannot be combined with mcp.serverUrl or mcp.command
+        template: templates/serviceaccount.yaml
+
+  - it: should not render a service when service is disabled
+    set:
+      credentials.existingSecretName: openai-tunnel-secret
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+      service.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/service.yaml
+
+  - it: should not render a servicemonitor by default
+    set:
+      credentials.existingSecretName: openai-tunnel-secret
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/servicemonitor.yaml

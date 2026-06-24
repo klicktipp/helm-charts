@@ -1,0 +1,129 @@
+{{- include "openai-mcp-tunnel.validate" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "openai-mcp-tunnel.fullname" . }}
+  namespace: {{ include "openai-mcp-tunnel.namespace" . }}
+  labels:
+    {{- include "openai-mcp-tunnel.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "openai-mcp-tunnel.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "openai-mcp-tunnel.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "openai-mcp-tunnel.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ if .Values.image.registry }}{{ .Values.image.registry }}/{{ end }}{{ .Values.image.repository }}{{ if .Values.image.digest }}@{{ .Values.image.digest }}{{ else }}:{{ .Values.image.tag | default .Chart.AppVersion }}{{ end }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: CONTROL_PLANE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "openai-mcp-tunnel.secretName" . }}
+                  key: {{ .Values.credentials.secretKey }}
+            - name: CONTROL_PLANE_TUNNEL_ID
+              value: {{ .Values.controlPlane.tunnelId | quote }}
+            {{- if .Values.controlPlane.baseUrl }}
+            - name: CONTROL_PLANE_BASE_URL
+              value: {{ .Values.controlPlane.baseUrl | quote }}
+            {{- end }}
+            - name: LOG_LEVEL
+              value: {{ .Values.log.level | quote }}
+            - name: LOG_FORMAT
+              value: {{ .Values.log.format | quote }}
+            - name: HEALTH_LISTEN_ADDR
+              value: {{ .Values.health.listenAddr | quote }}
+            - name: ALLOW_REMOTE_UI
+              value: {{ ternary "true" "false" .Values.health.allowRemoteUI | quote }}
+            - name: OPEN_WEB_UI
+              value: {{ ternary "true" "false" .Values.health.openWebUI | quote }}
+            - name: MCP_CONNECTION_MAX_TTL
+              value: {{ .Values.mcp.connectionMaxTTL | quote }}
+            - name: MCP_MAX_CONCURRENT_REQUESTS
+              value: {{ .Values.mcp.maxConcurrentRequests | quote }}
+            {{- if .Values.controlPlane.urlPath }}
+            - name: CONTROL_PLANE_URL_PATH
+              value: {{ .Values.controlPlane.urlPath | quote }}
+            {{- end }}
+            {{- if .Values.mcp.serverUrl }}
+            - name: MCP_SERVER_URL
+              value: {{ .Values.mcp.serverUrl | quote }}
+            {{- end }}
+            {{- if .Values.mcp.command }}
+            - name: MCP_COMMAND
+              value: {{ .Values.mcp.command | quote }}
+            {{- end }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- if .Values.extraArgs }}
+          args:
+            {{- toYaml .Values.extraArgs | nindent 12 }}
+          {{- else if include "openai-mcp-tunnel.useBootstrapStub" . }}
+          args:
+            - --embedded-mcp-stub
+          {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

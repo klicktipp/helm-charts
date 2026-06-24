@@ -1,0 +1,9 @@
+OpenAI Secure MCP Tunnel client has been deployed.
+
+Check runtime health:
+  kubectl -n {{ include "openai-mcp-tunnel.namespace" . }} get pods -l app.kubernetes.io/instance={{ .Release.Name }}
+  kubectl -n {{ include "openai-mcp-tunnel.namespace" . }} port-forward deploy/{{ include "openai-mcp-tunnel.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  curl http://127.0.0.1:{{ .Values.service.port }}/healthz
+  curl http://127.0.0.1:{{ .Values.service.port }}/readyz
+
+If `health.allowRemoteUI=false`, `/ui` only answers on loopback clients.
