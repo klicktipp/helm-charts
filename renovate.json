@@ -1,20 +1,18 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:best-practices"
-  ],
+  "extends": ["config:best-practices"],
   "semanticCommits": "enabled",
-  "ignorePresets": [
-    "docker:pinDigests",
-    ":pinDevDependencies"
-  ],
+  "ignorePresets": ["docker:pinDigests", ":pinDevDependencies"],
   "packageRules": [
     {
+      "description": "Automerge patch updates for powerdns-recursor (security fixes)",
+      "matchPackageNames": ["powerdns/pdns-recursor-54"],
+      "automerge": true,
+      "matchUpdateTypes": ["patch"]
+    },
+    {
       "changelogUrl": "https://github.com/n8n-io/n8n",
-      "matchPackageNames": [
-        "n8nio/n8n",
-        "n8n"
-      ]
+      "matchPackageNames": ["n8nio/n8n", "n8n"]
     },
     {
       "matchFileNames": ["charts/**"],
@@ -30,9 +28,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "/(^|/)Chart\\.ya?ml$/"
-      ],
+      "managerFilePatterns": ["/(^|/)Chart\\.ya?ml$/"],
       "matchStrings": [
         "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s*depName=(?<depName>\\S+)(?:\\s*versioning=(?<versioning>\\S+))?[\\s\\S]*?appVersion\\s*:\\s*\"?(?<currentValue>[^\"\\n\\r]*)\"?"
       ],
