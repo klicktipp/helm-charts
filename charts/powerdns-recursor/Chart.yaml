@@ -2,9 +2,9 @@ apiVersion: v2
 name: powerdns-recursor
 description: Helm chart for deploying PowerDNS Recursor on Kubernetes
 type: application
-version: 0.4.7
+version: 0.4.8
 # renovate: datasource=docker depName=powerdns/pdns-recursor-54
-appVersion: 5.4.2
+appVersion: 5.4.3
 keywords:
   - dns
   - powerdns
