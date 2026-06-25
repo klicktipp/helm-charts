@@ -74,13 +74,19 @@ Return the fully qualified startup jitter image reference.
 {{- end -}}
 
 {{/*
-Given a list of strings, concatenate all of them with a dash ("-")
-and slugify the string to be DNS name compatible.
+Joins a list of strings with "-" and makes the result safe for use as a
+Kubernetes resource name (lowercase, no special chars, max 63 chars).
 
-When given a list of 2+ elements, the last element (e.g. an EFS access point ID)
-is always preserved in full; only the prefix is truncated if the total exceeds 63
-chars. This prevents long namespaces from silently collapsing all access-point
-suffixes into the same PV name.
+The last element is always kept in full — it is the unique part (e.g. an EFS
+access point ID like "0e702cdce44153d31"). If the combined string would exceed
+63 chars, the prefix (everything before the last element) is shortened from the
+right to make room. This way two different access points for the same job always
+get two different PV names, even in namespaces with long names.
+
+Without this fix, the entire string was cut off at 63 chars from the right,
+which silently dropped the access point ID for long namespace names, making
+every access point of a job produce the same PV name — causing Kubernetes to
+reject the update because the PV's volume source is immutable after creation.
 */}}
 {{- define "com.klicktipp.slugify-volume-name" -}}
 {{- if and (kindIs "slice" .) (gt (len .) 1) -}}
