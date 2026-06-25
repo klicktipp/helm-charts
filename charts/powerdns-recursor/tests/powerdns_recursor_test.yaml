@@ -41,8 +41,6 @@ tests:
             outgoing:
               source_address:
               - 0.0.0.0
-            recordcache:
-              refresh_on_ttl_perc: 10
             recursor:
               config_dir: /etc/powerdns
               setgid: pdns
