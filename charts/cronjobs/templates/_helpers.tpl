@@ -90,14 +90,21 @@ reject the update because the PV's volume source is immutable after creation.
 */}}
 {{- define "com.klicktipp.slugify-volume-name" -}}
 {{- if and (kindIs "slice" .) (gt (len .) 1) -}}
-{{-   $last   := last    . | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
-{{-   $prefix := join "-" (initial .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
-{{-   $max    := int (sub 63 (add 1 (len $last))) -}}
-{{-   if lt $max 1 }}{{- $max = 1 }}{{- end -}}
-{{-   printf "%s-%s" ($prefix | trunc $max | trimSuffix "-") $last | trimSuffix "-" -}}
+{{-   $last   := last . | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{-   if ge (len $last) 63 -}}
+{{-     $last | trunc 63 | trimSuffix "-" | trimPrefix "-" -}}
+{{-   else -}}
+{{-     $prefix := join "-" (initial .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{-     $max    := int (sub 63 (add 1 (len $last))) -}}
+{{-     $p      := $prefix | trunc $max | trimSuffix "-" | trimPrefix "-" -}}
+{{-     if eq $p "" -}}
+{{-       $last -}}
+{{-     else -}}
+{{-       printf "%s-%s" $p $last | trimSuffix "-" -}}
+{{-     end -}}
+{{-   end -}}
 {{- else -}}
 {{-   (join "-" .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
 {{- end -}}
 
 {{/*
