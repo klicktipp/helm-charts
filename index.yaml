@@ -9,6 +9,27 @@ entries:
           url: https://hub.docker.com/_/busybox
     apiVersion: v2
     appVersion: latest
+    created: "2026-06-25T09:55:29.695738969Z"
+    description: A generic helm cronjob chart for kubernetes
+    digest: f4a22c9bc168bb21de9f9ad8158f22abd4b45ae0df688512135b3b02af3be6a0
+    home: https://github.com/klicktipp/helm-charts
+    keywords:
+    - cronjob
+    name: cronjobs
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/cronjobs-1.7.1/cronjobs-1.7.1.tgz
+    version: 1.7.1
+  - annotations:
+      artifacthub.io/links: |
+        - name: Image source
+          url: https://github.com/docker-library/busybox
+        - name: Image DockerHub
+          url: https://hub.docker.com/_/busybox
+    apiVersion: v2
+    appVersion: latest
     created: "2026-04-23T07:18:34.130690414Z"
     description: A generic helm cronjob chart for kubernetes
     digest: 95643e585dac98a8fb6f6b58a8c6597360121132ef3cbd50d1f2e9f87f7af5a5
@@ -3950,4 +3971,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-06-25T09:50:36.175274839Z"
+generated: "2026-06-25T09:55:29.696160481Z"
