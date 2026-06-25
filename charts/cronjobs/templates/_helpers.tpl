@@ -75,11 +75,23 @@ Return the fully qualified startup jitter image reference.
 
 {{/*
 Given a list of strings, concatenate all of them with a dash ("-")
-and slugify the string to be DNS name compatible
+and slugify the string to be DNS name compatible.
+
+When given a list of 2+ elements, the last element (e.g. an EFS access point ID)
+is always preserved in full; only the prefix is truncated if the total exceeds 63
+chars. This prevents long namespaces from silently collapsing all access-point
+suffixes into the same PV name.
 */}}
 {{- define "com.klicktipp.slugify-volume-name" -}}
-{{- $r := (join "-" .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trunc 63 | trimSuffix "-" }}
-{{- $r }}
+{{- if and (kindIs "slice" .) (gt (len .) 1) -}}
+{{-   $last   := last    . | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{-   $prefix := join "-" (initial .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{-   $max    := int (sub 63 (add 1 (len $last))) -}}
+{{-   if lt $max 1 }}{{- $max = 1 }}{{- end -}}
+{{-   printf "%s-%s" ($prefix | trunc $max | trimSuffix "-") $last | trimSuffix "-" -}}
+{{- else -}}
+{{-   (join "-" .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
