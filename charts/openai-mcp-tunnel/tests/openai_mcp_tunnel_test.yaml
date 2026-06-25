@@ -4,6 +4,7 @@ release:
 templates:
   - templates/serviceaccount.yaml
   - templates/secret.yaml
+  - templates/secret.mcp-extra-headers.yaml
   - templates/deployment.yaml
   - templates/service.yaml
   - templates/pdb.yaml
@@ -119,6 +120,61 @@ tests:
           value: sk-example-runtime-key
         template: templates/secret.yaml
 
+  - it: should mount secret-backed MCP auth headers and expose file-based env references
+    set:
+      credentials.existingSecretName: openai-tunnel-secret
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+      mcp.serverUrl: https://internal-mcp.example.local/mcp
+      mcp.auth.extraHeaders.existingSecretName: internal-mcp-auth
+      mcp.auth.extraHeaders.headers.Authorization: authorization
+      mcp.auth.discoveryExtraHeaders.existingSecretName: internal-mcp-auth
+      mcp.auth.discoveryExtraHeaders.headers.Authorization: authorization
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCP_EXTRA_HEADERS
+            value: "Authorization: file:/etc/openai-mcp-tunnel/mcp-extra-headers/authorization"
+        template: templates/deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCP_DISCOVERY_EXTRA_HEADERS
+            value: "Authorization: file:/etc/openai-mcp-tunnel/mcp-discovery-extra-headers/authorization"
+        template: templates/deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: mcp-extra-headers
+            mountPath: /etc/openai-mcp-tunnel/mcp-extra-headers
+            readOnly: true
+        template: templates/deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: mcp-extra-headers
+            secret:
+              secretName: internal-mcp-auth
+        template: templates/deployment.yaml
+
+  - it: should create dedicated mcp auth header secrets when requested
+    set:
+      credentials.existingSecretName: openai-tunnel-secret
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+      mcp.serverUrl: https://internal-mcp.example.local/mcp
+      mcp.auth.extraHeaders.createSecret: true
+      mcp.auth.extraHeaders.values.authorization: Bearer example-token
+      mcp.auth.extraHeaders.headers.Authorization: authorization
+    asserts:
+      - hasDocuments:
+          count: 1
+        template: templates/secret.mcp-extra-headers.yaml
+      - equal:
+          path: stringData.authorization
+          value: Bearer example-token
+        template: templates/secret.mcp-extra-headers.yaml
+        documentIndex: 0
+
   - it: should fail when serviceaccount rendering is attempted without tunnel credentials
     asserts:
       - failedTemplate:
@@ -143,6 +199,17 @@ tests:
     asserts:
       - failedTemplate:
           errorMessage: mcp.bootstrap.enabled cannot be combined with mcp.serverUrl or mcp.command
+        template: templates/serviceaccount.yaml
+
+  - it: should fail when extra header secret creation is enabled without values
+    set:
+      credentials.existingSecretName: openai-tunnel-secret
+      controlPlane.tunnelId: tunnel_0123456789abcdef0123456789abcdef
+      mcp.serverUrl: https://internal-mcp.example.local/mcp
+      mcp.auth.extraHeaders.createSecret: true
+    asserts:
+      - failedTemplate:
+          errorMessage: mcp.auth.extraHeaders.values is required when mcp.auth.extraHeaders.createSecret=true
         template: templates/serviceaccount.yaml
 
   - it: should not render a service when service is disabled

@@ -124,6 +124,27 @@ mcp:
   serverUrl: ""
   # -- Command to launch a local stdio MCP server. `stdio` does not support MCP sessions.
   command: ""
+  auth:
+    extraHeaders:
+      # -- Existing Secret whose keys contain complete header values such as `Bearer ...`.
+      existingSecretName: ""
+      # -- Create the Secret from values in this chart.
+      createSecret: false
+      # -- Secret data written when `createSecret=true`. Each key becomes one mounted file.
+      values: {}
+      headers:
+        # -- Map HTTP header names to secret keys. Example: `Authorization: authorization`.
+        {}
+    discoveryExtraHeaders:
+      # -- Existing Secret whose keys contain complete discovery/probe header values.
+      existingSecretName: ""
+      # -- Create the Secret from values in this chart.
+      createSecret: false
+      # -- Secret data written when `createSecret=true`. Each key becomes one mounted file.
+      values: {}
+      headers:
+        # -- Map HTTP header names to secret keys for MCP discovery/probe requests.
+        {}
   # -- Maximum lifetime of an upstream MCP connection.
   connectionMaxTTL: "10m"
   # -- Maximum number of concurrent upstream MCP requests.

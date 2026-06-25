@@ -2,7 +2,7 @@ apiVersion: v2
 name: openai-mcp-tunnel
 description: A Helm chart for running the OpenAI Secure MCP Tunnel client in Kubernetes.
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "v0.0.9"
 keywords:
   - openai

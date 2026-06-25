@@ -85,6 +85,14 @@ spec:
             - name: MCP_COMMAND
               value: {{ .Values.mcp.command | quote }}
             {{- end }}
+            {{- if .Values.mcp.auth.extraHeaders.headers }}
+            - name: MCP_EXTRA_HEADERS
+              value: {{ include "openai-mcp-tunnel.mcpExtraHeadersEnvValue" . | quote }}
+            {{- end }}
+            {{- if .Values.mcp.auth.discoveryExtraHeaders.headers }}
+            - name: MCP_DISCOVERY_EXTRA_HEADERS
+              value: {{ include "openai-mcp-tunnel.mcpDiscoveryExtraHeadersEnvValue" . | quote }}
+            {{- end }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -95,6 +103,16 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
+            {{- if .Values.mcp.auth.extraHeaders.headers }}
+            - name: mcp-extra-headers
+              mountPath: /etc/openai-mcp-tunnel/mcp-extra-headers
+              readOnly: true
+            {{- end }}
+            {{- if .Values.mcp.auth.discoveryExtraHeaders.headers }}
+            - name: mcp-discovery-extra-headers
+              mountPath: /etc/openai-mcp-tunnel/mcp-discovery-extra-headers
+              readOnly: true
+            {{- end }}
             {{- with .Values.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -108,6 +126,16 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
+        {{- if .Values.mcp.auth.extraHeaders.headers }}
+        - name: mcp-extra-headers
+          secret:
+            secretName: {{ include "openai-mcp-tunnel.mcpExtraHeadersSecretName" . }}
+        {{- end }}
+        {{- if .Values.mcp.auth.discoveryExtraHeaders.headers }}
+        - name: mcp-discovery-extra-headers
+          secret:
+            secretName: {{ include "openai-mcp-tunnel.mcpDiscoveryExtraHeadersSecretName" . }}
+        {{- end }}
         {{- with .Values.extraVolumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

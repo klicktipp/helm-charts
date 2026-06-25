@@ -94,6 +94,18 @@ Validate supported runtime configuration.
 {{- if and .Values.mcp.serverUrl .Values.mcp.command -}}
 {{- fail "set only one of mcp.serverUrl or mcp.command in this chart" -}}
 {{- end -}}
+{{- if and .Values.mcp.auth.extraHeaders.createSecret (not .Values.mcp.auth.extraHeaders.values) -}}
+{{- fail "mcp.auth.extraHeaders.values is required when mcp.auth.extraHeaders.createSecret=true" -}}
+{{- end -}}
+{{- if and .Values.mcp.auth.discoveryExtraHeaders.createSecret (not .Values.mcp.auth.discoveryExtraHeaders.values) -}}
+{{- fail "mcp.auth.discoveryExtraHeaders.values is required when mcp.auth.discoveryExtraHeaders.createSecret=true" -}}
+{{- end -}}
+{{- if and .Values.mcp.auth.extraHeaders.createSecret .Values.mcp.auth.extraHeaders.existingSecretName -}}
+{{- fail "set only one of mcp.auth.extraHeaders.createSecret or mcp.auth.extraHeaders.existingSecretName" -}}
+{{- end -}}
+{{- if and .Values.mcp.auth.discoveryExtraHeaders.createSecret .Values.mcp.auth.discoveryExtraHeaders.existingSecretName -}}
+{{- fail "set only one of mcp.auth.discoveryExtraHeaders.createSecret or mcp.auth.discoveryExtraHeaders.existingSecretName" -}}
+{{- end -}}
 {{- if and .Values.credentials.createSecret (not .Values.credentials.apiKey) -}}
 {{- fail "credentials.apiKey is required when credentials.createSecret=true" -}}
 {{- end -}}
@@ -109,4 +121,38 @@ Decide whether to run with the embedded MCP stub.
 {{- if or .Values.mcp.bootstrap.enabled (and (not .Values.mcp.serverUrl) (not .Values.mcp.command)) -}}
 true
 {{- end -}}
+{{- end }}
+
+{{- define "openai-mcp-tunnel.mcpExtraHeadersSecretName" -}}
+{{- if .Values.mcp.auth.extraHeaders.existingSecretName }}
+{{- .Values.mcp.auth.extraHeaders.existingSecretName }}
+{{- else }}
+{{- printf "%s-mcp-extra-headers" (include "openai-mcp-tunnel.fullname" .) }}
+{{- end }}
+{{- end }}
+
+{{- define "openai-mcp-tunnel.mcpDiscoveryExtraHeadersSecretName" -}}
+{{- if .Values.mcp.auth.discoveryExtraHeaders.existingSecretName }}
+{{- .Values.mcp.auth.discoveryExtraHeaders.existingSecretName }}
+{{- else }}
+{{- printf "%s-mcp-discovery-extra-headers" (include "openai-mcp-tunnel.fullname" .) }}
+{{- end }}
+{{- end }}
+
+{{- define "openai-mcp-tunnel.mcpExtraHeadersEnvValue" -}}
+{{- $path := printf "/etc/openai-mcp-tunnel/mcp-extra-headers" -}}
+{{- $entries := list -}}
+{{- range $header, $secretKey := .Values.mcp.auth.extraHeaders.headers }}
+{{- $entries = append $entries (printf "%s: file:%s/%s" $header $path $secretKey) -}}
+{{- end -}}
+{{- join ", " $entries -}}
+{{- end }}
+
+{{- define "openai-mcp-tunnel.mcpDiscoveryExtraHeadersEnvValue" -}}
+{{- $path := printf "/etc/openai-mcp-tunnel/mcp-discovery-extra-headers" -}}
+{{- $entries := list -}}
+{{- range $header, $secretKey := .Values.mcp.auth.discoveryExtraHeaders.headers }}
+{{- $entries = append $entries (printf "%s: file:%s/%s" $header $path $secretKey) -}}
+{{- end -}}
+{{- join ", " $entries -}}
 {{- end }}
