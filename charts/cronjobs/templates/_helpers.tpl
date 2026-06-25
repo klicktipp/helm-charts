@@ -106,6 +106,7 @@ reject the update because the PV's volume source is immutable after creation.
 {{- else -}}
 {{-   (join "-" .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+{{- end -}}
 
 {{/*
 Generate deterministic startup delay seconds from seed parts.
