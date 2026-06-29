@@ -2,7 +2,7 @@
 {{- $service_account_name := include "cronjobs.serviceAccountName" . }}
 {{- range $job_name, $job := .Values.jobs }}
 {{- if $job }}
-{{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-volume-name" $job_name }}
+{{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-string" $job_name }}
 {{- $env := mergeOverwrite dict $.Values.env ($job.env | default dict) }}
 {{- $image := mergeOverwrite dict ($.Values.image | default dict) ($job.image | default dict) }}
 {{- $timezone := $job.timezone | default $.Values.timezone }}
@@ -130,7 +130,7 @@ spec:
                 - name: {{ $key }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ include "com.klicktipp.slugify-volume-name" (list (include "cronjobs.fullname" $) $job_name "envvars") }}
+                      name: {{ printf "%s-%s-envvars" (include "cronjobs.fullname" $) $job_name | include "com.klicktipp.slugify-string" }}
                       key: {{ $key }}
                 {{- end }}
               resources:
@@ -197,7 +197,7 @@ spec:
             {{- if and (hasKey $job "extraFiles") $job.extraFiles }}
             - name: cronjob-files
               configMap:
-                name: {{ include "com.klicktipp.slugify-volume-name" (list $chart_name "files" $JOB_NAME_SLUG) }}
+                name: {{ printf "%s-files-%s" $chart_name $JOB_NAME_SLUG | include "com.klicktipp.slugify-string" }}
                 items:
                 {{- range $filename, $file := $job.extraFiles }}
                   {{- if $file.enabled }}

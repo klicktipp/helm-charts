@@ -10,6 +10,10 @@ keywords:
   - cronjob
 sources:
   - https://github.com/klicktipp/helm-charts
+dependencies:
+  - name: klicktipp-common
+    version: 1.0.2
+    repository: file://../klicktipp-common
 annotations:
   artifacthub.io/links: |
     - name: Image source
