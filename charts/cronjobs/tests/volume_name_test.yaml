@@ -7,21 +7,21 @@ templates:
   - templates/volumes.yaml
 
 tests:
-  - it: should keep legacy EFS volume names by default
+  - it: should keep cronjobs 1.7.0 EFS volume names by default
     values:
       - ../ci/efs-volume-names.yaml
     asserts:
       - equal:
           path: spec.jobTemplate.spec.template.spec.containers[0].volumeMounts[0].name
-          value: cronjobs-a-very-long-cronjob-name-that-can-co-0e702cdce44153d31
+          value: cronjobs-a-very-long-cronjob-name-that-can-collide-very-long-pa
         template: templates/cronjob.yaml
       - equal:
           path: spec.jobTemplate.spec.template.spec.volumes[0].persistentVolumeClaim.claimName
-          value: cronjobs-a-very-long-cronjob-name-that-can-co-0e702cdce44153d31
+          value: cronjobs-a-very-long-cronjob-name-that-can-collide-very-long-pa
         template: templates/cronjob.yaml
       - equal:
           path: metadata.name
-          value: cronjobs-a-very-long-cronjob-name-that-can-co-0e702cdce44153d31
+          value: cronjobs-a-very-long-cronjob-name-that-can-collide-very-long-pa
         template: templates/volumes.yaml
         documentIndex: 1
 
