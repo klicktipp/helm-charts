@@ -3,6 +3,13 @@ nameOverride: ""
 # -- Fully override generated resource names.
 fullnameOverride: ""
 
+# -- Use collision-free EFS PV/PVC naming (com.klicktipp.slugify-volume-name-v2).
+# When enabled, PV names are globally unique and PVC names are namespace-unique
+# by hashing the infix (chart + job name) to 8 hex chars while keeping the
+# namespace/release prefix and EFS access-point ID verbatim.
+# Disabled by default to preserve backward compatibility with existing PVs/PVCs.
+slugifyVolumeNamesV2: false
+
 # -- Image pull secrets.
 imagePullSecrets: []
 
