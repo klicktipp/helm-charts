@@ -3,13 +3,17 @@ apiVersion: v2
 name: cronjobs
 description: A generic helm cronjob chart for kubernetes
 type: application
-version: 2.0.0
+version: 2.0.1
 appVersion: latest
 home: https://github.com/klicktipp/helm-charts
 keywords:
   - cronjob
 sources:
   - https://github.com/klicktipp/helm-charts
+dependencies:
+  - name: klicktipp-common
+    version: 1.0.2
+    repository: file://../klicktipp-common
 annotations:
   artifacthub.io/links: |
     - name: Image source

@@ -1,20 +1,20 @@
----
 {{- range $job_name, $job := .Values.jobs }}
-{{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-volume-name" $job_name }}
+{{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-string" $job_name }}
 {{- if and $job (hasKey $job "storage") (hasKey $job.storage "efs") (hasKey $job.storage.efs "mounts") }}
 {{- range $efs_mount := $job.storage.efs.mounts }}
 {{- range $efs_ap := $efs_mount.access_points }}
 {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}
-{{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" (default false $.Values.slugifyVolumeNamesV2) -}}
-{{- $PV_NAME  := include $slugify (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) }}
-{{- $PVC_NAME := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
-{{- $PV_FULL  := join "-" (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
-{{- $PVC_FULL := join "-" (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" $.Values.slugifyVolumeNamesV2 }}
+{{- $PV_NAME_SLUG  := include $slugify (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) }}
+{{- $PVC_NAME_SLUG := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
+{{- $PV_FULL_NAME  := join "-" (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" }}
+{{- $PVC_FULL_NAME := join "-" (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" }}
+
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ $PV_NAME }}
+  name: {{ $PV_NAME_SLUG }}
   labels:
     storage.ktsys.cloud/efs_fs_id: {{ $efs_mount.fs_id | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
@@ -23,7 +23,7 @@ metadata:
     storage.ktsys.cloud/efs_name: {{ $efs_mount.fs_name | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
     storage.ktsys.cloud/efs_path: {{ $efs_ap.path | quote }}
-    storage.ktsys.cloud/volume-name-full: {{ $PV_FULL | quote }}
+    storage.ktsys.cloud/volume-name-full: {{ $PV_FULL_NAME | quote }}
     {{- with $.commonAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -46,7 +46,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ $PVC_NAME }}
+  name: {{ $PVC_NAME_SLUG }}
   labels:
     storage.ktsys.cloud/efs_fs_id: {{ $efs_mount.fs_id | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
@@ -55,7 +55,7 @@ metadata:
     storage.ktsys.cloud/efs_name: {{ $efs_mount.fs_name | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
     storage.ktsys.cloud/efs_path: {{ $efs_ap.path | quote }}
-    storage.ktsys.cloud/volume-name-full: {{ $PVC_FULL | quote }}
+    storage.ktsys.cloud/volume-name-full: {{ $PVC_FULL_NAME | quote }}
     {{- with $.commonAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -66,7 +66,7 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: {{ $job.storage.efs.storageClass }}
-  volumeName: {{ $PV_NAME }}
+  volumeName: {{ $PV_NAME_SLUG }}
   resources:
     requests:
       storage: 5Gi  # Any number will do, we are just required to specify a storage capacity

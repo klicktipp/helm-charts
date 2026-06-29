@@ -1,6 +1,6 @@
 # cronjobs
 
-![Version: 1.7.1](https://img.shields.io/badge/Version-1.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 A generic helm cronjob chart for kubernetes
 
@@ -10,12 +10,19 @@ A generic helm cronjob chart for kubernetes
 
 * <https://github.com/klicktipp/helm-charts>
 
+## Requirements
+
+| Repository | Name | Version |
+|------------|------|---------|
+| file://../klicktipp-common | klicktipp-common | 1.0.2 |
+
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | nameOverride | string | `""` | Partially override generated resource names. |
 | fullnameOverride | string | `""` | Fully override generated resource names. |
+| slugifyVolumeNamesV2 | bool | `false` | Use collision-free EFS PV/PVC naming (com.klicktipp.slugify-volume-name-v2). When enabled, PV names are globally unique and PVC names are namespace-unique by hashing the infix (chart + job name) to 8 hex chars while keeping the namespace/release prefix and EFS access-point ID verbatim. Disabled by default to preserve backward compatibility with existing PVs/PVCs. |
 | imagePullSecrets | list | `[]` | Image pull secrets. |
 | image | object | `{}` | Default container image settings for all jobs. Individual jobs can override these values. |
 | secrets | object | `{}` | Configure secrets. |

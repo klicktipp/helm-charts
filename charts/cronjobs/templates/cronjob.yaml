@@ -2,7 +2,7 @@
 {{- $service_account_name := include "cronjobs.serviceAccountName" . }}
 {{- range $job_name, $job := .Values.jobs }}
 {{- if $job }}
-{{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-volume-name" $job_name }}
+{{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-string" $job_name }}
 {{- $env := mergeOverwrite dict $.Values.env ($job.env | default dict) }}
 {{- $image := mergeOverwrite dict ($.Values.image | default dict) ($job.image | default dict) }}
 {{- $timezone := $job.timezone | default $.Values.timezone }}
@@ -130,7 +130,7 @@ spec:
                 - name: {{ $key }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ include "com.klicktipp.slugify-volume-name" (list (include "cronjobs.fullname" $) $job_name "envvars") }}
+                      name: {{ include "com.klicktipp.slugify-string" (list (include "cronjobs.fullname" $) $job_name "envvars") }}
                       key: {{ $key }}
                 {{- end }}
               resources:
@@ -140,9 +140,9 @@ spec:
                 {{- range $efs_mount := $job.storage.efs.mounts }}
                 {{- range $efs_ap := $efs_mount.access_points }}
                 {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}
-                {{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" (default false $.Values.slugifyVolumeNamesV2) -}}
-                {{- $PVC_NAME := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
-                - name: {{ $PVC_NAME }}
+                {{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" $.Values.slugifyVolumeNamesV2 }}
+                {{- $PVC_NAME_SLUG := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
+                - name: {{ $PVC_NAME_SLUG }}
                   mountPath: {{ required "ERROR: the EFS mount point requires a mount_dest." $efs_ap.mount_dest }}
                 {{- end }} {{/* # end range $efs_ap */}}
                 {{- end }} {{/* # end range $efs_mount */}}
@@ -186,18 +186,18 @@ spec:
             {{- range $efs_mount := $job.storage.efs.mounts }}
             {{- range $efs_ap := $efs_mount.access_points }}
             {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}
-            {{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" (default false $.Values.slugifyVolumeNamesV2) -}}
-            {{- $PVC_NAME := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
-            - name: {{ $PVC_NAME }}
+            {{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" $.Values.slugifyVolumeNamesV2 }}
+            {{- $PVC_NAME_SLUG := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
+            - name: {{ $PVC_NAME_SLUG }}
               persistentVolumeClaim:
-                claimName: {{ $PVC_NAME }}
+                claimName: {{ $PVC_NAME_SLUG }}
             {{- end }} {{/* # end range $efs_ap */}}
             {{- end }} {{/* # end range $efs_mount */}}
             {{- end }} {{/* # end if storage.efs */}}
             {{- if and (hasKey $job "extraFiles") $job.extraFiles }}
             - name: cronjob-files
               configMap:
-                name: {{ include "com.klicktipp.slugify-volume-name" (list $chart_name "files" $JOB_NAME_SLUG) }}
+                name: {{ include "com.klicktipp.slugify-string" (list $chart_name "files" $JOB_NAME_SLUG) }}
                 items:
                 {{- range $filename, $file := $job.extraFiles }}
                   {{- if $file.enabled }}
