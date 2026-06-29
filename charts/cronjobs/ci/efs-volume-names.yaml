@@ -1,0 +1,16 @@
+image:
+  repository: busybox
+
+jobs:
+  a-very-long-cronjob-name-that-can-collide:
+    schedule: "* * * * *"
+    storage:
+      efs:
+        storageClass: kt-efs-sc
+        mounts:
+          - fs_name: test-efs
+            fs_id: fs-1234567890abcdef0
+            access_points:
+              - path: /very/long/path/that/can/collide
+                mount_dest: /mnt/test
+                id: fsap-0e702cdce44153d31
