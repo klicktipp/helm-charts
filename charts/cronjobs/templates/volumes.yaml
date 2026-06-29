@@ -5,18 +5,25 @@
 {{- range $efs_mount := $job.storage.efs.mounts }}
 {{- range $efs_ap := $efs_mount.access_points }}
 {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}
-{{- $PV_NAME := include "com.klicktipp.slugify-volume-name" (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) }}
-{{- $PVC_NAME := include "com.klicktipp.slugify-volume-name" (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
+{{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" (default false $.Values.slugifyVolumeNamesV2) -}}
+{{- $PV_NAME  := include $slugify (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) }}
+{{- $PVC_NAME := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
+{{- $PV_FULL  := join "-" (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{- $PVC_FULL := join "-" (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: {{ $PV_NAME }}
+  labels:
+    storage.ktsys.cloud/efs_fs_id: {{ $efs_mount.fs_id | quote }}
+    storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
   annotations:
     storage.ktsys.cloud/efs_fs_id: {{ $efs_mount.fs_id | quote }}
     storage.ktsys.cloud/efs_name: {{ $efs_mount.fs_name | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
     storage.ktsys.cloud/efs_path: {{ $efs_ap.path | quote }}
+    storage.ktsys.cloud/volume-name-full: {{ $PV_FULL | quote }}
     {{- with $.commonAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -40,11 +47,15 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ $PVC_NAME }}
+  labels:
+    storage.ktsys.cloud/efs_fs_id: {{ $efs_mount.fs_id | quote }}
+    storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
   annotations:
     storage.ktsys.cloud/efs_fs_id: {{ $efs_mount.fs_id | quote }}
     storage.ktsys.cloud/efs_name: {{ $efs_mount.fs_name | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
     storage.ktsys.cloud/efs_path: {{ $efs_ap.path | quote }}
+    storage.ktsys.cloud/volume-name-full: {{ $PVC_FULL | quote }}
     {{- with $.commonAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

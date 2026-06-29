@@ -74,37 +74,51 @@ Return the fully qualified startup jitter image reference.
 {{- end -}}
 
 {{/*
-Joins a list of strings with "-" and makes the result safe for use as a
-Kubernetes resource name (lowercase, no special chars, max 63 chars).
-
-The last element is always kept in full — it is the unique part (e.g. an EFS
-access point ID like "0e702cdce44153d31"). If the combined string would exceed
-63 chars, the prefix (everything before the last element) is shortened from the
-right to make room. This way two different access points for the same job always
-get two different PV names, even in namespaces with long names.
-
-Without this fix, the entire string was cut off at 63 chars from the right,
-which silently dropped the access point ID for long namespace names, making
-every access point of a job produce the same PV name — causing Kubernetes to
-reject the update because the PV's volume source is immutable after creation.
+Given a list of strings, concatenate all of them with a dash ("-")
+and slugify the string to be DNS name compatible
 */}}
 {{- define "com.klicktipp.slugify-volume-name" -}}
-{{- if and (kindIs "slice" .) (gt (len .) 1) -}}
-{{-   $last   := last . | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
-{{-   if ge (len $last) 63 -}}
-{{-     $last | trunc 63 | trimSuffix "-" | trimPrefix "-" -}}
+{{- $r := (join "-" .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trunc 63 | trimSuffix "-" }}
+{{- $r }}
+{{- end -}}
+
+{{/*
+Collision-free PV / PVC names. Accepts the same list as slugify-volume-name:
+  [prefix, infix..., suffix]
+  prefix – first element (namespace for PVs, release name for PVCs); kept as-is
+  infix  – all middle elements; joined and sha256-hashed to 8 hex chars
+  suffix – last element (EFS access-point ID without "fsap-" prefix); kept as-is
+
+Result: prefix-hash(infix)-suffix  (≤ 63 chars)
+
+When the result would exceed 63 chars the prefix is right-truncated to fit;
+any trailing dash introduced by truncation is stripped.
+
+Because the hash covers the full infix and the access-point ID sits verbatim in
+the suffix, names are globally unique even if the same access point is mounted
+more than once or two jobs share the same name prefix.
+
+Enable per release with .Values.slugifyVolumeNamesV2: true.
+*/}}
+{{- define "com.klicktipp.slugify-volume-name-v2" -}}
+{{- $first  := first . | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{- $last   := last  . | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{- $hash   := join "-" (rest (initial .)) | sha256sum | trunc 8 -}}
+{{- $result := printf "%s-%s-%s" $first $hash $last -}}
+{{- if le (len $result) 63 -}}
+{{-   $result -}}
+{{- else -}}
+{{-   $max := int (sub 53 (len $last)) -}}
+{{-   if le $max 0 -}}
+{{-     printf "%s-%s" $hash $last | trunc 63 | trimSuffix "-" -}}
 {{-   else -}}
-{{-     $prefix := join "-" (initial .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
-{{-     $max    := int (sub 63 (add 1 (len $last))) -}}
-{{-     $p      := $prefix | trunc $max | trimSuffix "-" | trimPrefix "-" -}}
-{{-     if eq $p "" -}}
-{{-       $last -}}
+{{-     $f := $first | trunc $max | trimSuffix "-" | trimPrefix "-" -}}
+{{-     if eq $f "" -}}
+{{-       printf "%s-%s" $hash $last -}}
 {{-     else -}}
-{{-       printf "%s-%s" $p $last | trimSuffix "-" -}}
+{{-       printf "%s-%s-%s" $f $hash $last -}}
 {{-     end -}}
 {{-   end -}}
-{{- else -}}
-{{-   (join "-" .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 
