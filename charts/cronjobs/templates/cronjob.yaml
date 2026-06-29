@@ -140,9 +140,7 @@ spec:
                 {{- range $efs_mount := $job.storage.efs.mounts }}
                 {{- range $efs_ap := $efs_mount.access_points }}
                 {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}
-                {{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" (default false $.Values.slugifyVolumeNamesV2) -}}
-                {{- $PVC_NAME := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
-                - name: {{ $PVC_NAME }}
+                {{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" $.Values.slugifyVolumeNamesV2 -}}
                 {{- $PVC_NAME_SLUG := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
                 - name: {{ $PVC_NAME_SLUG }}
                   mountPath: {{ required "ERROR: the EFS mount point requires a mount_dest." $efs_ap.mount_dest }}
@@ -188,9 +186,7 @@ spec:
             {{- range $efs_mount := $job.storage.efs.mounts }}
             {{- range $efs_ap := $efs_mount.access_points }}
             {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}
-            {{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" (default false $.Values.slugifyVolumeNamesV2) -}}
-            {{- $PVC_NAME := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
-            - name: {{ $PVC_NAME }}
+            {{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" $.Values.slugifyVolumeNamesV2 -}}
             {{- $PVC_NAME_SLUG := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
             - name: {{ $PVC_NAME_SLUG }}
               persistentVolumeClaim:

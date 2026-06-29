@@ -5,11 +5,7 @@
 {{- range $efs_mount := $job.storage.efs.mounts }}
 {{- range $efs_ap := $efs_mount.access_points }}
 {{- $EFS_AP_ID_TRIMMED := trimPrefix "fsap-" $efs_ap.id }}
-{{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" (default false $.Values.slugifyVolumeNamesV2) -}}
-{{- $PV_NAME  := include $slugify (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) }}
-{{- $PVC_NAME := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
-{{- $PV_FULL  := join "-" (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
-{{- $PVC_FULL := join "-" (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{- $slugify  := ternary "com.klicktipp.slugify-volume-name-v2" "com.klicktipp.slugify-volume-name" $.Values.slugifyVolumeNamesV2 -}}
 {{- $PV_NAME_SLUG  := include $slugify (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) }}
 {{- $PVC_NAME_SLUG := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
 {{- $PV_FULL_NAME  := join "-" (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
