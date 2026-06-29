@@ -10,11 +10,15 @@
 {{- $PVC_NAME := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
 {{- $PV_FULL  := join "-" (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
 {{- $PVC_FULL := join "-" (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{- $PV_NAME_SLUG  := include $slugify (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) }}
+{{- $PVC_NAME_SLUG := include $slugify (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) }}
+{{- $PV_FULL_NAME  := join "-" (list $.Release.Namespace $.Release.Name $JOB_NAME_SLUG $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{- $PVC_FULL_NAME := join "-" (list $.Release.Name $JOB_NAME_SLUG (coalesce $efs_ap.name $efs_ap.path) $EFS_AP_ID_TRIMMED) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ $PV_NAME }}
+  name: {{ $PV_NAME_SLUG }}
   labels:
     storage.ktsys.cloud/efs_fs_id: {{ $efs_mount.fs_id | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
@@ -46,7 +50,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ $PVC_NAME }}
+  name: {{ $PVC_NAME_SLUG }}
   labels:
     storage.ktsys.cloud/efs_fs_id: {{ $efs_mount.fs_id | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
@@ -66,7 +70,7 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: {{ $job.storage.efs.storageClass }}
-  volumeName: {{ $PV_NAME }}
+  volumeName: {{ $PV_NAME_SLUG }}
   resources:
     requests:
       storage: 5Gi  # Any number will do, we are just required to specify a storage capacity
