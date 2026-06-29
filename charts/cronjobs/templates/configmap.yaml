@@ -33,7 +33,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-files-%s" (include "cronjobs.fullname" $) $job_name | include "com.klicktipp.slugify-string" }}
+  name: {{ include "com.klicktipp.slugify-string" (list (include "cronjobs.fullname" $) "files" $job_name) }}
   labels:
     {{- include "cronjobs.labels" $ | nindent 4 }}
     {{- with $.Values.commonLabels }}

@@ -130,7 +130,7 @@ spec:
                 - name: {{ $key }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ printf "%s-%s-envvars" (include "cronjobs.fullname" $) $job_name | include "com.klicktipp.slugify-string" }}
+                      name: {{ include "com.klicktipp.slugify-string" (list (include "cronjobs.fullname" $) $job_name "envvars") }}
                       key: {{ $key }}
                 {{- end }}
               resources:
@@ -197,7 +197,7 @@ spec:
             {{- if and (hasKey $job "extraFiles") $job.extraFiles }}
             - name: cronjob-files
               configMap:
-                name: {{ printf "%s-files-%s" $chart_name $JOB_NAME_SLUG | include "com.klicktipp.slugify-string" }}
+                name: {{ include "com.klicktipp.slugify-string" (list $chart_name "files" $JOB_NAME_SLUG) }}
                 items:
                 {{- range $filename, $file := $job.extraFiles }}
                   {{- if $file.enabled }}
