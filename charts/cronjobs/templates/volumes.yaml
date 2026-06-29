@@ -1,4 +1,3 @@
----
 {{- range $job_name, $job := .Values.jobs }}
 {{- $JOB_NAME_SLUG := include "com.klicktipp.slugify-string" $job_name }}
 {{- if and $job (hasKey $job "storage") (hasKey $job.storage "efs") (hasKey $job.storage.efs "mounts") }}
