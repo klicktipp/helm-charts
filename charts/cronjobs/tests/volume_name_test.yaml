@@ -1,0 +1,46 @@
+suite: cronjobs-volume-name-tests
+release:
+  name: cronjobs
+  namespace: very-long-namespace-name-that-triggers-truncation
+templates:
+  - templates/cronjob.yaml
+  - templates/volumes.yaml
+
+tests:
+  - it: should keep legacy EFS volume names by default
+    values:
+      - ../ci/efs-volume-names.yaml
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].volumeMounts[0].name
+          value: cronjobs-a-very-long-cronjob-name-that-can-co-0e702cdce44153d31
+        template: templates/cronjob.yaml
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.volumes[0].persistentVolumeClaim.claimName
+          value: cronjobs-a-very-long-cronjob-name-that-can-co-0e702cdce44153d31
+        template: templates/cronjob.yaml
+      - equal:
+          path: metadata.name
+          value: cronjobs-a-very-long-cronjob-name-that-can-co-0e702cdce44153d31
+        template: templates/volumes.yaml
+        documentIndex: 1
+
+  - it: should use hash-based EFS volume names when V2 is enabled
+    values:
+      - ../ci/efs-volume-names.yaml
+    set:
+      slugifyVolumeNamesV2: true
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].volumeMounts[0].name
+          value: cronjobs-5503b47f-0e702cdce44153d31
+        template: templates/cronjob.yaml
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.volumes[0].persistentVolumeClaim.claimName
+          value: cronjobs-5503b47f-0e702cdce44153d31
+        template: templates/cronjob.yaml
+      - equal:
+          path: metadata.name
+          value: cronjobs-5503b47f-0e702cdce44153d31
+        template: templates/volumes.yaml
+        documentIndex: 1
