@@ -77,30 +77,28 @@ Return the fully qualified startup jitter image reference.
 Joins a list of strings with "-" and makes the result safe for use as a
 Kubernetes resource name (lowercase, no special chars, max 63 chars).
 
-The last element is always kept in full — it is the unique part (e.g. an EFS
-access point ID like "0e702cdce44153d31"). If the combined string would exceed
-63 chars, the prefix (everything before the last element) is shortened from the
-right to make room. This way two different access points for the same job always
-get two different PV names, even in namespaces with long names.
+When the combined string fits within 63 chars it is used as-is — this keeps
+names in long-lived namespaces (staging, prod) stable.
 
-Without this fix, the entire string was cut off at 63 chars from the right,
-which silently dropped the access point ID for long namespace names, making
-every access point of a job produce the same PV name — causing Kubernetes to
-reject the update because the PV's volume source is immutable after creation.
+When the name would exceed 63 chars, the last element (EFS access point ID)
+is replaced with a 6-char sha256 hash of its value. This keeps the infix
+(chart + job name) readable while still uniquely identifying the access point.
 */}}
 {{- define "com.klicktipp.slugify-volume-name" -}}
 {{- if and (kindIs "slice" .) (gt (len .) 1) -}}
 {{-   $last   := last . | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
-{{-   if ge (len $last) 63 -}}
-{{-     $last | trunc 63 | trimSuffix "-" | trimPrefix "-" -}}
+{{-   $prefix := join "-" (initial .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
+{{-   $full   := printf "%s-%s" $prefix $last -}}
+{{-   if le (len $full) 63 -}}
+{{-     $full -}}
 {{-   else -}}
-{{-     $prefix := join "-" (initial .) | lower | replace "." "-" | replace "/" "-" | replace "_" "-" | replace "--" "-" | replace " " "-" | trimPrefix "-" | trimSuffix "-" -}}
-{{-     $max    := int (sub 63 (add 1 (len $last))) -}}
+{{-     $suffix := $last | sha256sum | trunc 6 -}}
+{{-     $max    := int (sub 63 (add 1 (len $suffix))) -}}
 {{-     $p      := $prefix | trunc $max | trimSuffix "-" | trimPrefix "-" -}}
 {{-     if eq $p "" -}}
-{{-       $last -}}
+{{-       $suffix -}}
 {{-     else -}}
-{{-       printf "%s-%s" $p $last | trimSuffix "-" -}}
+{{-       printf "%s-%s" $p $suffix -}}
 {{-     end -}}
 {{-   end -}}
 {{- else -}}
