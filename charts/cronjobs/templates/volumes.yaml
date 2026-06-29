@@ -27,7 +27,7 @@ metadata:
     storage.ktsys.cloud/efs_name: {{ $efs_mount.fs_name | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
     storage.ktsys.cloud/efs_path: {{ $efs_ap.path | quote }}
-    storage.ktsys.cloud/volume-name-full: {{ $PV_FULL | quote }}
+    storage.ktsys.cloud/volume-name-full: {{ $PV_FULL_NAME | quote }}
     {{- with $.commonAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -59,7 +59,7 @@ metadata:
     storage.ktsys.cloud/efs_name: {{ $efs_mount.fs_name | quote }}
     storage.ktsys.cloud/efs_ap_id: {{ $efs_ap.id | quote }}
     storage.ktsys.cloud/efs_path: {{ $efs_ap.path | quote }}
-    storage.ktsys.cloud/volume-name-full: {{ $PVC_FULL | quote }}
+    storage.ktsys.cloud/volume-name-full: {{ $PVC_FULL_NAME | quote }}
     {{- with $.commonAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
