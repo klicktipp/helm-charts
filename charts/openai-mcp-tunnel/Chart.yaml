@@ -2,9 +2,9 @@ apiVersion: v2
 name: openai-mcp-tunnel
 description: A Helm chart for running the OpenAI Secure MCP Tunnel client in Kubernetes.
 type: application
-version: 0.1.1
+version: 0.1.2
 # renovate: datasource=docker depName=ghcr.io/klicktipp/openai-tunnel-client
-appVersion: "v0.0.9"
+appVersion: "0.0.10"
 keywords:
   - openai
   - mcp
