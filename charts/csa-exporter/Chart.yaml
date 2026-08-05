@@ -3,6 +3,7 @@ name: csa-exporter
 description: A Helm chart for Kubernetes to scrape the CSA stats API.
 type: application
 version: 0.1.3
+# renovate: datasource=docker depName=ghcr.io/klicktipp/csa-exporter
 appVersion: "0.3.0"
 keywords:
   - csa

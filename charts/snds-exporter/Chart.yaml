@@ -3,6 +3,7 @@ name: snds-exporter
 description: A Helm chart for running the snds-exporter with OAuth token files in Kubernetes.
 type: application
 version: 0.2.4
+# renovate: datasource=docker depName=ghcr.io/klicktipp/snds-exporter
 appVersion: "0.2.3"
 keywords:
   - snds
