@@ -22,8 +22,11 @@ jobs:
     steps:
       # Only minted for same-repo pull requests once the app credentials exist.
       # Without it the job keeps its original behaviour: verify, never auto-fix.
+      # continue-on-error keeps a missing, misconfigured or expired credential
+      # from failing every chart pull request: it degrades to verify-only.
       - name: Generate app token
         id: app-token
+        continue-on-error: true
         if: >-
           github.event_name == 'pull_request'
           && vars.HELM_DOCS_BOT_APP_ID != ''
