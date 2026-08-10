@@ -8,15 +8,45 @@ on:
       - ".github/workflows/docs-quality.yml"
   workflow_dispatch:
 
+concurrency:
+  group: docs-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   docs-quality:
     runs-on: ubuntu-latest
 
     steps:
+      # Only minted for same-repo pull requests once the app credentials exist.
+      # Without it the job keeps its original behaviour: verify, never auto-fix.
+      # continue-on-error keeps a missing, misconfigured or expired credential
+      # from failing every chart pull request: it degrades to verify-only.
+      - name: Generate app token
+        id: app-token
+        continue-on-error: true
+        if: >-
+          github.event_name == 'pull_request'
+          && vars.HELM_DOCS_BOT_CLIENT_ID != ''
+          && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ vars.HELM_DOCS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.HELM_DOCS_BOT_PRIVATE_KEY }}
+
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
+          # Check out the PR head branch itself (not the detached merge commit)
+          # so regenerated READMEs can be pushed back. Fork PRs and
+          # workflow_dispatch fall back to the default checkout.
+          ref: >-
+            ${{ (github.event.pull_request.head.repo.full_name == github.repository
+            && github.event.pull_request.head.ref) || '' }}
+          token: ${{ steps.app-token.outputs.token || github.token }}
 
       - name: Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
@@ -73,6 +103,41 @@ jobs:
         run: |
           set -euo pipefail
           scripts/check-values-docs.sh ${{ steps.changed.outputs.values_files }}
+
+      - name: Regenerate chart READMEs
+        id: regen
+        if: steps.changed.outputs.has_charts == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/generate-chart-readmes.sh
+
+          if git diff --quiet -- 'charts/*/README.md'; then
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+            git --no-pager diff --stat -- 'charts/*/README.md'
+          fi
+
+      # Pushing here re-triggers this workflow on the new head commit, so the
+      # PR ends up with a green check instead of a stale failing one. The rerun
+      # finds no drift, pushes nothing, and the loop stops.
+      - name: Commit regenerated READMEs
+        if: steps.regen.outputs.drift == 'true' && steps.app-token.outputs.token != ''
+        shell: bash
+        env:
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          user_id="$(gh api "/users/${APP_SLUG}[bot]" --jq .id)"
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+
+          git add -- 'charts/*/README.md'
+          git commit -m "docs(charts): regenerate chart READMEs"
+          git push
 
       - name: Verify README consistency with values
         if: steps.changed.outputs.has_charts == 'true'
