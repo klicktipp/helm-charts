@@ -120,9 +120,11 @@ metrics:
 ingress:
   # -- Enable ingress resources.
   enabled: false
-  # -- ingressClassName value.
+  # -- Ingress controller implementation. Supported values are `nginx` and `contour`.
+  controller: nginx
+  # -- ingressClassName value used by Ingress or HTTPProxy.
   className: ""
-  # -- Ingress annotations.
+  # -- Annotations added to Ingress resources. Contour HTTPProxy resources omit NGINX-specific annotations.
   annotations: {}
   # -- Ingress host/path rules.
   hosts:
@@ -140,6 +142,18 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+  # -- Optional explicit cert-manager Certificate management for Contour TLS.
+  certManager:
+    # -- Create cert-manager Certificate resources in Contour mode.
+    enabled: false
+    # -- cert-manager issuer reference used by generated Certificates.
+    issuerRef:
+      # -- API group of the cert-manager issuer.
+      group: cert-manager.io
+      # -- Issuer resource kind.
+      kind: ClusterIssuer
+      # -- Issuer resource name. Required when Certificate creation is enabled with TLS.
+      name: ""
   # -- Extra ingress exposing per-pod endpoints for neighbour calls.
   singlePodPaths:
     # -- Enable dedicated per-pod ingress rules.
