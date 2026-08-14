@@ -3879,6 +3879,29 @@ entries:
   rspamd:
   - apiVersion: v2
     appVersion: 4.1.4
+    created: "2026-08-14T10:14:44.689200171Z"
+    description: A Helm chart for deploying Rspamd on Kubernetes
+    digest: 6b756e5babe2f0f71869d729ce73626a2bcfa3a1bd4fd5a870e0408c584f0996
+    home: https://github.com/klicktipp/helm-charts
+    icon: https://avatars.githubusercontent.com/u/21975367?s=200&v=4
+    keywords:
+    - rspamd
+    - spam-filter
+    - mta
+    - email
+    maintainers:
+    - name: vquie
+      url: https://github.com/vquie
+    name: rspamd
+    sources:
+    - https://github.com/rspamd/rspamd
+    - https://rspamd.com
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rspamd-1.5.0/rspamd-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v2
+    appVersion: 4.1.4
     created: "2026-08-05T11:59:44.692993817Z"
     description: A Helm chart for deploying Rspamd on Kubernetes
     digest: 57e6ddbdb3d569c1799a1c6a2d1e72864bbe467807f4c4f909534df671c5c810
@@ -4322,4 +4345,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-08-10T14:53:10.718283622Z"
+generated: "2026-08-14T10:14:44.689475197Z"
