@@ -1,4 +1,5 @@
-{{- if .Values.ingress.enabled }}
+{{- include "rspamd.validateValues" . }}
+{{- if and .Values.ingress.enabled (eq .Values.ingress.controller "nginx") }}
 {{- $fullName := include "rspamd.fullname" . }}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}

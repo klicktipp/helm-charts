@@ -1,0 +1,96 @@
+{{- include "rspamd.validateValues" . }}
+{{- if and .Values.ingress.enabled (eq .Values.ingress.controller "contour") }}
+{{- $root := . }}
+{{- $fullName := include "rspamd.fullname" . }}
+{{- $hostCount := len .Values.ingress.hosts }}
+{{- $annotations := omit .Values.ingress.annotations
+      "nginx.ingress.kubernetes.io/use-regex"
+      "nginx.ingress.kubernetes.io/rewrite-target"
+      "nginx.ingress.kubernetes.io/backend-protocol"
+      "nginx.ingress.kubernetes.io/client-body-buffer-size"
+      "nginx.ingress.kubernetes.io/force-ssl-redirect" }}
+{{- range $_, $hostConfig := .Values.ingress.hosts }}
+{{- $host := $hostConfig.host | default $root.Values.global.baseURL }}
+{{- $tlsSecret := "" }}
+{{- range $tls := $root.Values.ingress.tls }}
+{{- if and (empty $tlsSecret) (has $host $tls.hosts) }}
+{{- $tlsSecret = $tls.secretName }}
+{{- end }}
+{{- end }}
+{{- $proxyName := $fullName }}
+{{- if gt $hostCount 1 }}
+{{- $hostHash := sha256sum $host | trunc 8 }}
+{{- $proxyName = printf "%s-%s" ($fullName | trunc 54 | trimSuffix "-") $hostHash }}
+{{- end }}
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: {{ $proxyName }}
+  labels:
+    {{- include "rspamd.labels" $root | nindent 4 }}
+  {{- with $annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with $root.Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  virtualhost:
+    fqdn: {{ $host | quote }}
+    {{- with $tlsSecret }}
+    tls:
+      secretName: {{ . | quote }}
+    {{- end }}
+  routes:
+    {{- range $pathConfig := $hostConfig.paths }}
+    {{- $backend := ($pathConfig.backend | default dict) }}
+    {{- $serviceName := (get $backend "serviceName" | default (get $backend "service") | default $fullName) }}
+    {{- $servicePort := (get $backend "servicePort" | default (get $backend "port") | default $root.Values.services.worker) }}
+    - conditions:
+        - prefix: {{ $pathConfig.path | quote }}
+      services:
+        - name: {{ $serviceName | quote }}
+          port: {{ $servicePort }}
+    {{- end }}
+    {{- if $root.Values.multiTenancy }}
+    {{- range $tenant, $_ := $root.Values.config }}
+    - conditions:
+        - prefix: {{ printf "/%s/" $tenant | quote }}
+      pathRewritePolicy:
+        replacePrefix:
+          - prefix: {{ printf "/%s/" $tenant | quote }}
+            replacement: /
+      services:
+        - name: {{ $fullName }}-{{ $tenant }}
+          port: {{ $root.Values.services.worker }}
+    {{- if $root.Values.ingress.singlePodPaths.enabled }}
+    {{- range $index := until (int $root.Values.replicaCount) }}
+    - conditions:
+        - prefix: {{ printf "/rspamd-%s-%d/" $tenant $index | quote }}
+      pathRewritePolicy:
+        replacePrefix:
+          - prefix: {{ printf "/rspamd-%s-%d/" $tenant $index | quote }}
+            replacement: /
+      services:
+        - name: {{ $fullName }}-{{ $tenant }}-{{ $index }}
+          port: {{ $root.Values.services.controller }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- else if $root.Values.ingress.singlePodPaths.enabled }}
+    {{- range $index := until (int $root.Values.replicaCount) }}
+    - conditions:
+        - prefix: {{ printf "/rspamd-%d/" $index | quote }}
+      pathRewritePolicy:
+        replacePrefix:
+          - prefix: {{ printf "/rspamd-%d/" $index | quote }}
+            replacement: /
+      services:
+        - name: {{ $fullName }}-{{ $index }}
+          port: {{ $root.Values.services.controller }}
+    {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}

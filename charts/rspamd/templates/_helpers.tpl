@@ -129,6 +129,12 @@ podAntiAffinity:
 Validate value combinations that would otherwise render broken manifests.
 */}}
 {{- define "rspamd.validateValues" }}
+{{- if and .Values.ingress.enabled (not (has .Values.ingress.controller (list "nginx" "contour"))) }}
+{{- fail (printf "rspamd: ingress.controller must be one of nginx or contour when ingress.enabled=true (got %q)" .Values.ingress.controller) }}
+{{- end }}
+{{- if and .Values.ingress.enabled (eq .Values.ingress.controller "contour") .Values.ingress.certManager.enabled .Values.ingress.tls (empty .Values.ingress.certManager.issuerRef.name) }}
+{{- fail "rspamd: ingress.certManager.issuerRef.name is required when Contour cert-manager certificate management and TLS are enabled" }}
+{{- end }}
 {{- if and .Values.multiTenancy (empty .Values.config) }}
 {{- fail "rspamd: multiTenancy=true requires at least one tenant entry in values.config" }}
 {{- end }}

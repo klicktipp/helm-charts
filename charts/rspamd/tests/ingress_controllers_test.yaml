@@ -1,0 +1,274 @@
+suite: rspamd-ingress-controller-tests
+templates:
+  - templates/ingress.yaml
+  - templates/httpproxy.yaml
+  - templates/certificate.yaml
+
+tests:
+  - it: renders no exposure resources when ingress is disabled
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/ingress.yaml
+      - hasDocuments:
+          count: 0
+        template: templates/httpproxy.yaml
+      - hasDocuments:
+          count: 0
+        template: templates/certificate.yaml
+
+  - it: preserves NGINX ingress regex and rewrite behavior
+    set:
+      ingress.enabled: true
+      ingress.controller: nginx
+      ingress.className: nginx
+      ingress.hosts:
+        - host: rspamd.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                servicePort: 11334
+      ingress.singlePodPaths.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 2
+        template: templates/ingress.yaml
+      - equal:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/use-regex"]
+          value: "true"
+        template: templates/ingress.yaml
+        documentIndex: 1
+      - equal:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/rewrite-target"]
+          value: /$2
+        template: templates/ingress.yaml
+        documentIndex: 1
+      - hasDocuments:
+          count: 0
+        template: templates/httpproxy.yaml
+
+  - it: renders Contour main routes without per-pod routes
+    set:
+      ingress.enabled: true
+      ingress.controller: contour
+      ingress.className: contour-internal
+      ingress.hosts:
+        - host: rspamd.example.com
+          paths:
+            - path: /checkv2
+              backend:
+                servicePort: 11333
+            - path: /
+              backend:
+                servicePort: 11334
+      ingress.singlePodPaths.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: templates/ingress.yaml
+      - hasDocuments:
+          count: 1
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.ingressClassName
+          value: contour-internal
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[0].conditions[0].prefix
+          value: /checkv2
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[0].services[0].port
+          value: 11333
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[1].conditions[0].prefix
+          value: /
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[1].services[0].port
+          value: 11334
+        template: templates/httpproxy.yaml
+      - lengthEqual:
+          path: spec.routes
+          count: 2
+        template: templates/httpproxy.yaml
+      - hasDocuments:
+          count: 0
+        template: templates/certificate.yaml
+
+  - it: renders one Contour HTTPProxy per configured host
+    set:
+      ingress.enabled: true
+      ingress.controller: contour
+      ingress.hosts:
+        - host: rspamd-a.example.com
+          paths:
+            - path: /
+        - host: rspamd-b.example.com
+          paths:
+            - path: /
+      ingress.singlePodPaths.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 2
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.virtualhost.fqdn
+          value: rspamd-a.example.com
+        template: templates/httpproxy.yaml
+        documentIndex: 0
+      - equal:
+          path: spec.virtualhost.fqdn
+          value: rspamd-b.example.com
+        template: templates/httpproxy.yaml
+        documentIndex: 1
+
+  - it: renders tenant and per-pod Contour routes for every replica
+    set:
+      replicaCount: 2
+      multiTenancy: true
+      config:
+        in: {}
+        out: {}
+      ingress.enabled: true
+      ingress.controller: contour
+      ingress.hosts:
+        - host: rspamd.example.com
+          paths:
+            - path: /checkv2
+              backend:
+                servicePort: 11333
+            - path: /
+              backend:
+                servicePort: 11334
+      ingress.singlePodPaths.enabled: true
+    asserts:
+      - lengthEqual:
+          path: spec.routes
+          count: 8
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[2].pathRewritePolicy.replacePrefix[0].replacement
+          value: /
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[3].conditions[0].prefix
+          value: /rspamd-in-0/
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[3].services[0].name
+          value: RELEASE-NAME-rspamd-in-0
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[3].services[0].port
+          value: 11334
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[7].conditions[0].prefix
+          value: /rspamd-out-1/
+        template: templates/httpproxy.yaml
+
+  - it: follows a different replica count for Contour per-pod routes
+    set:
+      replicaCount: 3
+      ingress.enabled: true
+      ingress.controller: contour
+      ingress.hosts:
+        - host: rspamd.example.com
+          paths:
+            - path: /
+      ingress.singlePodPaths.enabled: true
+    asserts:
+      - lengthEqual:
+          path: spec.routes
+          count: 4
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.routes[3].conditions[0].prefix
+          value: /rspamd-2/
+        template: templates/httpproxy.yaml
+
+  - it: filters NGINX annotations from HTTPProxy and keeps other annotations
+    set:
+      ingress.enabled: true
+      ingress.controller: contour
+      ingress.annotations:
+        example.com/owner: mail
+        nginx.ingress.kubernetes.io/use-regex: "true"
+        nginx.ingress.kubernetes.io/rewrite-target: /$2
+        nginx.ingress.kubernetes.io/backend-protocol: HTTP
+        nginx.ingress.kubernetes.io/client-body-buffer-size: 100K
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    asserts:
+      - equal:
+          path: metadata.annotations["example.com/owner"]
+          value: mail
+        template: templates/httpproxy.yaml
+      - notExists:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/use-regex"]
+        template: templates/httpproxy.yaml
+      - notExists:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/rewrite-target"]
+        template: templates/httpproxy.yaml
+      - notExists:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/backend-protocol"]
+        template: templates/httpproxy.yaml
+      - notExists:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/client-body-buffer-size"]
+        template: templates/httpproxy.yaml
+      - notExists:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/force-ssl-redirect"]
+        template: templates/httpproxy.yaml
+
+  - it: renders Contour TLS and an explicit cert-manager Certificate
+    set:
+      ingress.enabled: true
+      ingress.controller: contour
+      ingress.className: contour-internal
+      ingress.hosts:
+        - host: rspamd.example.com
+          paths:
+            - path: /
+      ingress.tls:
+        - secretName: rspamd-example-tls
+          hosts:
+            - rspamd.example.com
+            - rspamd-alt.example.com
+      ingress.certManager.enabled: true
+      ingress.certManager.issuerRef:
+        group: cert-manager.io
+        kind: ClusterIssuer
+        name: zerossl-prod
+    asserts:
+      - equal:
+          path: spec.virtualhost.tls.secretName
+          value: rspamd-example-tls
+        template: templates/httpproxy.yaml
+      - equal:
+          path: spec.secretName
+          value: rspamd-example-tls
+        template: templates/certificate.yaml
+      - equal:
+          path: spec.dnsNames
+          value:
+            - rspamd.example.com
+            - rspamd-alt.example.com
+        template: templates/certificate.yaml
+      - equal:
+          path: spec.issuerRef
+          value:
+            group: cert-manager.io
+            kind: ClusterIssuer
+            name: zerossl-prod
+        template: templates/certificate.yaml
+
+  - it: rejects an unsupported ingress controller
+    set:
+      ingress.enabled: true
+      ingress.controller: traefik
+    asserts:
+      - failedTemplate:
+          errorMessage: 'rspamd: ingress.controller must be one of nginx or contour when ingress.enabled=true (got "traefik")'
+        template: templates/ingress.yaml

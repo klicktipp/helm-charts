@@ -1,6 +1,6 @@
 # rspamd
 
-![Version: 1.4.1](https://img.shields.io/badge/Version-1.4.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.1.4](https://img.shields.io/badge/AppVersion-4.1.4-informational?style=flat-square)
+![Version: 1.5.0](https://img.shields.io/badge/Version-1.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.1.4](https://img.shields.io/badge/AppVersion-4.1.4-informational?style=flat-square)
 
 A Helm chart for deploying Rspamd on Kubernetes
 
@@ -14,6 +14,42 @@ A Helm chart for deploying Rspamd on Kubernetes
 
 * <https://github.com/rspamd/rspamd>
 * <https://rspamd.com>
+
+## Ingress controllers
+
+NGINX remains the default controller and continues to render the existing Kubernetes Ingress resources, including regex paths and rewrite annotations:
+
+```yaml
+ingress:
+  enabled: true
+  controller: nginx
+  className: nginx
+  singlePodPaths:
+    enabled: true
+```
+
+Set `controller: contour` to render one Contour `HTTPProxy` per configured host. Main paths come from `ingress.hosts[].paths`; tenant and per-pod prefixes use native Contour prefix rewriting. NGINX-specific annotations are omitted from each HTTPProxy.
+
+```yaml
+ingress:
+  enabled: true
+  controller: contour
+  className: contour-internal
+  singlePodPaths:
+    enabled: true
+  certManager:
+    enabled: true
+    issuerRef:
+      group: cert-manager.io
+      kind: ClusterIssuer
+      name: zerossl-prod
+  tls:
+    - secretName: rspamd.example.com-tls
+      hosts:
+        - rspamd.example.com
+```
+
+Contour does not provide the Ingress shim lifecycle used by cert-manager annotations on an Ingress. Before migrating an existing NGINX installation, ensure every TLS Secret is managed by an explicit `Certificate` (either enable `ingress.certManager` or provide one separately) before removing the old Ingress-owned Certificate.
 
 ## Values
 
@@ -65,14 +101,21 @@ A Helm chart for deploying Rspamd on Kubernetes
 | metrics.interval | string | `"60s"` | Scrape interval. |
 | metrics.scrapeTimeout | string | `""` | Optional scrape timeout. |
 | metrics.path | string | `"/metrics"` | Metrics path on the worker port. |
-| ingress | object | `{"annotations":{},"className":"","enabled":false,"hosts":[{"host":"chart-example.local","paths":[{"backend":{"serviceName":"","servicePort":11333},"path":"/","pathType":"Prefix"}]}],"singlePodPaths":{"enabled":true},"tls":[]}` | Ingress configuration. |
+| ingress | object | `{"annotations":{},"certManager":{"enabled":false,"issuerRef":{"group":"cert-manager.io","kind":"ClusterIssuer","name":""}},"className":"","controller":"nginx","enabled":false,"hosts":[{"host":"chart-example.local","paths":[{"backend":{"serviceName":"","servicePort":11333},"path":"/","pathType":"Prefix"}]}],"singlePodPaths":{"enabled":true},"tls":[]}` | Ingress configuration. |
 | ingress.enabled | bool | `false` | Enable ingress resources. |
-| ingress.className | string | `""` | ingressClassName value. |
-| ingress.annotations | object | `{}` | Ingress annotations. |
+| ingress.controller | string | `"nginx"` | Ingress controller implementation. Supported values are `nginx` and `contour`. |
+| ingress.className | string | `""` | ingressClassName value used by Ingress or HTTPProxy. |
+| ingress.annotations | object | `{}` | Annotations added to Ingress resources. Contour HTTPProxy resources omit NGINX-specific annotations. |
 | ingress.hosts | list | `[{"host":"chart-example.local","paths":[{"backend":{"serviceName":"","servicePort":11333},"path":"/","pathType":"Prefix"}]}]` | Ingress host/path rules. |
 | ingress.hosts[0].paths[0].backend.serviceName | string | `""` | Service name for this ingress path. If empty, defaults to chart Service. |
 | ingress.hosts[0].paths[0].backend.servicePort | int | `11333` | Service port for this ingress path. If empty, defaults to services.worker. |
 | ingress.tls | list | `[]` | TLS sections. |
+| ingress.certManager | object | `{"enabled":false,"issuerRef":{"group":"cert-manager.io","kind":"ClusterIssuer","name":""}}` | Optional explicit cert-manager Certificate management for Contour TLS. |
+| ingress.certManager.enabled | bool | `false` | Create cert-manager Certificate resources in Contour mode. |
+| ingress.certManager.issuerRef | object | `{"group":"cert-manager.io","kind":"ClusterIssuer","name":""}` | cert-manager issuer reference used by generated Certificates. |
+| ingress.certManager.issuerRef.group | string | `"cert-manager.io"` | API group of the cert-manager issuer. |
+| ingress.certManager.issuerRef.kind | string | `"ClusterIssuer"` | Issuer resource kind. |
+| ingress.certManager.issuerRef.name | string | `""` | Issuer resource name. Required when Certificate creation is enabled with TLS. |
 | ingress.singlePodPaths | object | `{"enabled":true}` | Extra ingress exposing per-pod endpoints for neighbour calls. |
 | ingress.singlePodPaths.enabled | bool | `true` | Enable dedicated per-pod ingress rules. |
 | resources | object | `{}` | Container resource requests and limits. |
