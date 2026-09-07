@@ -1,6 +1,6 @@
 # rspamd
 
-![Version: 1.5.0](https://img.shields.io/badge/Version-1.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.1.4](https://img.shields.io/badge/AppVersion-4.1.4-informational?style=flat-square)
+![Version: 1.6.0](https://img.shields.io/badge/Version-1.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.1.4](https://img.shields.io/badge/AppVersion-4.1.4-informational?style=flat-square)
 
 A Helm chart for deploying Rspamd on Kubernetes
 
@@ -141,6 +141,9 @@ Contour does not provide the Ingress shim lifecycle used by cert-manager annotat
 | extraEnvs | object | `{}` | Additional environment variables as plain text (ConfigMap-backed). |
 | extraEnv | object | `{}` | Deprecated compatibility key for extraEnvs. |
 | extraSecrets | object | `{}` | Additional environment variables as secrets (Secret-backed, values are plain text). |
+| envFrom | list | `[]` | Existing ConfigMaps or Secrets added as environment variable sources. |
+| extraEnvFrom | list | `[]` | Deprecated compatibility alias for envFrom. |
+| extraObjects | list | `[]` | Additional arbitrary Kubernetes objects rendered via `tpl`. |
 | multiTenancy | bool | `false` | Enable multi-tenant mode (one StatefulSet and Services per config key). |
 | config | object | `{}` | Rspamd config files written to /etc/rspamd/local.d/. In multiTenancy mode this must be a map: tenant -> (filename -> content). In single-tenant mode this must be a map: filename -> content. |
 | podDisruptionBudget | object | `{}` | PodDisruptionBudget spec snippet. Example: { maxUnavailable: 1 } |

@@ -234,6 +234,27 @@ extraEnv: {}
 # -- Additional environment variables as secrets (Secret-backed, values are plain text).
 extraSecrets: {}
 
+# -- Existing ConfigMaps or Secrets added as environment variable sources.
+envFrom: []
+# Example:
+# envFrom:
+#   - secretRef:
+#       name: existing-secret
+
+# -- Deprecated compatibility alias for envFrom.
+extraEnvFrom: []
+
+# -- Additional arbitrary Kubernetes objects rendered via `tpl`.
+extraObjects: []
+# Example:
+# extraObjects:
+#   - apiVersion: onepassword.com/v1
+#     kind: OnePasswordItem
+#     metadata:
+#       name: existing-secret
+#     spec:
+#       itemPath: "vaults/example/items/example"
+
 # -- Enable multi-tenant mode (one StatefulSet and Services per config key).
 multiTenancy: false
 
