@@ -1,0 +1,114 @@
+suite: rspamd-extra-configuration-tests
+templates:
+  - templates/configmap.yaml
+  - templates/secrets.yaml
+  - templates/statefulset.yaml
+  - templates/extra-objects.yaml
+
+tests:
+  - it: renders extraEnvs in a ConfigMap and references it from the StatefulSet
+    set:
+      extraEnvs:
+        LOG_LEVEL: debug
+        WORKER_COUNT: "4"
+    asserts:
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-rspamd-envvars
+        template: templates/configmap.yaml
+        documentIndex: 0
+      - equal:
+          path: data
+          value:
+            RSPAMD_LOG_LEVEL: debug
+            RSPAMD_WORKER_COUNT: "4"
+        template: templates/configmap.yaml
+        documentIndex: 0
+      - equal:
+          path: spec.template.spec.containers[0].envFrom[0].configMapRef.name
+          value: RELEASE-NAME-rspamd-envvars
+        template: templates/statefulset.yaml
+
+  - it: references the extraEnvs ConfigMap from every tenant StatefulSet
+    set:
+      multiTenancy: true
+      config:
+        inbound: {}
+        outbound: {}
+      extraEnvs:
+        LOG_LEVEL: info
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].envFrom[0].configMapRef.name
+          value: RELEASE-NAME-rspamd-envvars
+        template: templates/statefulset.yaml
+        documentIndex: 0
+      - equal:
+          path: spec.template.spec.containers[0].envFrom[0].configMapRef.name
+          value: RELEASE-NAME-rspamd-envvars
+        template: templates/statefulset.yaml
+        documentIndex: 1
+
+  - it: keeps supporting the deprecated extraEnv key
+    set:
+      extraEnv:
+        LEGACY_SETTING: enabled
+    asserts:
+      - equal:
+          path: data.RSPAMD_LEGACY_SETTING
+          value: enabled
+        template: templates/configmap.yaml
+        documentIndex: 0
+      - equal:
+          path: spec.template.spec.containers[0].envFrom[0].configMapRef.name
+          value: RELEASE-NAME-rspamd-envvars
+        template: templates/statefulset.yaml
+
+  - it: renders structured extraObjects and evaluates template expressions
+    set:
+      extraObjects:
+        - apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: '{{ .Release.Name }}-structured'
+          data:
+            chart: '{{ .Chart.Name }}'
+        - |
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: {{ .Release.Name }}-templated
+          stringData:
+            releaseNamespace: {{ .Release.Namespace }}
+    asserts:
+      - hasDocuments:
+          count: 2
+        template: templates/extra-objects.yaml
+      - isKind:
+          of: ConfigMap
+        template: templates/extra-objects.yaml
+        documentIndex: 0
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-structured
+        template: templates/extra-objects.yaml
+        documentIndex: 0
+      - equal:
+          path: data.chart
+          value: rspamd
+        template: templates/extra-objects.yaml
+        documentIndex: 0
+      - isKind:
+          of: Secret
+        template: templates/extra-objects.yaml
+        documentIndex: 1
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-templated
+        template: templates/extra-objects.yaml
+        documentIndex: 1
+      - equal:
+          path: stringData.releaseNamespace
+          value: NAMESPACE
+        template: templates/extra-objects.yaml
+        documentIndex: 1
