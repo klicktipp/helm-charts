@@ -1,0 +1,48 @@
+suite: rspamd-neighbours-tests
+templates:
+  - templates/configmap.yaml
+
+tests:
+  - it: renders no public neighbours when ingress is disabled
+    set:
+      replicaCount: 2
+      ingress.enabled: false
+    asserts:
+      - matchRegex:
+          path: data["options.inc"]
+          pattern: "^neighbours \\{\\n\\}\\n$"
+      - notMatchRegex:
+          path: data["options.inc"]
+          pattern: "host ="
+
+  - it: renders public neighbours when ingress is enabled
+    set:
+      replicaCount: 2
+      global.baseURL: rspamd.example.com
+      ingress.enabled: true
+    asserts:
+      - matchRegex:
+          path: data["options.inc"]
+          pattern: "rspamd-0 \\{[\\s\\S]*host = \"https://rspamd\\.example\\.com:443\";[\\s\\S]*path = \"/rspamd-0/\";"
+      - matchRegex:
+          path: data["options.inc"]
+          pattern: "rspamd-1 \\{[\\s\\S]*host = \"https://rspamd\\.example\\.com:443\";[\\s\\S]*path = \"/rspamd-1/\";"
+
+  - it: renders tenant neighbours when ingress is enabled
+    set:
+      replicaCount: 1
+      multiTenancy: true
+      config:
+        inbound: {}
+        outbound: {}
+      global.baseURL: rspamd.example.com
+      ingress.enabled: true
+    asserts:
+      - matchRegex:
+          path: data["options.inc"]
+          pattern: "rspamd-inbound-0 \\{[\\s\\S]*path = \"/rspamd-inbound-0/\";"
+        documentIndex: 2
+      - matchRegex:
+          path: data["options.inc"]
+          pattern: "rspamd-outbound-0 \\{[\\s\\S]*path = \"/rspamd-outbound-0/\";"
+        documentIndex: 2
