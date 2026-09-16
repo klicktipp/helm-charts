@@ -51,6 +51,15 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Labels applied by the RabbitMQ Cluster Operator to RabbitMQ pods.
+*/}}
+{{- define "rabbitmq-cluster.rabbitmqPodSelectorLabels" -}}
+app.kubernetes.io/name: {{ .Values.rabbitmq.cluster.name | default (include "rabbitmq-cluster.fullname" .) }}
+app.kubernetes.io/component: rabbitmq
+app.kubernetes.io/part-of: rabbitmq
+{{- end }}
+
+{{/*
 Returns the default vhost name.
 If one of the vhosts has "default: true", use that vhost as default one.
 Otherwise, always use "/".

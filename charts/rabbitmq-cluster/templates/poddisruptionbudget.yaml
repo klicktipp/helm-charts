@@ -15,5 +15,5 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "rabbitmq-cluster.selectorLabels" . | nindent 6 }}
+      {{- include "rabbitmq-cluster.rabbitmqPodSelectorLabels" . | nindent 6 }}
 {{- end }}
