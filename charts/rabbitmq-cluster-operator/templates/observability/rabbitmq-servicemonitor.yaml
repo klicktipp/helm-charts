@@ -10,5 +10,11 @@
 {{- if not (empty $annotations) }}
 {{- $_ := set $resource.metadata "annotations" $annotations }}
 {{- end }}
+{{- $metricRelabelings := .Values.monitoring.rabbitmqServiceMonitor.metricRelabelings }}
+{{- if not (empty $metricRelabelings) }}
+{{- range $endpoint := $resource.spec.endpoints }}
+{{- $_ := set $endpoint "metricRelabelings" $metricRelabelings }}
+{{- end }}
+{{- end }}
 {{ toYaml $resource }}
 {{- end }}
