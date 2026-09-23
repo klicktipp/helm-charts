@@ -238,9 +238,22 @@ clusterOperator:
   priorityClassName: ""
   # -- Lifecycle hooks for the Cluster Operator container
   lifecycleHooks: {}
-  # -- Metrics port exposed by the Cluster Operator container
+  # -- Ports exposed by the Cluster Operator container
   containerPorts:
+    # -- Metrics port exposed by the Cluster Operator container
     metrics: 9782
+    # -- Admission webhook port exposed by the Cluster Operator container
+    webhook: 9443
+  # -- Admission webhooks (MutatingWebhookConfiguration/ValidatingWebhookConfiguration) for RabbitmqCluster, required since cluster-operator 2.22.0
+  webhook:
+    # -- Skip creation of the MutatingWebhookConfiguration/ValidatingWebhookConfiguration for RabbitmqCluster
+    skipCreateAdmissionWebhookConfig: false
+    # -- Name of an existing secret containing the webhook certificates
+    existingWebhookCertSecret: ""
+    # -- PEM-encoded CA Bundle of the existing secret provided in existingWebhookCertSecret (only if useCertManager=false)
+    existingWebhookCertCABundle: ""
+    # -- Deploy cert-manager objects (Issuer and Certificate) for the webhook
+    useCertManager: false
   # -- Additional environment variables for the container.
   extraEnvVars: []
   # -- Name of an existing ConfigMap with extra environment variables for the Cluster Operator
