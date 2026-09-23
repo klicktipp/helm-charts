@@ -284,3 +284,21 @@ Render containerSecurityContext using the local helper with proper parameter map
 {{- define "rmqco.renderContainerSecurityContext" -}}
 {{- toYaml (omit .securityContext "enabled") -}}
 {{- end -}}
+
+{{/*
+Return the Cluster Operator's own admission webhook fullname.
+*/}}
+{{- define "rmqco.clusterOperator.webhook.fullname" -}}
+{{- printf "%s-%s" (include "rmqco.clusterOperator.fullname" .) "webhook" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Return the secret name backing the Cluster Operator's own admission webhook certificate.
+*/}}
+{{- define "rmqco.clusterOperator.webhook.secretName" -}}
+{{- if .Values.clusterOperator.webhook.existingWebhookCertSecret -}}
+    {{- .Values.clusterOperator.webhook.existingWebhookCertSecret -}}
+{{- else -}}
+    {{- include "rmqco.clusterOperator.webhook.fullname" . -}}
+{{- end -}}
+{{- end -}}

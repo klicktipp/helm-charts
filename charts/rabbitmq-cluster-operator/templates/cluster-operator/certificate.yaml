@@ -1,0 +1,21 @@
+{{- if and (.Values.clusterOperator.webhook.useCertManager) (not .Values.clusterOperator.webhook.existingWebhookCertSecret) }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    {{- include "rmqco.labels" . | nindent 4 }}
+  name: {{ template "rmqco.clusterOperator.webhook.fullname" . }}
+  namespace: {{ include "rabbitmq-cluster-operator.namespace" . }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "rabbitmq-cluster-operator.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  commonName: {{ template "rmqco.clusterOperator.webhook.fullname" . }}
+  dnsNames:
+    - {{ printf "%s.%s.svc" (include "rmqco.clusterOperator.webhook.fullname" .) (include "rabbitmq-cluster-operator.namespace" .) }}
+    - {{ printf "%s.%s.svc.%s" (include "rmqco.clusterOperator.webhook.fullname" .) (include "rabbitmq-cluster-operator.namespace" .) .Values.clusterDomain }}
+  issuerRef:
+    kind: Issuer
+    name: {{ template "rmqco.clusterOperator.fullname" . }}
+  secretName: {{ template "rmqco.clusterOperator.webhook.fullname" . }}
+{{- end }}

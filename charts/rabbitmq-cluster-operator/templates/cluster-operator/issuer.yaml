@@ -1,0 +1,11 @@
+{{- if .Values.clusterOperator.webhook.useCertManager }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    {{- include "rmqco.labels" . | nindent 4 }}
+  name: {{ template "rmqco.clusterOperator.fullname" . }}
+  namespace: {{ include "rabbitmq-cluster-operator.namespace" . | quote }}
+spec:
+  selfSigned: {}
+{{- end }}
