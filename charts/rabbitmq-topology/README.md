@@ -1,6 +1,6 @@
 # rabbitmq-topology
 
-![Version: 1.1.3](https://img.shields.io/badge/Version-1.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.19.1](https://img.shields.io/badge/AppVersion-1.19.1-informational?style=flat-square)
+![Version: 1.2.0](https://img.shields.io/badge/Version-1.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.20.1](https://img.shields.io/badge/AppVersion-1.20.1-informational?style=flat-square)
 
 Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology Operator CRDs.
 
@@ -159,6 +159,8 @@ rabbitmq:
 ### 4. Users from existing secrets (e.g. 1Password)
 
 ```yaml
+# Note: since messaging-topology-operator 1.20.0, an existingSecret must carry the label
+# rabbitmq.com/topology-operator: "true" - the chart cannot add it for you, so label it yourself.
 rabbitmq:
   cluster:
     name: app-rabbitmq
