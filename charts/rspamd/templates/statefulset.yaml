@@ -64,7 +64,7 @@ spec:
               protocol: TCP
           {{- end }}
           {{- $extraEnvs := ($root.Values.extraEnvs | default $root.Values.extraEnv) }}
-          {{- if or (not (empty $extraEnvs)) (not (empty $root.Values.extraSecrets)) }}
+          {{- if or (not (empty $extraEnvs)) (not (empty $root.Values.extraSecrets)) (not (empty $root.Values.envFrom)) (not (empty $root.Values.extraEnvFrom)) }}
           envFrom:
             {{- if $extraEnvs }}
             - configMapRef:
@@ -73,6 +73,12 @@ spec:
             {{- if $root.Values.extraSecrets }}
             - secretRef:
                 name: '{{ include "rspamd.fullname" $root }}-secretvars'
+            {{- end }}
+            {{- with $root.Values.envFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with $root.Values.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
           {{- if $root.Values.livenessProbe}}
@@ -217,7 +223,7 @@ spec:
               protocol: TCP
           {{- end }}
           {{- $extraEnvs := (.Values.extraEnvs | default .Values.extraEnv) }}
-          {{- if or (not (empty $extraEnvs)) (not (empty .Values.extraSecrets)) }}
+          {{- if or (not (empty $extraEnvs)) (not (empty .Values.extraSecrets)) (not (empty .Values.envFrom)) (not (empty .Values.extraEnvFrom)) }}
           envFrom:
             {{- if $extraEnvs }}
             - configMapRef:
@@ -226,6 +232,12 @@ spec:
             {{- if .Values.extraSecrets }}
             - secretRef:
                 name: '{{ include "rspamd.fullname" . }}-secretvars'
+            {{- end }}
+            {{- with .Values.envFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
             {{- end }}
           {{- end }}
           {{- if .Values.livenessProbe}}
