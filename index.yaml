@@ -2057,6 +2057,37 @@ entries:
   rabbitmq-cluster:
   - apiVersion: v2
     appVersion: 2.20.1
+    created: "2026-09-23T08:20:10.777178715Z"
+    dependencies:
+    - name: klicktipp-common
+      repository: file://../klicktipp-common
+      version: 1.0.2
+    - condition: rabbitmq-topology.enabled
+      name: rabbitmq-topology
+      repository: file://../rabbitmq-topology
+      version: 1.2.0
+    description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com
+      CRDs (RabbitmqCluster).
+    digest: 3e45a54a4576b8eef854175047bb780dd666e1e32a913b102bda33a4b96886a6
+    home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
+    icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
+    keywords:
+    - rabbitmq
+    - operator
+    - crd
+    - messaging
+    - amqp
+    name: rabbitmq-cluster
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    - https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
+    - https://github.com/rabbitmq/cluster-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-cluster-3.2.2/rabbitmq-cluster-3.2.2.tgz
+    version: 3.2.2
+  - apiVersion: v2
+    appVersion: 2.20.1
     created: "2026-09-16T13:14:47.650357578Z"
     dependencies:
     - name: klicktipp-common
@@ -2656,6 +2687,38 @@ entries:
     - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-cluster-1.2.0/rabbitmq-cluster-1.2.0.tgz
     version: 1.2.0
   rabbitmq-cluster-operator:
+  - annotations:
+      license: Apache-2.0
+    apiVersion: v2
+    appVersion: 2.20.1
+    created: "2026-09-23T08:20:10.977121467Z"
+    dependencies:
+    - alias: msgTopologyOperator
+      condition: msgTopologyOperator.enabled
+      name: rabbitmq-topology-operator
+      repository: file://../rabbitmq-topology-operator
+      version: 0.4.2
+    description: Helm chart to deploy the official RabbitMQ Cluster Operator and optionally
+      include the Messaging Topology Operator chart.
+    digest: 64726241e2b54bd695545202fa138124740035398a1d78f71e3c0361df0f2d49
+    home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
+    icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
+    keywords:
+    - rabbitmq
+    - operator
+    - crd
+    - messaging
+    - amqp
+    name: rabbitmq-cluster-operator
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    - https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
+    - https://github.com/rabbitmq/cluster-operator
+    - https://github.com/rabbitmq/messaging-topology-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-cluster-operator-0.4.4/rabbitmq-cluster-operator-0.4.4.tgz
+    version: 0.4.4
   - annotations:
       license: Apache-2.0
     apiVersion: v2
@@ -3330,6 +3393,33 @@ entries:
     version: 0.1.0
   rabbitmq-topology:
   - apiVersion: v2
+    appVersion: 1.20.1
+    created: "2026-09-23T08:20:11.194681832Z"
+    dependencies:
+    - name: klicktipp-common
+      repository: file://../klicktipp-common
+      version: 1.0.2
+    description: Helm chart to manage RabbitMQ topology resources via RabbitMQ Topology
+      Operator CRDs.
+    digest: 82fe5cc13e9a93eac09a434d51c4acffb221279bd29c1c7a1dd38433af616360
+    home: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+    icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
+    keywords:
+    - rabbitmq
+    - topology
+    - operator
+    - messaging
+    - amqp
+    name: rabbitmq-topology
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    - https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+    - https://github.com/rabbitmq/messaging-topology-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-topology-1.2.0/rabbitmq-topology-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v2
     appVersion: 1.19.1
     created: "2026-04-16T19:08:06.686597731Z"
     dependencies:
@@ -3546,6 +3636,30 @@ entries:
     - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-topology-1.0.0/rabbitmq-topology-1.0.0.tgz
     version: 1.0.0
   rabbitmq-topology-operator:
+  - annotations:
+      license: Apache-2.0
+    apiVersion: v2
+    appVersion: 1.20.1
+    created: "2026-09-23T08:20:11.398655057Z"
+    description: Helm chart to deploy the official RabbitMQ Messaging Topology Operator.
+    digest: 5fd9cff2583569bd1157b6cc5592b03c4c1da85439974ad3e8650009828ac931
+    home: https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+    icon: https://avatars.githubusercontent.com/u/96669?s=200&v=4
+    keywords:
+    - rabbitmq
+    - topology
+    - operator
+    - messaging
+    - amqp
+    name: rabbitmq-topology-operator
+    sources:
+    - https://github.com/klicktipp/helm-charts
+    - https://www.rabbitmq.com/kubernetes/operator/using-topology-operator
+    - https://github.com/rabbitmq/messaging-topology-operator
+    type: application
+    urls:
+    - https://github.com/klicktipp/helm-charts/releases/download/rabbitmq-topology-operator-0.4.2/rabbitmq-topology-operator-0.4.2.tgz
+    version: 0.4.2
   - annotations:
       license: Apache-2.0
     apiVersion: v2
@@ -4512,4 +4626,4 @@ entries:
     urls:
     - https://github.com/klicktipp/helm-charts/releases/download/zalando-postgres-cluster-1.0.1/zalando-postgres-cluster-1.0.1.tgz
     version: 1.0.1
-generated: "2026-09-23T07:24:43.535853521Z"
+generated: "2026-09-23T08:20:11.398859948Z"
