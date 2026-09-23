@@ -159,6 +159,8 @@ rabbitmq:
 ### 4. Users from existing secrets (e.g. 1Password)
 
 ```yaml
+# Note: since messaging-topology-operator 1.20.0, an existingSecret must carry the label
+# rabbitmq.com/topology-operator: "true" - the chart cannot add it for you, so label it yourself.
 rabbitmq:
   cluster:
     name: app-rabbitmq

@@ -28,6 +28,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ $secretName | quote }}
+  labels:
+    # required by messaging-topology-operator >= 1.20.0, see https://www.rabbitmq.com/kubernetes/operator/using-topology-operator#secret-label-requirement
+    rabbitmq.com/topology-operator: "true"
 type: "Opaque"
 stringData:
   username: {{ $userName | quote }}
