@@ -1,6 +1,6 @@
 dependencies:
 - name: rabbitmq-topology-operator
   repository: file://../rabbitmq-topology-operator
-  version: 0.4.0
-digest: sha256:e8230f6a59d78bbf4c6164af2e354181bce655070ac4ba761a8ed25b717eae72
-generated: "2026-04-27T14:50:22.400956+02:00"
+  version: 0.4.1
+digest: sha256:609d3320567940f254e944c2bffa77bf0f0a0d2ef5a07afb075b2f27bb14fa3a
+generated: "2026-08-10T14:48:53.540827561Z"

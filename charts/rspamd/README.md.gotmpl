@@ -10,6 +10,42 @@
 {{ template "chart.maintainersSection" . }}
 {{ template "chart.sourcesSection" . }}
 
+## Ingress controllers
+
+NGINX remains the default controller and continues to render the existing Kubernetes Ingress resources, including regex paths and rewrite annotations:
+
+```yaml
+ingress:
+  enabled: true
+  controller: nginx
+  className: nginx
+  singlePodPaths:
+    enabled: true
+```
+
+Set `controller: contour` to render one Contour `HTTPProxy` per configured host. Main paths come from `ingress.hosts[].paths`; tenant and per-pod prefixes use native Contour prefix rewriting. NGINX-specific annotations are omitted from each HTTPProxy.
+
+```yaml
+ingress:
+  enabled: true
+  controller: contour
+  className: contour-internal
+  singlePodPaths:
+    enabled: true
+  certManager:
+    enabled: true
+    issuerRef:
+      group: cert-manager.io
+      kind: ClusterIssuer
+      name: zerossl-prod
+  tls:
+    - secretName: rspamd.example.com-tls
+      hosts:
+        - rspamd.example.com
+```
+
+Contour does not provide the Ingress shim lifecycle used by cert-manager annotations on an Ingress. Before migrating an existing NGINX installation, ensure every TLS Secret is managed by an explicit `Certificate` (either enable `ingress.certManager` or provide one separately) before removing the old Ingress-owned Certificate.
+
 {{ template "chart.valuesSection" . }}
 
 <!-- BEGIN AUTO EXAMPLES -->

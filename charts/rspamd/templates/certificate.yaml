@@ -1,0 +1,24 @@
+{{- include "rspamd.validateValues" . }}
+{{- if and .Values.ingress.enabled (eq .Values.ingress.controller "contour") .Values.ingress.certManager.enabled .Values.ingress.tls }}
+{{- $root := . }}
+{{- $fullName := include "rspamd.fullname" . }}
+{{- range $index, $tls := .Values.ingress.tls }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ printf "%s-tls-%d" ($fullName | trunc 52 | trimSuffix "-") $index }}
+  labels:
+    {{- include "rspamd.labels" $root | nindent 4 }}
+spec:
+  secretName: {{ $tls.secretName | quote }}
+  dnsNames:
+    {{- range $tls.hosts }}
+    - {{ . | quote }}
+    {{- end }}
+  issuerRef:
+    group: {{ $root.Values.ingress.certManager.issuerRef.group | quote }}
+    kind: {{ $root.Values.ingress.certManager.issuerRef.kind | quote }}
+    name: {{ $root.Values.ingress.certManager.issuerRef.name | quote }}
+{{- end }}
+{{- end }}

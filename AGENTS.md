@@ -24,6 +24,8 @@ This script ensures that the README of every changed chart stays in sync with th
 
 Do not hand-edit generated README sections when the content is derived from chart metadata or values. Regenerate or validate them through the repository scripts instead.
 
+On pull requests the `Helm Docs Quality` workflow regenerates the READMEs of the changed charts and, if they had drifted, commits the result back to the branch. Pull the branch before continuing to work on it. This is a safety net for automated dependency bumps, not a replacement for running the script yourself.
+
 ## Values documentation
 
 Whenever you change `values.yaml`, keep the Helm Docs comments (`# -- ...`) in sync and run `scripts/check-values-docs.sh` for the affected values file.

@@ -1,0 +1,27 @@
+suite: rabbitmq-cluster-poddisruptionbudget-tests
+templates:
+  - templates/poddisruptionbudget.yaml
+
+tests:
+  - it: should select RabbitMQ pods using the generated cluster name
+    set:
+      pdb.enabled: true
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/name: RELEASE-NAME-rabbitmq-cluster
+            app.kubernetes.io/component: rabbitmq
+            app.kubernetes.io/part-of: rabbitmq
+
+  - it: should select RabbitMQ pods using the configured cluster name
+    set:
+      pdb.enabled: true
+      rabbitmq.cluster.name: production-rabbitmq
+    asserts:
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/name: production-rabbitmq
+            app.kubernetes.io/component: rabbitmq
+            app.kubernetes.io/part-of: rabbitmq
