@@ -1,6 +1,6 @@
 # rabbitmq-cluster-operator
 
-![Version: 0.4.2](https://img.shields.io/badge/Version-0.4.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.1](https://img.shields.io/badge/AppVersion-2.20.1-informational?style=flat-square)
+![Version: 0.4.3](https://img.shields.io/badge/Version-0.4.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.20.1](https://img.shields.io/badge/AppVersion-2.20.1-informational?style=flat-square)
 
 Helm chart to deploy the official RabbitMQ Cluster Operator and optionally include the Messaging Topology Operator chart.
 
@@ -204,6 +204,7 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 | monitoring.rabbitmqServiceMonitor.namespace | string | `""` | Namespace in which to create the RabbitMQ ServiceMonitor. |
 | monitoring.rabbitmqServiceMonitor.labels | object | `{}` | Additional labels for the RabbitMQ ServiceMonitor. |
 | monitoring.rabbitmqServiceMonitor.annotations | object | `{}` | Additional annotations for the RabbitMQ ServiceMonitor. |
+| monitoring.rabbitmqServiceMonitor.metricRelabelings | list | `[]` | Metric relabeling rules applied to every endpoint of the RabbitMQ ServiceMonitor. |
 | monitoring.rules | object | `{"clusterOperator":{"annotations":{},"enabled":false,"labels":{"role":"alert-rules"},"namespace":""},"rabbitmq":{"annotations":{},"enabled":false,"labels":{"role":"alert-rules"},"namespace":""}}` | Upstream alert and recording rules for the operator itself and for managed RabbitMQ clusters. |
 | monitoring.rules.clusterOperator.enabled | bool | `false` | Create rules for the Cluster Operator deployment itself, for example unavailable operator replicas. |
 | monitoring.rules.clusterOperator.namespace | string | `""` | Namespace in which to create the Cluster Operator PrometheusRule. |

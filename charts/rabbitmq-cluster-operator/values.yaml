@@ -411,6 +411,8 @@ monitoring:
     labels: {}
     # -- Additional annotations for the RabbitMQ ServiceMonitor.
     annotations: {}
+    # -- Metric relabeling rules applied to every endpoint of the RabbitMQ ServiceMonitor.
+    metricRelabelings: []
   # -- Upstream alert and recording rules for the operator itself and for managed RabbitMQ clusters.
   rules:
     clusterOperator:
