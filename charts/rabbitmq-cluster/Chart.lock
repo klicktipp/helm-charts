@@ -4,6 +4,6 @@ dependencies:
   version: 1.0.2
 - name: rabbitmq-topology
   repository: file://../rabbitmq-topology
-  version: 1.2.0
-digest: sha256:0e0c3b8dbc87bc808fda65be9aefb29c51a48f82ed0ebc652efd89fc81856bda
-generated: "2026-09-23T09:40:55.197249032+02:00"
+  version: 1.2.1
+digest: sha256:57987f2a9f648e7c1cea16bcc2cdd2d713a7ff1cdf4e48d816befd5f2ec6af92
+generated: "2026-09-23T13:18:34.996484673+02:00"
