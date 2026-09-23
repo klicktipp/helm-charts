@@ -109,6 +109,18 @@ tests:
           path: metadata.name
           value: RELEASE-NAME-rabbitmq-cluster-operator-NAMESPACE
         template: templates/cluster-operator/clusterrole.yaml
+      - equal:
+          path: rules[13].verbs
+          value: [get, patch, update]
+        template: templates/cluster-operator/clusterrole.yaml
+      - contains:
+          path: rules[14].verbs
+          content: delete
+        template: templates/cluster-operator/clusterrole.yaml
+      - contains:
+          path: rules[15].verbs
+          content: delete
+        template: templates/cluster-operator/clusterrole.yaml
 
   - it: should create clusterrolebinding with default values
     asserts:
