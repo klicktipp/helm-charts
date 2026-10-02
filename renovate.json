@@ -8,6 +8,12 @@
   ],
   "packageRules": [
     {
+      "description": "Automerge minor, patch, pin, and digest updates for openai-tunnel-client",
+      "matchPackageNames": ["ghcr.io/klicktipp/openai-tunnel-client"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest"],
+      "automerge": true
+    },
+    {
       "description": "Automerge patch updates for powerdns-recursor (security fixes)",
       "matchPackageNames": ["powerdns/pdns-recursor-54"],
       "automerge": true,
