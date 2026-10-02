@@ -3,6 +3,9 @@
   "extends": ["config:best-practices"],
   "semanticCommits": "enabled",
   "ignorePresets": ["docker:pinDigests", ":pinDevDependencies"],
+  "gitIgnoredAuthors": [
+    "/^[0-9]+\\+klicktipp-helm-docs-bot\\[bot\\]@users\\.noreply\\.github\\.com$/"
+  ],
   "packageRules": [
     {
       "description": "Automerge patch updates for powerdns-recursor (security fixes)",
