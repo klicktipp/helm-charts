@@ -70,9 +70,9 @@ tests:
         - apiVersion: v1
           kind: ConfigMap
           metadata:
-            name: '{{ .Release.Name }}-structured'
+            name: "{{ .Release.Name }}-structured"
           data:
-            chart: '{{ .Chart.Name }}'
+            chart: "{{ .Chart.Name }}"
         - |
           apiVersion: v1
           kind: Secret
