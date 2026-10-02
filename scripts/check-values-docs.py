@@ -74,7 +74,12 @@ def collect_entries(values_file: pathlib.Path) -> list[Entry]:
                 continue
             block_scalar_indent = None
 
-        if stripped == "" or stripped.startswith("#") or stripped == "---" or stripped == "...":
+        if (
+            stripped == ""
+            or stripped.startswith("#")
+            or stripped == "---"
+            or stripped == "..."
+        ):
             continue
         if stripped.startswith("- "):
             continue
@@ -92,7 +97,9 @@ def collect_entries(values_file: pathlib.Path) -> list[Entry]:
 
         path = ".".join([k for _, k in stack] + [key])
         documented_self = has_doc_comment(lines, i)
-        entries.append(Entry(path=path, indent=indent, line=i + 1, documented_self=documented_self))
+        entries.append(
+            Entry(path=path, indent=indent, line=i + 1, documented_self=documented_self)
+        )
         stack.append((indent, key))
 
         if value_part in {"|", "|-", "|+", ">", ">-", ">+"}:
@@ -131,7 +138,10 @@ def check_file(values_file: pathlib.Path) -> tuple[bool, list[str]]:
     if not undocumented:
         return True, []
 
-    errors = [f"{values_file}:{e.line}: missing documentation comment (# -- ...) for '{e.path}'" for e in undocumented]
+    errors = [
+        f"{values_file}:{e.line}: missing documentation comment (# -- ...) for '{e.path}'"
+        for e in undocumented
+    ]
     return False, errors
 
 
@@ -146,7 +156,9 @@ def discover_values_files(root: pathlib.Path) -> list[pathlib.Path]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("files", nargs="*", type=pathlib.Path, help="values.yaml files to check")
+    parser.add_argument(
+        "files", nargs="*", type=pathlib.Path, help="values.yaml files to check"
+    )
     args = parser.parse_args()
 
     files = args.files if args.files else discover_values_files(pathlib.Path("."))
