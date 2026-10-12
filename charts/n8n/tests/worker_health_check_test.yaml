@@ -1,0 +1,111 @@
+suite: Worker health check toggle
+templates:
+  - templates/deployment.worker.yaml
+  - templates/deployment.yaml
+tests:
+  - it: enables worker health endpoints and probes by default
+    template: templates/deployment.worker.yaml
+    set:
+      worker.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUEUE_HEALTH_CHECK_ACTIVE
+            value: "true"
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /healthz
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /healthz/readiness
+
+  - it: disables worker endpoints and removes both probes
+    template: templates/deployment.worker.yaml
+    set:
+      worker.enabled: true
+      worker.healthCheck.enabled: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUEUE_HEALTH_CHECK_ACTIVE
+            value: "false"
+      - notExists:
+          path: spec.template.spec.containers[0].livenessProbe
+      - notExists:
+          path: spec.template.spec.containers[0].readinessProbe
+
+  - it: overrides conflicting list env entries without duplicating the variable
+    template: templates/deployment.worker.yaml
+    set:
+      worker.enabled: true
+      global.extraEnv:
+        - name: QUEUE_HEALTH_CHECK_ACTIVE
+          value: "false"
+        - name: KEEP_GLOBAL
+          value: global
+      worker.extraEnv:
+        - name: QUEUE_HEALTH_CHECK_ACTIVE
+          value: "false"
+        - name: KEEP_WORKER
+          value: worker
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.containers[0].env
+          count: 4
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUEUE_HEALTH_CHECK_ACTIVE
+            value: "true"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KEEP_GLOBAL
+            value: global
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KEEP_WORKER
+            value: worker
+
+  - it: overrides legacy map env while preserving other entries
+    template: templates/deployment.worker.yaml
+    set:
+      worker.enabled: true
+      worker.healthCheck.enabled: false
+      global.extraEnv:
+        QUEUE_HEALTH_CHECK_ACTIVE: "true"
+        KEEP_GLOBAL: global
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.containers[0].env
+          count: 3
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUEUE_HEALTH_CHECK_ACTIVE
+            value: "false"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: KEEP_GLOBAL
+            value: global
+
+  - it: keeps main probes independent of the worker toggle
+    template: templates/deployment.yaml
+    set:
+      worker.healthCheck.enabled: false
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /healthz
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /healthz/readiness
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: QUEUE_HEALTH_CHECK_ACTIVE
+            value: "false"

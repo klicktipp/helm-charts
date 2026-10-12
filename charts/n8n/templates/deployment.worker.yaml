@@ -121,6 +121,14 @@ spec:
           {{- end }}
           {{- $workerUserFolder := default "/home/node" .Values.worker.userFolder }}
           {{- $mergedExtraEnv := include "n8n.renderMergedExtraEnv" (dict "global" .Values.global.extraEnv "component" .Values.worker.extraEnv "context" $) }}
+          {{- $workerExtraEnv := list }}
+          {{- range $entry := fromYamlArray (default "[]" $mergedExtraEnv) }}
+          {{- if ne $entry.name "QUEUE_HEALTH_CHECK_ACTIVE" }}
+          {{- $workerExtraEnv = append $workerExtraEnv $entry }}
+          {{- end }}
+          {{- end }}
+          {{- $workerExtraEnv = append $workerExtraEnv (dict "name" "QUEUE_HEALTH_CHECK_ACTIVE" "value" (.Values.worker.healthCheck.enabled | toString)) }}
+          {{- $mergedExtraEnv = toYaml $workerExtraEnv }}
           {{- if or $workerUserFolder $mergedExtraEnv }}
           env:
             - name: N8N_USER_FOLDER
@@ -167,6 +175,7 @@ spec:
               containerPort: {{ $workerRunnerPort }}
               protocol: TCP
             {{- end }}
+          {{- if .Values.worker.healthCheck.enabled }}
           {{- with .Values.worker.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
@@ -174,6 +183,7 @@ spec:
           {{- with .Values.worker.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- end }}
           resources:
             {{- toYaml (coalesce .Values.worker.resources .Values.global.resources (dict)) | nindent 12 }}

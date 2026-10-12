@@ -116,7 +116,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | main.command | list | `[]` | Override container command. |
 | main.livenessProbe.httpGet.path | string | `"/healthz"` | HTTP path for liveness probe. |
 | main.livenessProbe.httpGet.port | string | `"http"` | Port for liveness probe. |
-| main.readinessProbe.httpGet.path | string | `"/healthz"` | HTTP path for readiness probe. |
+| main.readinessProbe.httpGet.path | string | `"/healthz/readiness"` | HTTP path for readiness probe. |
 | main.readinessProbe.httpGet.port | string | `"http"` | Port for readiness probe. |
 | main.initContainers | list | `[]` | Init containers for main deployment. Appended after `global.initContainers`. |
 | main.service.enabled | bool | `true` | Create service for main deployment. |
@@ -168,9 +168,10 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | worker.lifecycle | object | `{}` | Container lifecycle hooks for worker deployment. |
 | worker.command | list | `[]` | Override worker container command. |
 | worker.commandArgs | list | `[]` | Override worker container args. |
+| worker.healthCheck.enabled | bool | `true` | Enable worker health endpoints and Kubernetes liveness/readiness probes. Sets `QUEUE_HEALTH_CHECK_ACTIVE` on the worker and takes precedence over config, envFrom, and extraEnv values for this variable. |
 | worker.livenessProbe.httpGet.path | string | `"/healthz"` | HTTP path for worker liveness probe. |
 | worker.livenessProbe.httpGet.port | string | `"http"` | Port for worker liveness probe. |
-| worker.readinessProbe.httpGet.path | string | `"/healthz"` | HTTP path for worker readiness probe. |
+| worker.readinessProbe.httpGet.path | string | `"/healthz/readiness"` | HTTP path for worker readiness probe. |
 | worker.readinessProbe.httpGet.port | string | `"http"` | Port for worker readiness probe. |
 | worker.initContainers | list | `[]` | Init containers for worker deployment. Appended after `global.initContainers`. |
 | worker.service | object | `{"annotations":{},"port":80,"type":"ClusterIP"}` | Currently not used by templates. |
@@ -208,7 +209,7 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | webhook.commandArgs | list | `[]` | Override webhook container args. |
 | webhook.livenessProbe.httpGet.path | string | `"/healthz"` | HTTP path for webhook liveness probe. |
 | webhook.livenessProbe.httpGet.port | string | `"http"` | Port for webhook liveness probe. |
-| webhook.readinessProbe.httpGet.path | string | `"/healthz"` | HTTP path for webhook readiness probe. |
+| webhook.readinessProbe.httpGet.path | string | `"/healthz/readiness"` | HTTP path for webhook readiness probe. |
 | webhook.readinessProbe.httpGet.port | string | `"http"` | Port for webhook readiness probe. |
 | webhook.initContainers | list | `[]` | Init containers for webhook deployment. Appended after `global.initContainers`. |
 | webhook.service.annotations | object | `{}` | Service annotations for webhook deployment. |
