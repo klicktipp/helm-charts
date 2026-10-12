@@ -1,0 +1,123 @@
+suite: MCP ingress routing
+templates:
+  - templates/ingress.yaml
+release:
+  name: audit
+tests:
+  - it: routes production triggers to webhook and tests and instance MCP to main
+    set:
+      ingress.enabled: true
+      webhook.enabled: true
+      webhook.mcp.enabled: true
+      main.config.queue.bull.redis.host: redis.example
+      main.service.port: 8080
+      webhook.service.port: 8081
+    asserts:
+      - contains:
+          path: spec.rules[0].http.paths
+          content:
+            path: /mcp/
+            pathType: Prefix
+            backend:
+              service:
+                name: audit-n8n-webhook
+                port:
+                  number: 8081
+      - contains:
+          path: spec.rules[0].http.paths
+          content:
+            path: /mcp-test/
+            pathType: Prefix
+            backend:
+              service:
+                name: audit-n8n
+                port:
+                  number: 8080
+      - contains:
+          path: spec.rules[0].http.paths
+          content:
+            path: /mcp-server/
+            pathType: Prefix
+            backend:
+              service:
+                name: audit-n8n
+                port:
+                  number: 8080
+
+  - it: keeps MCP usable on main without a webhook deployment
+    set:
+      ingress.enabled: true
+      webhook.mcp.enabled: true
+    asserts:
+      - lengthEqual:
+          path: spec.rules[0].http.paths
+          count: 4
+      - equal:
+          path: spec.rules[0].http.paths[1].backend.service.name
+          value: audit-n8n
+      - equal:
+          path: spec.rules[0].http.paths[2].backend.service.name
+          value: audit-n8n
+      - equal:
+          path: spec.rules[0].http.paths[3].backend.service.name
+          value: audit-n8n
+
+  - it: preserves the original routes when MCP routing is disabled
+    set:
+      ingress.enabled: true
+      webhook.enabled: true
+      main.config.queue.bull.redis.host: redis.example
+    asserts:
+      - lengthEqual:
+          path: spec.rules[0].http.paths
+          count: 5
+      - equal:
+          path: spec.rules[0].http.paths[1].path
+          value: /webhook/
+      - equal:
+          path: spec.rules[0].http.paths[2].backend.service.name
+          value: audit-n8n
+
+  - it: prefixes trigger routes and preserves custom absolute instance routes
+    set:
+      ingress.enabled: true
+      ingress.hosts:
+        - host: workflow.example.com
+          paths:
+            - path: /n8n/
+              pathType: Prefix
+      webhook.enabled: true
+      webhook.mcp.enabled: true
+      webhook.mcp.ingress.paths:
+        - /n8n/mcp-server/
+      webhook.mcp.ingress.pathType: ImplementationSpecific
+      main.config.queue.bull.redis.host: redis.example
+    asserts:
+      - equal:
+          path: spec.rules[0].http.paths[5].path
+          value: /n8n/mcp/
+      - equal:
+          path: spec.rules[0].http.paths[5].backend.service.name
+          value: audit-n8n-webhook
+      - equal:
+          path: spec.rules[0].http.paths[6].path
+          value: /n8n/mcp-test/
+      - equal:
+          path: spec.rules[0].http.paths[6].backend.service.name
+          value: audit-n8n
+      - equal:
+          path: spec.rules[0].http.paths[7].path
+          value: /n8n/mcp-server/
+      - equal:
+          path: spec.rules[0].http.paths[7].pathType
+          value: ImplementationSpecific
+      - equal:
+          path: spec.rules[0].http.paths[5].pathType
+          value: Prefix
+
+  - it: renders no ingress when ingress is disabled
+    set:
+      webhook.mcp.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0

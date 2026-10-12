@@ -1,6 +1,6 @@
 # n8n
 
-![Version: 1.11.0](https://img.shields.io/badge/Version-1.11.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.43.3](https://img.shields.io/badge/AppVersion-2.43.3-informational?style=flat-square)
+![Version: 1.11.1](https://img.shields.io/badge/Version-1.11.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.43.3](https://img.shields.io/badge/AppVersion-2.43.3-informational?style=flat-square)
 
 Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services.
 
@@ -225,9 +225,9 @@ Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation plat
 | webhook.extraVolumes | list | `[]` | Extra pod volumes for webhook pods. |
 | webhook.extraVolumeMounts | list | `[]` | Extra volume mounts for webhook pods. |
 | webhook.terminationGracePeriodSeconds | int | `30` | Pod termination grace period in seconds for webhook deployment. |
-| webhook.mcp.enabled | bool | `false` | Enable MCP ingress routing (`/mcp-server/`) to the main n8n pod. |
-| webhook.mcp.ingress.paths | list | `["/mcp-server/"]` | MCP paths that should be routed to the main n8n service. |
-| webhook.mcp.ingress.pathType | string | `"Prefix"` | Path type for MCP ingress paths. |
+| webhook.mcp.enabled | bool | `false` | Enable MCP ingress routing. Production triggers (`/mcp/`) use the webhook service when `webhook.enabled=true`, otherwise main. Test triggers (`/mcp-test/`) and instance-level MCP paths use main. Trigger paths follow each ingress base path. |
+| webhook.mcp.ingress.paths | list | `["/mcp-server/"]` | Instance-level MCP paths routed to the main n8n service. These are absolute paths, independent of the ingress base path. |
+| webhook.mcp.ingress.pathType | string | `"Prefix"` | Path type for instance-level MCP ingress paths. Trigger paths always use `Prefix`. |
 | extraManifests | list | `[]` | Additional static Kubernetes manifests rendered with the chart. |
 | extraTemplateManifests | list | `[]` | Additional templated manifests rendered with Helm context. |
 | valkey | object | `{"enabled":false}` | Valkey dependency values. |

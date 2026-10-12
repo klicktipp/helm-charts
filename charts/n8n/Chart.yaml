@@ -1,7 +1,7 @@
 ---
 apiVersion: v2
 name: n8n
-version: 1.11.0
+version: 1.11.1
 # renovate: datasource=docker depName=n8nio/n8n
 appVersion: 2.43.3
 type: application

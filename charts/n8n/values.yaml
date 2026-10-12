@@ -638,14 +638,14 @@ webhook:
   terminationGracePeriodSeconds: 30
 
   mcp:
-    # -- Enable MCP ingress routing (`/mcp-server/`) to the main n8n pod.
+    # -- Enable MCP ingress routing. Production triggers (`/mcp/`) use the webhook service when `webhook.enabled=true`, otherwise main. Test triggers (`/mcp-test/`) and instance-level MCP paths use main. Trigger paths follow each ingress base path.
     enabled: false
 
     ingress:
-      # -- MCP paths that should be routed to the main n8n service.
+      # -- Instance-level MCP paths routed to the main n8n service. These are absolute paths, independent of the ingress base path.
       paths:
         - /mcp-server/
-      # -- Path type for MCP ingress paths.
+      # -- Path type for instance-level MCP ingress paths. Trigger paths always use `Prefix`.
       pathType: Prefix
 
 # -- Additional static Kubernetes manifests rendered with the chart.
