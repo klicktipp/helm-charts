@@ -71,6 +71,26 @@ spec:
                   number: {{ $.Values.webhook.service.port | default 80  }}
           {{- end }}
           {{- if $.Values.webhook.mcp.enabled }}
+          - path: {{ trimSuffix "/" .path }}/mcp/
+            pathType: Prefix
+            backend:
+              service:
+                {{- if $.Values.webhook.enabled }}
+                name: {{ $fullName }}-webhook
+                port:
+                  number: {{ $.Values.webhook.service.port | default 80 }}
+                {{- else }}
+                name: {{ $fullName }}
+                port:
+                  number: {{ $.Values.main.service.port | default 80 }}
+                {{- end }}
+          - path: {{ trimSuffix "/" .path }}/mcp-test/
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $.Values.main.service.port | default 80 }}
           {{- range $mcpPath := $.Values.webhook.mcp.ingress.paths }}
           - path: {{ $mcpPath }}
             pathType: {{ $.Values.webhook.mcp.ingress.pathType | default "Prefix" }}

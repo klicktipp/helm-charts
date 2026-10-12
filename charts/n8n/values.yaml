@@ -294,7 +294,7 @@ main:
   readinessProbe:
     httpGet:
       # -- HTTP path for readiness probe.
-      path: /healthz
+      path: /healthz/readiness
       # -- Port for readiness probe.
       port: http
 
@@ -451,6 +451,10 @@ worker:
   # -- Override worker container args.
   commandArgs: []
 
+  healthCheck:
+    # -- Enable worker health endpoints and Kubernetes liveness/readiness probes. Sets `QUEUE_HEALTH_CHECK_ACTIVE` on the worker and takes precedence over config, envFrom, and extraEnv values for this variable.
+    enabled: true
+
   livenessProbe:
     httpGet:
       # -- HTTP path for worker liveness probe.
@@ -461,7 +465,7 @@ worker:
   readinessProbe:
     httpGet:
       # -- HTTP path for worker readiness probe.
-      path: /healthz
+      path: /healthz/readiness
       # -- Port for worker readiness probe.
       port: http
 
@@ -591,7 +595,7 @@ webhook:
   readinessProbe:
     httpGet:
       # -- HTTP path for webhook readiness probe.
-      path: /healthz
+      path: /healthz/readiness
       # -- Port for webhook readiness probe.
       port: http
 
@@ -638,14 +642,14 @@ webhook:
   terminationGracePeriodSeconds: 30
 
   mcp:
-    # -- Enable MCP ingress routing (`/mcp-server/`) to the main n8n pod.
+    # -- Enable MCP ingress routing. Production triggers (`/mcp/`) use the webhook service when `webhook.enabled=true`, otherwise main. Test triggers (`/mcp-test/`) and instance-level MCP paths use main. Trigger paths follow each ingress base path.
     enabled: false
 
     ingress:
-      # -- MCP paths that should be routed to the main n8n service.
+      # -- Instance-level MCP paths routed to the main n8n service. These are absolute paths, independent of the ingress base path.
       paths:
         - /mcp-server/
-      # -- Path type for MCP ingress paths.
+      # -- Path type for instance-level MCP ingress paths. Trigger paths always use `Prefix`.
       pathType: Prefix
 
 # -- Additional static Kubernetes manifests rendered with the chart.
