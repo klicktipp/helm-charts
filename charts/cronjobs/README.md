@@ -1,6 +1,6 @@
 # cronjobs
 
-![Version: 2.0.1](https://img.shields.io/badge/Version-2.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 2.1.0](https://img.shields.io/badge/Version-2.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 A generic helm cronjob chart for kubernetes
 
@@ -65,3 +65,4 @@ A generic helm cronjob chart for kubernetes
 | nodeSelector | object | `{}` | Node selector for pod scheduling. |
 | tolerations | list | `[]` | Tolerations for pod scheduling. |
 | affinity | object | `{}` | Affinity rules for pod scheduling. |
+| priorityClassName | string | `""` | PriorityClass for the job pods. A job can set its own `priorityClassName`. |

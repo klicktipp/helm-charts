@@ -1,0 +1,33 @@
+suite: cronjobs-priority-class-tests
+templates:
+  - templates/cronjob.yaml
+
+tests:
+  - it: should not render priorityClassName by default
+    set:
+      image.repository: busybox
+      jobs.test.schedule: "* * * * *"
+    asserts:
+      - notExists:
+          path: spec.jobTemplate.spec.template.spec.priorityClassName
+
+  - it: should use the chart default priorityClassName
+    set:
+      image.repository: busybox
+      priorityClassName: low
+      jobs.test.schedule: "* * * * *"
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.priorityClassName
+          value: low
+
+  - it: should prefer the job priorityClassName over the chart default
+    set:
+      image.repository: busybox
+      priorityClassName: low
+      jobs.test.schedule: "* * * * *"
+      jobs.test.priorityClassName: high
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.priorityClassName
+          value: high
