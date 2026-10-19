@@ -262,3 +262,6 @@ tolerations: []
 
 # -- Affinity rules for pod scheduling.
 affinity: {}
+
+# -- PriorityClass for the job pods. A job can set its own `priorityClassName`.
+priorityClassName: ""
