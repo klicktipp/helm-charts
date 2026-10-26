@@ -62,9 +62,11 @@ transparentDNS:
       # -- Image used for the transparent DNS init/interceptor containers.
       repository: ghcr.io/klicktipp/pdns-transparent-dns
       # -- Image tag of the transparent DNS init/interceptor image.
-      tag: 0.1.2
+      tag: 0.1.3
       # -- Pull policy for the interceptor helper image.
       pullPolicy: IfNotPresent
+  # -- Seconds the PowerDNS container keeps answering after a pod stop request (native preStop sleep). In this time the interceptor hands transparentDNS.clusterDNS.serviceIP back to CoreDNS, so lookups do not fail during a DaemonSet roll or node drain. Needs interceptor image 0.1.3 or later. Keep it below the termination grace period (30s). Set 0 to disable.
+  preStopSleepSeconds: 5
   # -- Configure the local IP aliases plus raw/filter iptables rules required for the transparent DNS mode.
   setupIptables: true
   # -- Also configure raw OUTPUT rules for node-local processes hitting the node-local DNS IP and, when enabled, the cluster DNS Service IP.

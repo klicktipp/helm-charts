@@ -407,6 +407,44 @@ tests:
           value: kube-dns
         template: templates/service-cluster-dns-upstream.yaml
 
+  - it: should delay the recursor stop with a preStop sleep in transparent dns mode
+    set:
+      workload.type: DaemonSet
+      transparentDNS.enabled: true
+      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].lifecycle.preStop.sleep.seconds
+          value: 5
+        template: templates/daemonset.yaml
+      - notExists:
+          path: spec.template.spec.containers[1].lifecycle
+        template: templates/daemonset.yaml
+
+  - it: should allow overriding or disabling the transparent dns preStop sleep
+    set:
+      workload.type: DaemonSet
+      transparentDNS.enabled: true
+      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
+      transparentDNS.preStopSleepSeconds: 0
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].lifecycle
+        template: templates/daemonset.yaml
+
+  - it: should not render a preStop sleep without transparent dns mode
+    set:
+      workload.type: DaemonSet
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].lifecycle
+        template: templates/daemonset.yaml
+      - notExists:
+          path: spec.template.spec.containers[0].lifecycle
+        template: templates/deployment.yaml
+
   - it: should not create a generated cluster dns upstream service when a custom cluster dns ip is configured
     set:
       workload.type: DaemonSet

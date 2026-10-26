@@ -537,6 +537,12 @@ containers:
       periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
       timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
       failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+    {{- if and .Values.transparentDNS.enabled (gt (int .Values.transparentDNS.preStopSleepSeconds) 0) }}
+    lifecycle:
+      preStop:
+        sleep:
+          seconds: {{ int .Values.transparentDNS.preStopSleepSeconds }}
+    {{- end }}
     resources:
       {{- toYaml .Values.resources | nindent 6 }}
     volumeMounts:
