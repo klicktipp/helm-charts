@@ -42,7 +42,7 @@ Helm chart to deploy the official RabbitMQ Cluster Operator and optionally inclu
 | diagnosticMode.enabled | bool | `false` | Enable diagnostic mode (all probes will be disabled) |
 | rabbitmqImage.registry | string | `""` | RabbitMQ Image registry |
 | rabbitmqImage.repository | string | `"rabbitmq"` | RabbitMQ Image repository |
-| rabbitmqImage.tag | string | `"4.3-management-alpine"` | RabbitMQ Image tag (immutable tags are recommended) |
+| rabbitmqImage.tag | string | `"4.4-management-alpine"` | RabbitMQ Image tag (immutable tags are recommended) |
 | rabbitmqImage.digest | string | `""` | RabbitMQ image digest in the form `sha256:...`; overrides `rabbitmqImage.tag` when set |
 | rabbitmqImage.pullSecrets | list | `[]` | RabbitMQ Image pull secrets |
 | credentialUpdaterImage | object | `{"digest":"","pullSecrets":[],"registry":"ghcr.io","repository":"rabbitmq/default-user-credential-updater","tag":"1.0.17"}` | RabbitMQ Default User Credential Updater image |
