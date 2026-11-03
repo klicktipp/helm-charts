@@ -30,6 +30,14 @@
       "matchPackageNames": ["n8nio/n8n", "n8n"]
     },
     {
+      "description": "n8n betas have plain version numbers (no -beta suffix), so Docker tags cannot tell them apart. Read the versions from GitHub releases instead, where betas are marked as pre-release and Renovate skips them.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["n8nio/n8n"],
+      "overrideDatasource": "github-releases",
+      "overridePackageName": "n8n-io/n8n",
+      "extractVersion": "^n8n@(?<version>\\d+\\.\\d+\\.\\d+)$"
+    },
+    {
       "matchFileNames": ["charts/**"],
       "bumpVersions": [
         {
