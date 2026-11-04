@@ -145,6 +145,8 @@ mcp:
       headers:
         # -- Map HTTP header names to secret keys for MCP discovery/probe requests.
         {}
+  # -- Startup retry window for an unavailable HTTP MCP endpoint. Keep the startup probe budget longer than this duration.
+  startupWaitTimeout: "5m"
   # -- Maximum lifetime of an upstream MCP connection.
   connectionMaxTTL: "10m"
   # -- Maximum number of concurrent upstream MCP requests.
@@ -189,6 +191,17 @@ serviceMonitor:
   interval: 30s
   # -- Prometheus scrape timeout.
   scrapeTimeout: 10s
+
+# -- Startup probe configuration. The default budget is 360 seconds, longer than the 5-minute MCP startup retry window; failure restarts the container. Set to null to disable.
+startupProbe:
+  httpGet:
+    # -- HTTP path used by the startup probe.
+    path: /readyz
+    # -- Named port used by the startup probe.
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 36
 
 # -- Liveness probe configuration for the tunnel-client container.
 livenessProbe:

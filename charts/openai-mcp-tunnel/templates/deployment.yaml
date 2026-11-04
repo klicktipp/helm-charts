@@ -41,6 +41,10 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
@@ -85,6 +89,8 @@ spec:
             - name: MCP_COMMAND
               value: {{ .Values.mcp.command | quote }}
             {{- end }}
+            - name: MCP_STARTUP_WAIT_TIMEOUT
+              value: {{ .Values.mcp.startupWaitTimeout | quote }}
             {{- if .Values.mcp.auth.extraHeaders.headers }}
             - name: MCP_EXTRA_HEADERS
               value: {{ include "openai-mcp-tunnel.mcpExtraHeadersEnvValue" . | quote }}

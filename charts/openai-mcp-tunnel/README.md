@@ -1,6 +1,6 @@
 # openai-mcp-tunnel
 
-![Version: 0.1.6](https://img.shields.io/badge/Version-0.1.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.17](https://img.shields.io/badge/AppVersion-0.0.17-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.19](https://img.shields.io/badge/AppVersion-0.0.19-informational?style=flat-square)
 
 A Helm chart for running the OpenAI Secure MCP Tunnel client in Kubernetes.
 
@@ -59,6 +59,22 @@ The chart supports exactly one `main` MCP binding:
 For Kubernetes production use, `mcp.serverUrl` is the safer default. OpenAI documents that stdio transport does not support MCP sessions, and multi-replica active-active behavior only works when the upstream is stateless or session-aware.
 
 The bootstrap stub is useful only as a first-step bring-up mechanism. It lets ChatGPT connect to the tunnel, but it does not expose your real MCP tools. Switch to `mcp.serverUrl` or `mcp.command` once the backend exists.
+
+## Startup and Health Probes
+
+The chart sets `mcp.startupWaitTimeout: "5m"` to retry startup initialization when
+an HTTP MCP endpoint is unavailable. The startup probe checks `/readyz` every
+10 seconds and permits 36 failures (about 6 minutes). If startup never succeeds,
+Kubernetes restarts the container and begins a new retry window.
+
+Readiness checks `/readyz`; liveness checks `/healthz`. Readiness failures alone
+do not restart the container. Liveness and readiness probes begin only after the
+startup probe succeeds. Set `startupProbe: null` to disable the startup probe.
+
+When increasing `mcp.startupWaitTimeout`, also increase
+`startupProbe.failureThreshold` or `startupProbe.periodSeconds` so their product
+exceeds the retry window. These settings cover startup recovery; they do not
+ensure MCP session recovery or restart the container on every later upstream outage.
 
 ## Internal MCP Authentication
 
@@ -142,7 +158,7 @@ For production rollouts, prefer one of these image supply-chain patterns:
 | controlPlane.tunnelId | string | `""` | Tunnel ID created in the OpenAI tunnels management UI or API. |
 | controlPlane.baseUrl | string | `""` | Optional override for the control plane base URL. Leave empty to let `tunnel-client` use its built-in default (`https://api.openai.com`). |
 | controlPlane.urlPath | string | `""` | Optional URL path prefix inserted before `/v1/...` routes, for example `/workspace/dev/us` behind an enterprise gateway. |
-| mcp | object | `{"auth":{"discoveryExtraHeaders":{"createSecret":false,"existingSecretName":"","headers":{},"values":{}},"extraHeaders":{"createSecret":false,"existingSecretName":"","headers":{},"values":{}}},"bootstrap":{"enabled":false},"command":"","connectionMaxTTL":"10m","maxConcurrentRequests":10,"serverUrl":""}` | Upstream MCP configuration. Set either `serverUrl` or `command`. |
+| mcp | object | `{"auth":{"discoveryExtraHeaders":{"createSecret":false,"existingSecretName":"","headers":{},"values":{}},"extraHeaders":{"createSecret":false,"existingSecretName":"","headers":{},"values":{}}},"bootstrap":{"enabled":false},"command":"","connectionMaxTTL":"10m","maxConcurrentRequests":10,"serverUrl":"","startupWaitTimeout":"5m"}` | Upstream MCP configuration. Set either `serverUrl` or `command`. |
 | mcp.bootstrap.enabled | bool | `false` | Start `tunnel-client` with the built-in stub MCP so the tunnel can come up before a real MCP backend is available. When `mcp.serverUrl` and `mcp.command` are both empty, the chart falls back to this stub automatically. |
 | mcp.serverUrl | string | `""` | URL of the private MCP server reachable from the pod. |
 | mcp.command | string | `""` | Command to launch a local stdio MCP server. `stdio` does not support MCP sessions. |
@@ -152,6 +168,7 @@ For production rollouts, prefer one of these image supply-chain patterns:
 | mcp.auth.discoveryExtraHeaders.existingSecretName | string | `""` | Existing Secret whose keys contain complete discovery/probe header values. |
 | mcp.auth.discoveryExtraHeaders.createSecret | bool | `false` | Create the Secret from values in this chart. |
 | mcp.auth.discoveryExtraHeaders.values | object | `{}` | Secret data written when `createSecret=true`. Each key becomes one mounted file. |
+| mcp.startupWaitTimeout | string | `"5m"` | Startup retry window for an unavailable HTTP MCP endpoint. Keep the startup probe budget longer than this duration. |
 | mcp.connectionMaxTTL | string | `"10m"` | Maximum lifetime of an upstream MCP connection. |
 | mcp.maxConcurrentRequests | int | `10` | Maximum number of concurrent upstream MCP requests. |
 | log | object | `{"format":"json","level":"info"}` | Runtime logging configuration. |
@@ -172,6 +189,9 @@ For production rollouts, prefer one of these image supply-chain patterns:
 | serviceMonitor.labels | object | `{}` | Additional labels added to the ServiceMonitor. |
 | serviceMonitor.interval | string | `"30s"` | Prometheus scrape interval. |
 | serviceMonitor.scrapeTimeout | string | `"10s"` | Prometheus scrape timeout. |
+| startupProbe | object | `{"failureThreshold":36,"httpGet":{"path":"/readyz","port":"http"},"periodSeconds":10,"timeoutSeconds":5}` | Startup probe configuration. The default budget is 360 seconds, longer than the 5-minute MCP startup retry window; failure restarts the container. Set to null to disable. |
+| startupProbe.httpGet.path | string | `"/readyz"` | HTTP path used by the startup probe. |
+| startupProbe.httpGet.port | string | `"http"` | Named port used by the startup probe. |
 | livenessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/healthz","port":"http"},"initialDelaySeconds":5,"periodSeconds":10,"timeoutSeconds":5}` | Liveness probe configuration for the tunnel-client container. |
 | livenessProbe.httpGet.path | string | `"/healthz"` | HTTP path used by the liveness probe. |
 | livenessProbe.httpGet.port | string | `"http"` | Named port used by the liveness probe. |
