@@ -8,6 +8,16 @@
   ],
   "packageRules": [
     {
+      "description": "Automerge non-major updates when CI is green. A merge only publishes a new chart version. k8stipp pins exact chart versions, so the renovate-bench rollout in k8stipp stays the gate for the clusters.",
+      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest"],
+      "automerge": true
+    },
+    {
+      "description": "RabbitMQ keeps data: a person merges these updates.",
+      "matchFileNames": ["charts/rabbitmq-*/**"],
+      "automerge": false
+    },
+    {
       "description": "Automerge minor, patch, pin, and digest updates for openai-tunnel-client",
       "matchPackageNames": ["ghcr.io/klicktipp/openai-tunnel-client"],
       "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest"],
@@ -38,7 +48,10 @@
       "extractVersion": "^n8n@(?<version>\\d+\\.\\d+\\.\\d+)$"
     },
     {
+      "description": "One branch per chart: bumpVersions bumps only one chart per branch, and the chart-testing lint needs a bump in every changed chart.",
       "matchFileNames": ["charts/**"],
+      "additionalBranchPrefix": "{{parentDir}}-",
+      "commitMessageSuffix": "({{parentDir}})",
       "bumpVersions": [
         {
           "filePatterns": ["{{packageFileDir}}/Chart.{yaml,yml}"],
