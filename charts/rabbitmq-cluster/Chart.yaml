@@ -3,7 +3,7 @@ apiVersion: v2
 name: rabbitmq-cluster
 description: Helm chart to define a RabbitMQ cluster via official rabbitmq.com CRDs (RabbitmqCluster).
 type: application
-version: 3.4.0
+version: 3.5.0
 # renovate: datasource=docker depName=ghcr.io/rabbitmq/cluster-operator
 appVersion: 2.23.0
 home: https://www.rabbitmq.com/kubernetes/operator/operator-overview.html
