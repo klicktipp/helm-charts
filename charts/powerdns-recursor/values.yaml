@@ -65,8 +65,8 @@ transparentDNS:
       tag: 0.1.3
       # -- Pull policy for the interceptor helper image.
       pullPolicy: IfNotPresent
-  # -- Seconds the PowerDNS container keeps answering after a pod stop request (native preStop sleep). In this time the interceptor hands transparentDNS.clusterDNS.serviceIP back to CoreDNS, so lookups do not fail during a DaemonSet roll or node drain. Needs interceptor image 0.1.3 or later. Keep it below the termination grace period (30s). Set 0 to disable.
-  preStopSleepSeconds: 5
+  # -- (int) Deprecated, use preStopSleepSeconds. When set, it overrides preStopSleepSeconds in transparent DNS mode.
+  preStopSleepSeconds: null
   # -- Configure the local IP aliases plus raw/filter iptables rules required for the transparent DNS mode.
   setupIptables: true
   # -- Also configure raw OUTPUT rules for node-local processes hitting the node-local DNS IP and, when enabled, the cluster DNS Service IP.
@@ -272,6 +272,11 @@ image:
 
 # -- Resource requests and limits.
 resources: {}
+
+# -- Seconds PowerDNS keeps answering after a stop request (native preStop sleep), so Services stop routing to the pod before it exits.
+# In transparent DNS mode the interceptor also hands the cluster DNS Service IP back to CoreDNS in this time (needs interceptor 0.1.3+).
+# Keep it below the termination grace period (30s). Set 0 to disable.
+preStopSleepSeconds: 5
 
 # -- Probe configuration.
 probes:

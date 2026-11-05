@@ -537,11 +537,15 @@ containers:
       periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
       timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
       failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
-    {{- if and .Values.transparentDNS.enabled (gt (int .Values.transparentDNS.preStopSleepSeconds) 0) }}
+    {{- $preStopSleepSeconds := .Values.preStopSleepSeconds }}
+    {{- if and .Values.transparentDNS.enabled (not (kindIs "invalid" .Values.transparentDNS.preStopSleepSeconds)) }}
+    {{- $preStopSleepSeconds = .Values.transparentDNS.preStopSleepSeconds }}
+    {{- end }}
+    {{- if gt (int $preStopSleepSeconds) 0 }}
     lifecycle:
       preStop:
         sleep:
-          seconds: {{ int .Values.transparentDNS.preStopSleepSeconds }}
+          seconds: {{ int $preStopSleepSeconds }}
     {{- end }}
     resources:
       {{- toYaml .Values.resources | nindent 6 }}

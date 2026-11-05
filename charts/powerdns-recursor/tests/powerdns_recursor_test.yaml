@@ -434,15 +434,50 @@ tests:
           path: spec.template.spec.containers[0].lifecycle
         template: templates/daemonset.yaml
 
-  - it: should not render a preStop sleep without transparent dns mode
+  - it: should render the preStop sleep for a deployment
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].lifecycle.preStop.sleep.seconds
+          value: 5
+        template: templates/deployment.yaml
+
+  - it: should render the preStop sleep for a daemonset without transparent dns mode
     set:
       workload.type: DaemonSet
     asserts:
-      - notExists:
-          path: spec.template.spec.containers[0].lifecycle
+      - equal:
+          path: spec.template.spec.containers[0].lifecycle.preStop.sleep.seconds
+          value: 5
         template: templates/daemonset.yaml
+
+  - it: should allow overriding or disabling the preStop sleep
+    set:
+      preStopSleepSeconds: 0
+    asserts:
       - notExists:
           path: spec.template.spec.containers[0].lifecycle
+        template: templates/deployment.yaml
+
+  - it: should use preStopSleepSeconds in transparent dns mode when the deprecated key is unset
+    set:
+      workload.type: DaemonSet
+      transparentDNS.enabled: true
+      transparentDNS.clusterDNS.serviceIP: 172.20.0.10
+      transparentDNS.clusterDNS.upstreamService.clusterIP: 172.20.0.11
+      preStopSleepSeconds: 8
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].lifecycle.preStop.sleep.seconds
+          value: 8
+        template: templates/daemonset.yaml
+
+  - it: should ignore the deprecated transparent dns key without transparent dns mode
+    set:
+      transparentDNS.preStopSleepSeconds: 0
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].lifecycle.preStop.sleep.seconds
+          value: 5
         template: templates/deployment.yaml
 
   - it: should not create a generated cluster dns upstream service when a custom cluster dns ip is configured
