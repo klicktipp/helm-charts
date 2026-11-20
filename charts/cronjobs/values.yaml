@@ -73,6 +73,14 @@ secretEnvFrom: []
 # -- Environment variable entries.
 env: {}
 
+# -- Raw EnvVar entries for values the `env` map cannot express, such as Downward API fields.
+# They come after all other env entries and before each job's own `extraEnv`. Names must not repeat a name from another env source.
+extraEnv: []
+#  - name: HOST_IP
+#    valueFrom:
+#      fieldRef:
+#        fieldPath: status.hostIP
+
 # -- Default time zone for all CronJobs. Individual jobs can override this value.
 timezone: ""
 
@@ -136,6 +144,11 @@ jobs: {}
 #      - name: MY_SECRET_ENV_VAR
 #        secretName: my-secret
 #        key: my-key
+#    extraEnv:
+#      - name: POD_NAME
+#        valueFrom:
+#          fieldRef:
+#            fieldPath: metadata.name
 #    storage:
 #      efs:
 #        storageClass: kt-efs-sc

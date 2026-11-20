@@ -1,6 +1,6 @@
 # cronjobs
 
-![Version: 2.1.0](https://img.shields.io/badge/Version-2.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
+![Version: 2.2.0](https://img.shields.io/badge/Version-2.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: latest](https://img.shields.io/badge/AppVersion-latest-informational?style=flat-square)
 
 A generic helm cronjob chart for kubernetes
 
@@ -30,6 +30,7 @@ A generic helm cronjob chart for kubernetes
 | configMaps | object | `{}` | Configure configMaps. |
 | secretEnvFrom | list | `[]` | Set secretEnvFrom. |
 | env | object | `{}` | Environment variable entries. |
+| extraEnv | list | `[]` | Raw EnvVar entries for values the `env` map cannot express, such as Downward API fields. They come after all other env entries and before each job's own `extraEnv`. Names must not repeat a name from another env source. |
 | timezone | string | `""` | Default time zone for all CronJobs. Individual jobs can override this value. |
 | startupJitter | object | `{"enabled":false,"image":{"pullPolicy":"IfNotPresent","registry":"docker.io","repository":"bash","tag":"5.3"},"maxSeconds":60,"seed":"cronjobs-jitter"}` | Startup jitter settings for all jobs. Individual jobs can override these values. |
 | startupJitter.enabled | bool | `false` | Enable startup jitter initContainer. |

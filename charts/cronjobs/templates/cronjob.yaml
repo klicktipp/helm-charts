@@ -133,6 +133,9 @@ spec:
                       name: {{ include "com.klicktipp.slugify-string" (list (include "cronjobs.fullname" $) $job_name "envvars") }}
                       key: {{ $key }}
                 {{- end }}
+                {{- with concat ($.Values.extraEnv | default list) ($job.extraEnv | default list) }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
               resources:
                 {{- toYaml $job.resources | nindent 16 }}
               volumeMounts:
