@@ -1,0 +1,17 @@
+image:
+  repository: busybox
+env:
+  FOO: bar
+extraEnv:
+  - name: HOST_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+jobs:
+  test:
+    schedule: "* * * * *"
+    extraEnv:
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name

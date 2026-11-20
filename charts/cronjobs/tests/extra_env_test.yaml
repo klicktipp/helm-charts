@@ -1,0 +1,34 @@
+suite: cronjobs-extra-env-tests
+templates:
+  - templates/cronjob.yaml
+
+tests:
+  - it: should render only map env entries by default
+    set:
+      image.repository: busybox
+      env.FOO: bar
+      jobs.test.schedule: "* * * * *"
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          value:
+            - name: FOO
+              value: bar
+
+  - it: should append global then job extraEnv after map env entries
+    values:
+      - ../ci/extra-env-values.yaml
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          value:
+            - name: FOO
+              value: bar
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
