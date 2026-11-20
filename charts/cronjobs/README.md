@@ -30,7 +30,7 @@ A generic helm cronjob chart for kubernetes
 | configMaps | object | `{}` | Configure configMaps. |
 | secretEnvFrom | list | `[]` | Set secretEnvFrom. |
 | env | object | `{}` | Environment variable entries. |
-| extraEnv | list | `[]` | Raw EnvVar entries for all jobs, rendered after `env`, `secretEnvFrom` and `secretEnv`, followed by the job's own `extraEnv`. Use it for values the `env` map cannot express, such as Downward API fields. Names must not repeat a name from the other env sources. |
+| extraEnv | list | `[]` | Raw EnvVar entries for values the `env` map cannot express, such as Downward API fields. They come after all other env entries and before each job's own `extraEnv`. Names must not repeat a name from another env source. |
 | timezone | string | `""` | Default time zone for all CronJobs. Individual jobs can override this value. |
 | startupJitter | object | `{"enabled":false,"image":{"pullPolicy":"IfNotPresent","registry":"docker.io","repository":"bash","tag":"5.3"},"maxSeconds":60,"seed":"cronjobs-jitter"}` | Startup jitter settings for all jobs. Individual jobs can override these values. |
 | startupJitter.enabled | bool | `false` | Enable startup jitter initContainer. |

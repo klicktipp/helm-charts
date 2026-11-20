@@ -73,8 +73,8 @@ secretEnvFrom: []
 # -- Environment variable entries.
 env: {}
 
-# -- Raw EnvVar entries for all jobs, rendered after `env`, `secretEnvFrom` and `secretEnv`, followed by the job's own `extraEnv`.
-# Use it for values the `env` map cannot express, such as Downward API fields. Names must not repeat a name from the other env sources.
+# -- Raw EnvVar entries for values the `env` map cannot express, such as Downward API fields.
+# They come after all other env entries and before each job's own `extraEnv`. Names must not repeat a name from another env source.
 extraEnv: []
 #  - name: HOST_IP
 #    valueFrom:
